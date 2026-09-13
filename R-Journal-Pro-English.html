@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>R Journal Pro — Futures Trading Journal</title>
+<style>
+:root{--bg:#0b1020;--panel:#11182b;--panel2:#151e34;--line:#26324d;--text:#edf3ff;--muted:#8f9bb5;--green:#35d39a;--red:#ff6678;--blue:#6c8cff;--yellow:#f5c85b}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#080d19,#0d1426);color:var(--text);font:14px Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:flex;min-height:100vh}.side{width:240px;background:#0b1120;border-right:1px solid var(--line);padding:22px 14px;position:fixed;inset:0 auto 0 0;z-index:5}.brand{font-size:20px;font-weight:800;padding:8px 12px 25px}.brand span{color:var(--blue)}.nav{display:grid;gap:6px}.nav button{background:none;border:0;color:var(--muted);padding:11px 12px;border-radius:10px;text-align:left}.nav button.active,.nav button:hover{background:#17213a;color:#fff}.main{margin-left:240px;width:calc(100% - 240px);padding:28px;max-width:1500px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px}.top h1{margin:0;font-size:28px}.actions{display:flex;gap:8px}.btn{border:1px solid var(--line);background:var(--panel2);color:#fff;border-radius:10px;padding:10px 14px}.btn.primary{background:var(--blue);border-color:var(--blue)}.btn.danger{color:#ff9aa7}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(8,minmax(120px,1fr))}.card{background:rgba(17,24,43,.9);border:1px solid var(--line);border-radius:14px;padding:16px}.stat .label{color:var(--muted);font-size:12px}.stat .value{font-size:24px;font-weight:750;margin-top:7px}.positive{color:var(--green)}.negative{color:var(--red)}.layout{grid-template-columns:1.35fr .65fr;margin-top:14px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.section-title h2{font-size:16px;margin:0}.muted{color:var(--muted)}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 9px;border-bottom:1px solid #202b44;text-align:left;white-space:nowrap}.table th{font-size:11px;color:var(--muted);text-transform:uppercase}.pill{padding:4px 8px;border-radius:999px;font-size:11px;background:#202a43}.win{color:var(--green)}.loss{color:var(--red)}.bar{height:8px;background:#202a43;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--blue)}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:#0c1426;border:1px solid var(--line);color:#fff;border-radius:9px;padding:10px;outline:none}.field textarea{min-height:80px;resize:vertical}.full{grid-column:1/-1}.check{display:flex;gap:8px;align-items:center;background:#0c1426;border:1px solid var(--line);padding:10px;border-radius:9px}.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.open{display:flex}.modalbox{background:#11182b;border:1px solid var(--line);border-radius:16px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:20px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:18px}.tab{background:#11182b;border:1px solid var(--line);color:var(--muted);padding:9px 13px;border-radius:9px}.tab.active{color:#fff;background:#1b2743}.view{display:none}.view.active{display:block}.mini{font-size:12px;color:var(--muted)}.empty{padding:35px;text-align:center;color:var(--muted)}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}.day{min-height:75px;border:1px solid var(--line);border-radius:9px;padding:8px;background:#0f172a}.day.win{border-color:#1f765d}.day.loss{border-color:#873a49}.day strong{display:block;color:#fff}.mobilebar{display:none}
+@media(max-width:1050px){.stats{grid-template-columns:repeat(4,1fr)}.layout{grid-template-columns:1fr}.formgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.side{display:none}.main{margin:0;width:100%;padding:16px 12px 85px}.stats{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr}.mobilebar{display:flex;position:fixed;bottom:0;left:0;right:0;background:#0b1120;border-top:1px solid var(--line);z-index:10;justify-content:space-around;padding:8px}.mobilebar button{background:none;border:0;color:var(--muted);font-size:11px}.top h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+<div class="brand">R <span>JOURNAL PRO</span></div>
+<div class="nav">
+<button class="active" data-view="dashboard">Dashboard</button><button data-view="trades">Trade History</button><button data-view="analytics">Analytics</button><button data-view="strategies">Strategies</button><button data-view="days">Daily Performance</button><button data-view="missed">Missed Trades</button><button data-view="rules">Rules</button><button data-view="settings">Settings</button>
+</div>
+</aside>
+<main class="main">
+<div class="top"><div><h1 id="title">Dashboard</h1><div class="muted">Futures trading performance & review</div></div><div class="actions"><button class="btn" onclick="exportData()">Export</button><button class="btn primary" onclick="openTrade()">+ Add Trade</button></div></div>
+
+<section id="dashboard" class="view active">
+<div class="grid stats" id="stats"></div>
+<div class="grid layout">
+<div class="card"><div class="section-title"><h2>Recent Trades</h2><button class="btn" onclick="showView('trades')">View all</button></div><div id="recent"></div></div>
+<div class="card"><div class="section-title"><h2>Strategy Performance</h2></div><div id="strategyDash"></div></div>
+</div>
+<div class="grid layout">
+<div class="card"><div class="section-title"><h2>R Distribution</h2></div><div id="rDist"></div></div>
+<div class="card"><div class="section-title"><h2>Key Metrics</h2></div><div id="keyMetrics"></div></div>
+</div>
+</section>
+
+<section id="trades" class="view"><div class="card"><div class="section-title"><h2>Trade History</h2><button class="btn primary" onclick="openTrade()">+ Add Trade</button></div><div id="tradeTable"></div></div></section>
+<section id="analytics" class="view"><div class="grid layout"><div class="card"><h2>Performance Analytics</h2><div id="analyticsBox"></div></div><div class="card"><h2>Common Mistakes</h2><div id="mistakes"></div></div></div></section>
+<section id="strategies" class="view"><div class="card"><div class="section-title"><h2>Strategies</h2><button class="btn primary" onclick="addStrategy()">+ Add Strategy</button></div><div id="strategyList"></div></div></section>
+<section id="days" class="view"><div class="card"><div class="section-title"><h2>Daily Performance</h2></div><div id="daysBox"></div></div></section>
+<section id="missed" class="view"><div class="card"><div class="section-title"><h2>Missed Trades</h2><button class="btn primary" onclick="addMissed()">+ Add Missed Trade</button></div><div id="missedBox"></div></div></section>
+<section id="rules" class="view"><div class="card"><div class="section-title"><h2>Trading Rules</h2><button class="btn primary" onclick="addRule()">+ Add Rule</button></div><div id="rulesBox"></div></div></section>
+<section id="settings" class="view"><div class="grid layout"><div class="card"><h2>Accounts</h2><div id="accounts"></div><button class="btn primary" onclick="addAccount()">+ Add Account</button></div><div class="card"><h2>Data</h2><p class="muted">All journal data is stored locally in this browser.</p><button class="btn" onclick="exportData()">Export Backup</button> <label class="btn">Import<input type="file" hidden accept=".json" onchange="importData(event)"></label><button class="btn danger" onclick="resetAll()">Reset Everything</button></div></div></section>
+</main>
+</div>
+<div class="mobilebar"><button onclick="showView('dashboard')">Dashboard</button><button onclick="showView('trades')">Trades</button><button onclick="openTrade()">＋ Trade</button><button onclick="showView('analytics')">Analytics</button><button onclick="showView('settings')">Settings</button></div>
+
+<div class="modal" id="tradeModal"><div class="modalbox">
+<div class="section-title"><h2>Add Trade</h2><button class="btn" onclick="closeTrade()">Close</button></div>
+<form id="tradeForm" class="formgrid">
+<div class="field"><label>Date</label><input id="fDate" type="date" required></div>
+<div class="field"><label>Time</label><input id="fTime" type="time"></div>
+<div class="field"><label>Account</label><select id="fAccount"></select></div>
+<div class="field"><label>Symbol</label><select id="fSymbol"><option>MNQ</option><option>MES</option><option>NQ</option><option>ES</option><option>Other</option></select></div>
+<div class="field"><label>Direction</label><select id="fDirection"><option>Long</option><option>Short</option></select></div>
+<div class="field"><label>Strategy</label><select id="fStrategy"></select></div>
+<div class="field"><label>Entry</label><input id="fEntry" type="number" step="any"></div>
+<div class="field"><label>Exit</label><input id="fExit" type="number" step="any"></div>
+<div class="field"><label>Position Size</label><input id="fSize" type="number" step="1"></div>
+<div class="field"><label>P&L ($)</label><input id="fPnl" type="number" step="any" required></div>
+<div class="field"><label>Planned Risk ($)</label><input id="fRisk" type="number" step="any"></div>
+<div class="field"><label>Stop Loss</label><input id="fSL" type="number" step="any"></div>
+<div class="field"><label>Take Profit</label><input id="fTP" type="number" step="any"></div>
+<div class="field"><label>Planned R:R</label><input id="fRR" type="number" step="any"></div>
+<div class="field"><label>Result R</label><input id="fR" type="number" step="any"></div>
+<div class="field"><label>Session</label><select id="fSession"><option>New York AM</option><option>New York PM</option><option>London</option><option>Asia</option><option>Other</option></select></div>
+<div class="field"><label>Setup Grade</label><select id="fGrade"><option>A+</option><option>A</option><option>B</option><option>C</option><option>F</option></select></div>
+<div class="field"><label>Market Condition</label><select id="fMarket"><option>Trending</option><option>Ranging</option><option>Choppy</option><option>News</option><option>Reversal</option></select></div>
+<div class="field"><label>Execution Quality</label><select id="fExec"><option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option></select></div>
+<div class="field"><label>Confidence (1–10)</label><input id="fConfidence" type="number" min="1" max="10"></div>
+<div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>None</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overconfidence</option><option>Hesitation</option></select></div>
+<div class="field"><label>Rule Violations</label><input id="fViolation" placeholder="e.g. moved stop, overtraded"></div>
+<div class="field"><label>Confluence</label><input id="fConfluence" placeholder="e.g. HTF bias + liquidity + FVG"></div>
+<div class="field full"><label>What went right?</label><textarea id="fRight"></textarea></div>
+<div class="field full"><label>What went wrong?</label><textarea id="fWrong"></textarea></div>
+<div class="field full"><label>One Fix For Next Time</label><textarea id="fFix"></textarea></div>
+<div class="field full"><label>Trade Notes</label><textarea id="fNotes"></textarea></div>
+<div class="field"><label>Before Chart</label><input id="fBefore" type="file" accept="image/*"></div>
+<div class="field"><label>After Chart</label><input id="fAfter" type="file" accept="image/*"></div>
+<div class="field"><label>Plan Followed?</label><select id="fPlan"><option>Yes</option><option>No</option><option>Partially</option></select></div>
+<div class="full" style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="btn" onclick="closeTrade()">Cancel</button><button class="btn primary">Save Trade</button></div>
+</form></div></div>
+
+<script>
+const KEY='rjournal-pro-en-v1';
+let data=JSON.parse(localStorage.getItem(KEY)||'{"trades":[],"strategies":["Opening Range Breakout","Liquidity Sweep","FVG / Imbalance"],"rules":["Trade only planned setups","Respect daily loss limit","Do not move stop","No revenge trading"],"accounts":["Main Account"],"missed":[]}');
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function num(v){return Number(v)||0}
+function calc(){let t=data.trades,pnl=t.reduce((a,x)=>a+num(x.pnl),0),R=t.reduce((a,x)=>a+num(x.r),0),wins=t.filter(x=>num(x.pnl)>0),loss=t.filter(x=>num(x.pnl)<0),grossW=wins.reduce((a,x)=>a+num(x.pnl),0),grossL=Math.abs(loss.reduce((a,x)=>a+num(x.pnl),0));let eq=0,peak=0,dd=0;t.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(x=>{eq+=num(x.pnl);peak=Math.max(peak,eq);dd=Math.max(dd,peak-eq)});return{t,pnl,R,wr:t.length?wins.length/t.length*100:0,avgR:t.length?R/t.length:0,pf:grossL?grossW/grossL:0,exp:t.length?R/t.length:0,aw:wins.length?grossW/wins.length:0,al:loss.length?grossL/loss.length:0,dd}}
+function stat(label,val,cls=''){return `<div class="card stat"><div class="label">${label}</div><div class="value ${cls}">${val}</div></div>`}
+function render(){renderDash();renderTrades();renderAnalytics();renderStrategies();renderDays();renderMissed();renderRules();renderAccounts();fillSelects()}
+function renderDash(){let c=calc();document.getElementById('stats').innerHTML=[stat('Win Rate',c.wr.toFixed(1)+'%'),stat('Total P&L','$'+c.pnl.toFixed(2),c.pnl>=0?'positive':'negative'),stat('Total R',c.R.toFixed(2)+'R',c.R>=0?'positive':'negative'),stat('Avg R',c.avgR.toFixed(2)+'R'),stat('Profit Factor',c.pf.toFixed(2)),stat('Expectancy',c.exp.toFixed(2)+'R'),stat('Max Drawdown','$'+c.dd.toFixed(2),'negative'),stat('Trades',c.t.length)].join('');let recent=c.t.slice().reverse().slice(0,7);document.getElementById('recent').innerHTML=recent.length?`<table class="table"><tr><th>Date</th><th>Symbol</th><th>Strategy</th><th>R</th><th>P&L</th></tr>${recent.map((x,i)=>`<tr><td>${esc(x.date)}</td><td>${esc(x.symbol)}</td><td>${esc(x.strategy)}</td><td class="${num(x.r)>=0?'win':'loss'}">${num(x.r).toFixed(2)}R</td><td class="${num(x.pnl)>=0?'win':'loss'}">$${num(x.pnl).toFixed(2)}</td></tr>`).join('')}</table>`:'<div class="empty">No trades yet. Add your first trade.</div>';let groups={};c.t.forEach(x=>{let s=x.strategy||'Unassigned';groups[s]=(groups[s]||0)+num(x.r)});document.getElementById('strategyDash').innerHTML=Object.keys(groups).length?Object.entries(groups).map(([s,r])=>`<div style="margin:14px 0"><div style="display:flex;justify-content:space-between"><span>${esc(s)}</span><b class="${r>=0?'win':'loss'}">${r.toFixed(2)}R</b></div><div class="bar"><i style="width:${Math.min(100,Math.abs(r)*10)}%"></i></div></div>`).join(''):'<div class="empty">Add trades to see strategy performance.</div>';let bins=[-3,-2,-1,0,1,2,3],counts=bins.map(b=>c.t.filter(x=>{let r=num(x.r);return b===-3?r<=-3:b===3?r>=3:r>=b&&r<b+1}).length);document.getElementById('rDist').innerHTML=bins.map((b,i)=>`<div style="display:flex;gap:10px;align-items:center;margin:10px 0"><span style="width:35px">${b===3?'+3':b}R</span><div class="bar" style="flex:1"><i style="width:${counts[i]*12}%"></i></div><span>${counts[i]}</span></div>`).join('');document.getElementById('keyMetrics').innerHTML=`<p>Average Winner: <b class="win">$${c.aw.toFixed(2)}</b></p><p>Average Loser: <b class="loss">-$${c.al.toFixed(2)}</b></p><p>Winning Trades: <b>${c.t.filter(x=>num(x.pnl)>0).length}</b></p><p>Losing Trades: <b>${c.t.filter(x=>num(x.pnl)<0).length}</b></p>`}
+function renderTrades(){let box=document.getElementById('tradeTable');if(!data.trades.length){box.innerHTML='<div class="empty">No trades recorded.</div>';return}box.innerHTML=`<div style="overflow:auto"><table class="table"><tr><th>Date</th><th>Symbol</th><th>Side</th><th>Strategy</th><th>Setup</th><th>Planned R:R</th><th>Result R</th><th>P&L</th><th></th></tr>${data.trades.slice().reverse().map((x,ri)=>`<tr><td>${esc(x.date)} ${esc(x.time)}</td><td>${esc(x.symbol)}</td><td>${esc(x.direction)}</td><td>${esc(x.strategy)}</td><td>${esc(x.grade)}</td><td>${num(x.rr).toFixed(2)}</td><td class="${num(x.r)>=0?'win':'loss'}">${num(x.r).toFixed(2)}R</td><td class="${num(x.pnl)>=0?'win':'loss'}">$${num(x.pnl).toFixed(2)}</td><td><button class="btn danger" onclick="deleteTrade(${data.trades.length-1-ri})">Delete</button></td></tr>`).join('')}</table></div>`}
+function renderAnalytics(){let c=calc(),days={};c.t.forEach(x=>{days[x.date]=(days[x.date]||0)+num(x.r)});let vals=Object.values(days);document.getElementById('analyticsBox').innerHTML=`<p><b>Expectancy:</b> ${c.exp.toFixed(2)}R / trade</p><p><b>Average Win:</b> $${c.aw.toFixed(2)}</p><p><b>Average Loss:</b> $${c.al.toFixed(2)}</p><p><b>Profit Factor:</b> ${c.pf.toFixed(2)}</p><p><b>Winning Days:</b> ${vals.filter(x=>x>0).length}</p><p><b>Losing Days:</b> ${vals.filter(x=>x<0).length}</p><p><b>Best Day:</b> ${vals.length?Math.max(...vals).toFixed(2)+'R':'—'}</p><p><b>Worst Day:</b> ${vals.length?Math.min(...vals).toFixed(2)+'R':'—'}</p>`;let ms={};c.t.forEach(x=>(x.violation||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(m=>ms[m]=(ms[m]||0)+1));document.getElementById('mistakes').innerHTML=Object.keys(ms).length?Object.entries(ms).sort((a,b)=>b[1]-a[1]).map(([m,n])=>`<p><span class="pill">${esc(m)}</span> × ${n}</p>`).join(''):'<div class="empty">No rule violations logged.</div>'}
+function renderStrategies(){let c=calc();document.getElementById('strategyList').innerHTML=data.strategies.map(s=>{let a=c.t.filter(x=>x.strategy===s),r=a.reduce((q,x)=>q+num(x.r),0),w=a.filter(x=>num(x.pnl)>0).length;return `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><b>${esc(s)}</b><button class="btn danger" onclick="deleteStrategy('${esc(s)}')">Delete</button></div><p class="muted">${a.length} trades · Win rate ${a.length?(w/a.length*100).toFixed(0):0}% · <span class="${r>=0?'win':'loss'}">${r.toFixed(2)}R</span></p></div>`}).join('')||'<div class="empty">No strategies.</div>'}
+function renderDays(){let m={};data.trades.forEach(x=>m[x.date]=(m[x.date]||0)+num(x.r));let keys=Object.keys(m).sort().reverse();document.getElementById('daysBox').innerHTML=keys.length?`<div class="calendar">${keys.map(d=>`<div class="day ${m[d]>=0?'win':'loss'}"><strong>${esc(d)}</strong><span class="${m[d]>=0?'win':'loss'}">${m[d]>=0?'+':''}${m[d].toFixed(2)}R</span></div>`).join('')}</div>`:'<div class="empty">Daily results appear after you log trades.</div>'}
+function renderMissed(){document.getElementById('missedBox').innerHTML=data.missed.length?data.missed.map((x,i)=>`<div class="card" style="margin-bottom:10px"><b>${esc(x.date)} · ${esc(x.symbol)}</b><p>${esc(x.reason)}</p><button class="btn danger" onclick="data.missed.splice(${i},1);save()">Delete</button></div>`).join(''):'<div class="empty">No missed trades logged.</div>'}
+function renderRules(){document.getElementById('rulesBox').innerHTML=data.rules.map((r,i)=>`<div class="card" style="margin-bottom:9px;display:flex;justify-content:space-between"><span>${esc(r)}</span><button class="btn danger" onclick="data.rules.splice(${i},1);save()">Delete</button></div>`).join('')||'<div class="empty">Add your rules.</div>'}
+function renderAccounts(){document.getElementById('accounts').innerHTML=data.accounts.map((a,i)=>`<div class="card" style="margin-bottom:9px;display:flex;justify-content:space-between"><span>${esc(a)}</span><button class="btn danger" onclick="data.accounts.splice(${i},1);save()">Delete</button></div>`).join('')}
+function fillSelects(){fAccount.innerHTML=data.accounts.map(a=>`<option>${esc(a)}</option>`).join('');fStrategy.innerHTML=data.strategies.map(a=>`<option>${esc(a)}</option>`).join('')}
+function openTrade(){tradeModal.classList.add('open');fDate.value=new Date().toISOString().slice(0,10);fillSelects()}
+function closeTrade(){tradeModal.classList.remove('open');tradeForm.reset()}
+tradeForm.onsubmit=async e=>{e.preventDefault();let r=num(fR.value),risk=num(fRisk.value);if(!r&&risk)r=num(fPnl.value)/risk;let t={date:fDate.value,time:fTime.value,account:fAccount.value,symbol:fSymbol.value,direction:fDirection.value,strategy:fStrategy.value,entry:fEntry.value,exit:fExit.value,size:fSize.value,pnl:num(fPnl.value),risk:fRisk.value,sl:fSL.value,tp:fTP.value,rr:fRR.value,r,session:fSession.value,grade:fGrade.value,market:fMarket.value,exec:fExec.value,confidence:fConfidence.value,emotion:fEmotion.value,violation:fViolation.value,confluence:fConfluence.value,right:fRight.value,wrong:fWrong.value,fix:fFix.value,notes:fNotes.value,plan:fPlan.value};data.trades.push(t);save();closeTrade();showView('trades')}
+function deleteTrade(i){if(confirm('Delete this trade?')){data.trades.splice(i,1);save()}}
+function addStrategy(){let s=prompt('Strategy name');if(s&&s.trim()){data.strategies.push(s.trim());save()}}
+function deleteStrategy(s){if(confirm('Delete strategy? Existing trades stay unchanged.')){data.strategies=data.strategies.filter(x=>x!==s);save()}}
+function addRule(){let s=prompt('Trading rule');if(s&&s.trim()){data.rules.push(s.trim());save()}}
+function addAccount(){let s=prompt('Account name');if(s&&s.trim()){data.accounts.push(s.trim());save()}}
+function addMissed(){let d=prompt('Date (YYYY-MM-DD)',new Date().toISOString().slice(0,10));if(!d)return;let sym=prompt('Symbol','MNQ');if(!sym)return;let reason=prompt('Why was the trade missed?','');data.missed.push({date:d,symbol:sym,reason:reason||''});save()}
+function showView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(v).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===v));document.getElementById('title').textContent=v.replace(/^\w/,m=>m.toUpperCase()).replace('Days','Daily Performance').replace('Trades','Trade History').replace('Missed','Missed Trades').replace('Strategies','Strategies').replace('Rules','Rules').replace('Analytics','Analytics').replace('Settings','Settings')}
+function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='r-journal-pro-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data=JSON.parse(r.result);save();alert('Backup imported.')}catch{alert('Invalid backup file.')}};r.readAsText(f)}
+function resetAll(){if(confirm('Delete ALL journal data?')){localStorage.removeItem(KEY);location.reload()}}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));render();
+</script>
+</body></html>
