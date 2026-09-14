@@ -12,13 +12,11 @@
  --shadow:0 10px 30px rgba(0,0,0,.22);--radius:14px;
 }
 
-/* Light Theme (أبيض وسكني) */
 body.theme-light {
  --bg:#f4f6f5;--panel:#ffffff;--panel2:#e9ece9;--line:#d1d8d2;--text:#1a231b;--muted:#5f6e61;
  --green:#10b981;--red:#ef4444;--shadow:0 4px 20px rgba(0,0,0,0.06);
 }
 
-/* Midnight Blue Theme */
 body.theme-blue {
  --bg:#090d16;--panel:#101726;--panel2:#162035;--line:#202e4a;--text:#edf2f7;--muted:#8fa0be;
  --green:#38ef7d;--red:#ff5252;--shadow:0 10px 30px rgba(0,0,0,.35);
@@ -67,7 +65,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 <main class="main">
 <header class="top">
   <div class="search">⌕ &nbsp; Search...</div>
-  <!-- خيار تغيير الألوان العليوي الأيمن -->
   <div class="topRight">
     <label style="font-size:12px; color:var(--muted);">Theme:</label>
     <select class="select" id="themeSelect" onchange="changeTheme(this.value)">
@@ -142,7 +139,6 @@ function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remo
 document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
 function val(id){return $(id).value}
 
-/* إضافة وتعديل الصفقة */
 function saveTrade(){
  const editId=$('editTradeId').value;
  const t={
@@ -199,6 +195,42 @@ function renderMetrics(){
 
 function avgRR(){if(!data.trades.length)return '0.0';let a=data.trades.filter(t=>t.plannedRR>0);return a.length?'1 : '+(a.reduce((s,t)=>s+t.plannedRR,0)/a.length).toFixed(1):'0.0'}
 
+function renderPerformanceChart(){
+ const el=$('performanceChart'); if(!el)return;
+ const ts=data.trades.slice().reverse();
+ if(!ts.length){el.innerHTML='<div class="empty" style="margin-top:35px">Add trades to see performance.</div>';return}
+ 
+ let eq=0, vals=[0]; 
+ ts.forEach(t=>{eq+=Number(t.r)||0;vals.push(eq)});
+
+ const w=650,h=260,pad=35;
+ const min=Math.min(...vals, 0);
+ const max=Math.max(...vals, 1);
+ const span=(max-min)||1;
+
+ const pts=vals.map((v,i)=>{
+   const x=pad+(i*(w-pad*2))/Math.max(1, vals.length-1);
+   const y=225-((v-min)/span)*190;
+   return [x,y];
+ });
+
+ const poly=pts.map(p=>p.join(',')).join(' ');
+ const area=poly+` ${pts[pts.length-1][0]},225 ${pad},225`;
+
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+   <g stroke="var(--line)" stroke-width="1">
+     <line x1="35" y1="35" x2="615" y2="35"/>
+     <line x1="35" y1="82" x2="615" y2="82"/>
+     <line x1="35" y1="130" x2="615" y2="130"/>
+     <line x1="35" y1="177" x2="615" y2="177"/>
+     <line x1="35" y1="225" x2="615" y2="225"/>
+   </g>
+   <polygon points="${area}" fill="var(--green)" opacity=".15"/>
+   <polyline points="${poly}" fill="none" stroke="var(--green)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+   ${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--green)"/>`).join('')}
+ </svg>`;
+}
+
 function renderCalendar(id){
  let ts=data.trades||[];let grid=$(id);if(!grid)return;
  if(!ts.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;padding:20px">No trades recorded yet.</div>';return}
@@ -231,7 +263,7 @@ function renderRecent(){let ts=data.trades.slice(0,5);$('recent').innerHTML=ts.l
 
 function renderAll(){
  if(data.theme) { $('themeSelect').value=data.theme; document.body.className=data.theme==='light'?'theme-light':data.theme==='blue'?'theme-blue':''; }
- renderMetrics();renderCalendar('calendarGrid');renderRecent();renderTrades();renderManager();
+ renderMetrics();renderPerformanceChart();renderCalendar('calendarGrid');renderRecent();renderTrades();renderManager();
 }
 
 if($('tradeSearch'))$('tradeSearch').addEventListener('input',renderTrades);
