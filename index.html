@@ -297,14 +297,14 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-const KEY='rjournal_pro_v8_clean';
+const KEY='rjournal_pro_v9_fixed';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  theme:'dark',accountSize:25000,trades:[],notes:[],
  lists:{
-   KL:['HTF Trend','SMC / ICT','Liquidity','FVG'],
-   Entry:['Liquidity Sweep','BOS','Pullback'],
-   Bias:['Long','Short','Neutral'],
-   Narrative:['HTF Narrative','Order Flow','News']
+  KL:['HTF Trend','SMC / ICT','Liquidity','FVG'],
+  Entry:['Liquidity Sweep','BOS','Pullback'],
+  Bias:['Long','Short','Neutral'],
+  Narrative:['HTF Narrative','Order Flow','News']
  }
 };
 const $=id=>document.getElementById(id);
@@ -312,36 +312,36 @@ const $=id=>document.getElementById(id);
 let currentCalDate = new Date();
 
 function changeTheme(theme){
-  data.theme=theme;
-  document.body.className='';
-  if(theme==='light') document.body.classList.add('theme-light');
-  if(theme==='blue') document.body.classList.add('theme-blue');
-  if(theme==='gray') document.body.classList.add('theme-gray');
-  persist();
+ data.theme=theme;
+ document.body.className='';
+ if(theme==='light') document.body.classList.add('theme-light');
+ if(theme==='blue') document.body.classList.add('theme-blue');
+ if(theme==='gray') document.body.classList.add('theme-gray');
+ persist();
 }
 
 function persist(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
 function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
 function go(page){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  $(page).classList.add('active');
-  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
-  if(page==='add' && !$('editTradeId').value) {
-    $('fDate').value = new Date().toISOString().slice(0,10);
-  }
-  renderAll();scrollTo(0,0);
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ $(page).classList.add('active');
+ document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+ if(page==='add' && !$('editTradeId').value) {
+  $('fDate').value = new Date().toISOString().slice(0,10);
+ }
+ renderAll();scrollTo(0,0);
 }
 document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
 function val(id){return $(id).value}
 
 function encodeImage(input, targetId) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      $(targetId).value = e.target.result;
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
+ if (input.files && input.files[0]) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+   $(targetId).value = e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+ }
 }
 
 // Backup Export & Import Functions
@@ -394,11 +394,6 @@ window.addEventListener('click', function(e) {
   }
 });
 
-function toggleOption(containerId, textId, itemVal, optElement) {
-  optElement.classList.toggle('selected');
-  updateDropdownText(containerId, textId);
-}
-
 function updateDropdownText(boxId, textId) {
   const container = $(boxId);
   const textEl = $(textId);
@@ -441,355 +436,238 @@ function setCheckedValues(containerId, valuesStr, textId) {
   updateDropdownText(containerId, textId);
 }
 
-function saveTrade(){
- const editId=$('editTradeId').value;
- const t={
-  id: editId ? Number(editId) : Date.now(),
-  date:val('fDate')||new Date().toISOString().slice(0,10),
-  time:val('fTime'),
-  symbol:val('fSymbol'),
-  bias:getCheckedValues('fBiasBox'),
-  session:val('fSession'),
-  grade:val('fGrade'),
-  entry:getCheckedValues('fEntryBox'),
-  kl:getCheckedValues('fKLBox'),
-  narrative:getCheckedValues('fNarrativeBox'),
-  tradeStatus:val('fTradeStatus'),
-  entryPrice:+val('fEntryPrice')||0,
-  exitPrice:+val('fExitPrice')||0,
-  size:+val('fSize')||0,
-  pnl:+val('fPnl')||0,
-  risk:+val('fRisk')||0,
-  sl:+val('fSL')||0,
-  tp:+val('fTP')||0,
-  plannedRR:+val('fRR')||0,
-  r:+val('fR')||0,
-  exec:val('fExec'),
-  confidence:+val('fConfidence')||0,
-  emotion:val('fEmotion'),
-  plan:val('fPlan'),
-  chartBefore:val('fChartBeforeData'),
-  chartAfter:val('fChartAfterData'),
-  notes:val('fNotes')
- };
+// Strategies Manager Functions (Fixing delete & persistence issue)
+function renderStrategiesManager() {
+  const container = $('strategyManager');
+  if(!container) return;
+  
+  const keys = [
+    {key: 'KL', title: 'KL'},
+    {key: 'Entry', title: 'Entry'},
+    {key: 'Bias', title: 'Bias'},
+    {key: 'Narrative', title: 'Narrative'}
+  ];
 
- if(editId){
-  const idx=data.trades.findIndex(x=>x.id===Number(editId));
-  if(idx!==-1) data.trades[idx]=t;
-  toast('Trade updated successfully!');
- } else {
-  data.trades.unshift(t);
-  toast('Trade saved successfully!');
- }
- persist();clearForm();go('trades');
+  container.innerHTML = keys.map(k => `
+    <div class="card">
+      <h3>${k.title}</h3>
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <input class="select" style="flex:1" id="newOpt_${k.key}" placeholder="Add ${k.title}...">
+        <button class="primary" onclick="addStrategyItem('${k.key}')">+ Add</button>
+      </div>
+      <div class="list" style="max-height:200px; overflow-y:auto;">
+        ${(data.lists[k.key] || []).map(item => `
+          <div class="listItem">
+            <span>${item}</span>
+            <button class="danger" onclick="deleteStrategyItem('${k.key}', '${item}')">Delete</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
 }
 
-function editTrade(id){
- const t=data.trades.find(x=>x.id===id);
- if(!t)return;
- $('editTradeId').value=t.id;
- $('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;
- setCheckedValues('fBiasBox', t.bias, 'dropBiasText');
- $('fSession').value=t.session;$('fGrade').value=t.grade;
- setCheckedValues('fEntryBox', t.entry, 'dropEntryText');
- setCheckedValues('fKLBox', t.kl, 'dropKLText');
- setCheckedValues('fNarrativeBox', t.narrative, 'dropNarrativeText');
- $('fTradeStatus').value=t.tradeStatus||'In-Plan';
- $('fEntryPrice').value=t.entryPrice;$('fExitPrice').value=t.exitPrice;$('fSize').value=t.size;$('fPnl').value=t.pnl;$('fRisk').value=t.risk;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRR').value=t.plannedRR;$('fR').value=t.r;$('fExec').value=t.exec;$('fConfidence').value=t.confidence;$('fEmotion').value=t.emotion;$('fPlan').value=t.plan;
- $('fChartBeforeData').value=t.chartBefore||'';$('fChartBeforeFile').value='';
- $('fChartAfterData').value=t.chartAfter||'';$('fChartAfterFile').value='';
- $('fNotes').value=t.notes;
- $('formTitle').textContent='Edit Trade';
- go('add');
+function addStrategyItem(category) {
+  const input = $(`newOpt_${category}`);
+  if(!input || !input.value.trim()) return;
+  const val = input.value.trim();
+  if(!data.lists[category]) data.lists[category] = [];
+  if(!data.lists[category].includes(val)){
+    data.lists[category].push(val);
+    persist();
+    toast('Added successfully');
+  }
+  input.value = '';
 }
 
-function deleteTrade(id){
- if(confirm('Are you sure you want to delete this trade?')){
-  data.trades=data.trades.filter(t=>t.id!==id);
-  persist();
-  toast('Trade deleted!');
- }
-}
-
-function clearForm(){
- $('editTradeId').value='';
- ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeData','fChartAfterData','fChartBeforeFile','fChartAfterFile','fNotes'].forEach(id=>{if($(id))$(id).value='';});
- setCheckedValues('fBiasBox', '', 'dropBiasText');
- setCheckedValues('fEntryBox', '', 'dropEntryText');
- setCheckedValues('fKLBox', '', 'dropKLText');
- setCheckedValues('fNarrativeBox', '', 'dropNarrativeText');
- $('fTradeStatus').value = 'In-Plan';
- $('fDate').value = new Date().toISOString().slice(0,10);
- $('formTitle').textContent='Add Trade';
-}
-
-function stats(){
- let ts=data.trades, r=ts.reduce((a,t)=>a+t.r,0), pnl=ts.reduce((a,t)=>a+t.pnl,0), wins=ts.filter(t=>t.r>0),loss=ts.filter(t=>t.r<0);
- let pf=loss.length?wins.reduce((a,t)=>a+t.r,0)/Math.abs(loss.reduce((a,t)=>a+t.r,0)):wins.length?Infinity:0;
- let wr=ts.length?wins.length/ts.length*100:0;
- 
- let peak=0, maxDd=0, curr=0;
- ts.slice().reverse().forEach(t=>{
-   curr += Number(t.r)||0;
-   if(curr > peak) peak = curr;
-   let dd = peak - curr;
-   if(dd > maxDd) maxDd = dd;
- });
-
- return {ts,r,pnl,wins,loss,pf,wr,maxDd};
-}
-
-function renderMetrics(){
- let s=stats();
- let arr=[
-   ['Total R',s.r.toFixed(1)+'R','Multiple',s.r>=0?'up':'down'],
-   ['Total P&L','$'+Math.round(s.pnl).toLocaleString(),'Account',s.pnl>=0?'up':'down'],
-   ['Win Rate',s.wr.toFixed(1)+'%','Wins',s.wr>=50?'up':'down'],
-   ['Average R:R',avgRR(),'Reward/Risk','up'],
-   ['Profit Factor',s.pf===Infinity?'∞':s.pf.toFixed(2),'Gross P/L','up'],
-   ['Max Drawdown','-'+s.maxDd.toFixed(1)+'R','Peak to Valley',s.maxDd===0?'up':'down']
- ];
- $('metrics').innerHTML=arr.map(x=>`<div class="metric"><div class="label">${x[0]}</div><div class="value ${x[3]}">${x[1]}</div><div class="sub">${x[2]}</div></div>`).join('');
-}
-
-function avgRR(){if(!data.trades.length)return '0.0';let a=data.trades.filter(t=>t.plannedRR>0);return a.length?'1 : '+(a.reduce((s,t)=>s+t.plannedRR,0)/a.length).toFixed(1):'0.0'}
-
-function renderPerformanceChart(targetId='performanceChart'){
- const el=$(targetId); if(!el)return;
- const ts=data.trades.slice().reverse();
- if(!ts.length){el.innerHTML='<div class="empty" style="margin-top:35px">Add trades to see performance.</div>';return}
- 
- const type = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
- 
- let eq=0, vals=[0], dates=['Start'];
- ts.forEach(t=>{
-   eq += type === 'r' ? (Number(t.r)||0) : (Number(t.pnl)||0);
-   vals.push(eq);
-   dates.push(t.date ? t.date.slice(5) : '');
- });
-
- const isModal = targetId === 'modalBody';
- const w = isModal ? 900 : 750;
- const h = isModal ? 480 : 260;
- const padL=60, padR=20, padT=20, padB=35;
- const min=Math.min(...vals, 0);
- const max=Math.max(...vals, 1);
- const span=(max-min)||1;
-
- const pts=vals.map((v,i)=>{
-   const x=padL+(i*(w-padL-padR))/Math.max(1, vals.length-1);
-   const y=(h-padB)-((v-min)/span)*(h-padT-padB);
-   return [x,y];
- });
-
- const poly=pts.map(p=>p.join(',')).join(' ');
- const area=poly+` ${pts[pts.length-1][0]},${h-padB} ${padL},${h-padB}`;
-
- const yLabels = [max, min + (span * 0.75), min + (span * 0.5), min + (span * 0.25), min];
- const formatVal = (v) => type === 'r' ? (v >= 0 ? '+' : '') + v.toFixed(1) + 'R' : (v >= 0 ? '$' : '-$') + Math.abs(Math.round(v));
-
- const html = `<div class="chart" style="height:${h}px"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-   <g stroke="var(--line)" stroke-width="1">
-     ${yLabels.map((v, i) => {
-       const y = padT + (i * (h - padT - padB) / 4);
-       return `<line x1="${padL}" y1="${y}" x2="${w - padR}" y2="${y}"/><text x="${padL - 8}" y="${y + 4}" fill="var(--muted)" font-size="10" text-anchor="end">${formatVal(v)}</text>`;
-     }).join('')}
-   </g>
-   <g>
-     ${dates.map((d, i) => {
-       if (i === 0 || i === dates.length - 1 || i % Math.ceil(dates.length / 5) === 0) {
-         return `<text x="${pts[i][0]}" y="${h - 10}" fill="var(--muted)" font-size="10" text-anchor="middle">${d}</text>`;
-       }
-       return '';
-     }).join('')}
-   </g>
-   <polygon points="${area}" fill="var(--green)" opacity=".15"/>
-   <polyline points="${poly}" fill="none" stroke="var(--green)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-   ${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--green)"/>`).join('')}
- </svg></div>`;
-
- el.innerHTML = html;
-}
-
-function openModal(type){
-  const overlay = $('modalOverlay');
-  const title = $('modalTitle');
-  overlay.classList.add('active');
-  if(type === 'chart'){
-    title.textContent = 'Performance Overview (Expanded)';
-    renderPerformanceChart('modalBody');
-  } else if(type === 'calendar'){
-    title.textContent = 'Trading Calendar (Expanded)';
-    renderCalendar('modalBody');
+function deleteStrategyItem(category, item) {
+  if(confirm(`Are you sure you want to delete "${item}"?`)){
+    data.lists[category] = data.lists[category].filter(x => x !== item);
+    persist();
+    toast('Deleted successfully');
   }
 }
 
-function closeModal(){
-  $('modalOverlay').classList.remove('active');
-  $('modalBody').innerHTML = '';
+function renderDropdowns() {
+  const map = {
+    'fKLBox': {list: data.lists.KL, box: 'dropKL', text: 'dropKLText'},
+    'fEntryBox': {list: data.lists.Entry, box: 'dropEntry', text: 'dropEntryText'},
+    'fBiasBox': {list: data.lists.Bias, box: 'dropBias', text: 'dropBiasText'},
+    'fNarrativeBox': {list: data.lists.Narrative, box: 'dropNarrative', text: 'dropNarrativeText'}
+  };
+
+  Object.keys(map).forEach(boxId => {
+    const box = $(boxId);
+    if(!box) return;
+    const info = map[boxId];
+    const currentChecked = getCheckedValues(boxId);
+    
+    box.innerHTML = (info.list || []).map(item => `
+      <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
+        <span>${item}</span>
+        <span class="check-mark">✓</span>
+      </div>
+    `).join('');
+    
+    setCheckedValues(boxId, currentChecked, info.text);
+  });
 }
 
-function closeModalOnBg(e){
-  if(e.target === $('modalOverlay')) closeModal();
+function toggleOption(containerId, textId, itemVal, optElement) {
+  optElement.classList.toggle('selected');
+  updateDropdownText(containerId, textId);
 }
 
-document.addEventListener('keydown', (e)=>{if(e.key === 'Escape') closeModal();});
-
-function filterTradesByDate(dateStr){
- closeModal();
- go('trades');
- if($('tradeSearch')){
-  $('tradeSearch').value = dateStr;
-  renderTrades();
- }
+function renderCalendar(targetId='calendarGridWrapper') {
+  const el = $(targetId);
+  if(!el) return;
+  const year = currentCalDate.getFullYear();
+  const month = currentCalDate.getMonth();
+  
+  const firstDay = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  
+  let daysHTML = '';
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  for(let i = 0; i < firstDay; i++) {
+    daysHTML += `<div class="day emptyDay"></div>`;
+  }
+  
+  for(let d = 1; d <= totalDays; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const dayTrades = data.trades.filter(t => t.date === dateStr);
+    const dayR = dayTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
+    
+    let statusClass = '';
+    if(dayTrades.length > 0) {
+      statusClass = dayR >= 0 ? 'pos' : 'neg';
+    }
+    
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const isToday = dateStr === todayStr ? 'today' : '';
+    
+    daysHTML += `
+      <div class="day ${statusClass} ${isToday}" onclick="filterTradesByDate('${dateStr}')">
+        <strong>${d}</strong>
+        <small>${dayTrades.length > 0 ? (dayR >= 0 ? '+' : '') + dayR.toFixed(1) + 'R' : ''}</small>
+      </div>
+    `;
+  }
+  
+  el.innerHTML = `
+    <div class="calHeader">
+      <button class="calNavBtn" onclick="changeCalMonth(-1, '${targetId}')">◀</button>
+      <span>${monthNames[month]} ${year}</span>
+      <button class="calNavBtn" onclick="changeCalMonth(1, '${targetId}')">▶</button>
+    </div>
+    <div class="calWeekDays"><div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div></div>
+    <div class="calGrid">${daysHTML}</div>
+  `;
 }
 
-function changeCalMonth(delta, targetId){
+function changeCalMonth(delta, targetId) {
   currentCalDate.setMonth(currentCalDate.getMonth() + delta);
   renderCalendar(targetId);
 }
 
-function renderCalendar(targetId='calendarGridWrapper'){
- const wrapper = $(targetId); if(!wrapper) return;
- const ts = data.trades || [];
- const year = currentCalDate.getFullYear();
- const month = currentCalDate.getMonth();
- const todayObj = new Date();
- const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
- const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
- const firstDayIndex = new Date(year, month, 1).getDay();
- const totalDays = new Date(year, month + 1, 0).getDate();
-
- let byDate = {};
- ts.forEach(t => { if(t.date) byDate[t.date] = (byDate[t.date] || 0) + (Number(t.r) || 0); });
-
- let monthTotalR = 0;
- for(let d = 1; d <= totalDays; d++){
-   let dayStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-   if(byDate[dayStr]) monthTotalR += byDate[dayStr];
- }
-
- let html = `
-   <div class="calHeader">
-     <button class="calNavBtn" onclick="changeCalMonth(-1, '${targetId}')">❮</button>
-     <span>${monthNames[month]} ${year} (${monthTotalR >= 0 ? '+' : ''}${monthTotalR.toFixed(1)}R)</span>
-     <button class="calNavBtn" onclick="changeCalMonth(1, '${targetId}')">❯</button>
-   </div>
-   <div class="calWeekDays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
-   <div class="calGrid">
- `;
-
- for(let i = 0; i < firstDayIndex; i++) html += `<div class="day emptyDay"></div>`;
-
- for(let day = 1; day <= totalDays; day++){
-   let dayStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-   let r = byDate[dayStr];
-   let hasTrade = r !== undefined;
-   let isToday = dayStr === todayStr;
-
-   html += `
-     <div class="day ${isToday ? 'today' : ''} ${hasTrade ? (r > 0 ? 'pos' : r < 0 ? 'neg' : '') : ''}" 
-          ${hasTrade ? `onclick="filterTradesByDate('${dayStr}')"` : ''}>
-       <strong>${day}${isToday ? ' •' : ''}</strong>
-       ${hasTrade ? `<small class="${r < 0 ? 'down' : r > 0 ? 'up' : ''}">${r > 0 ? '+' : ''}${r.toFixed(1)}R</small>` : '<small style="opacity:0.2">-</small>'}
-     </div>
-   `;
- }
- html += `</div>`;
- wrapper.innerHTML = html;
-}
-
-function updateFilterDropdowns() {
-  const entryFilter = $('tradeEntryFilter');
-  const klFilter = $('tradeKLFilter');
-  if(!entryFilter || !klFilter) return;
-
-  const currentEntry = entryFilter.value;
-  const currentKL = klFilter.value;
-
-  const entries = data.lists.Entry || [];
-  const kls = data.lists.KL || [];
-
-  entryFilter.innerHTML = `<option value="All">All Entries</option>` + entries.map(e => `<option value="${e}">${e}</option>`).join('');
-  klFilter.innerHTML = `<option value="All">All KLs</option>` + kls.map(k => `<option value="${k}">${k}</option>`).join('');
-
-  entryFilter.value = entries.includes(currentEntry) ? currentEntry : 'All';
-  klFilter.value = kls.includes(currentKL) ? currentKL : 'All';
-}
-
 function renderTrades(){
- let q = ($('tradeSearch')?.value || '').toLowerCase();
- let res = $('tradeResult')?.value || 'All';
- let entryF = $('tradeEntryFilter')?.value || 'All';
- let klF = $('tradeKLFilter')?.value || 'All';
-
- $('tradesBody').innerHTML = data.trades.filter(t => {
-   let matchQ = !q || JSON.stringify(t).toLowerCase().includes(q);
-   let matchRes = res === 'All' || (res === 'Win' && t.r > 0) || (res === 'Loss' && t.r < 0) || (res === 'Breakeven' && t.r === 0);
-   let matchEntry = entryF === 'All' || (t.entry && t.entry.includes(entryF));
-   let matchKL = klF === 'All' || (t.kl && t.kl.includes(klF));
-   return matchQ && matchRes && matchEntry && matchKL;
- }).map(t => `
-  <tr>
-    <td>${t.date}</td><td>${t.symbol}</td><td><span class="pill" style="background:rgba(117,169,255,0.2);color:var(--blue);">${t.tradeStatus||'In-Plan'}</span></td><td>${t.bias}</td><td>${t.entry||'-'}</td><td>${t.kl||'-'}</td>
-    <td class="${t.r>=0?'up':'down'}">${t.r>=0?'+':''}${t.r}R</td><td class="${t.pnl>=0?'up':'down'}">$${t.pnl}</td>
-    <td>
-      ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="window.open('${t.chartBefore}')" title="Before Chart">` : ''}
-      ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="window.open('${t.chartAfter}')" title="After Chart">` : ''}
-      ${!t.chartBefore && !t.chartAfter ? '-' : ''}
-    </td>
-    <td>
-      <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
-      <button class="danger" onclick="deleteTrade(${t.id})">Delete</button>
-    </td>
-  </tr>`).join('') || '<tr><td colspan="10" class="empty">No trades match.</td></tr>';
+  const body = $('tradesBody');
+  if(!body) return;
+  const search = ($('tradeSearch')?.value || '').toLowerCase();
+  const resultFilter = $('tradeResult')?.value || 'All';
+  
+  const filtered = data.trades.filter(t => {
+    const matchSearch = t.symbol.toLowerCase().includes(search) || (t.notes || '').toLowerCase().includes(search);
+    let matchRes = true;
+    if(resultFilter === 'Win') matchRes = t.r > 0;
+    if(resultFilter === 'Loss') matchRes = t.r < 0;
+    if(resultFilter === 'Breakeven') matchRes = t.r === 0;
+    return matchSearch && matchRes;
+  });
+  
+  if(filtered.length === 0){
+    body.innerHTML = `<tr><td colspan="10" class="empty">No trades found.</td></tr>`;
+    return;
+  }
+  
+  body.innerHTML = filtered.map(t => `
+    <tr>
+      <td>${t.date}</td>
+      <td><b>${t.symbol}</b></td>
+      <td><span class="pill ${t.tradeStatus === 'Out-of-Plan' ? 'red' : ''}">${t.tradeStatus || 'In-Plan'}</span></td>
+      <td>${t.bias || '-'}</td>
+      <td>${t.entry || '-'}</td>
+      <td>${t.kl || '-'}</td>
+      <td class="${t.r >= 0 ? 'up' : 'down'}"><b>${t.r >= 0 ? '+' : ''}${t.r}R</b></td>
+      <td>$${t.pnl}</td>
+      <td>
+        ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="window.open(this.src)">` : ''}
+        ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="window.open(this.src)">` : ''}
+      </td>
+      <td>
+        <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
+        <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
+      </td>
+    </tr>
+  `).join('');
 }
 
-function renderCheckboxes(type, containerId, textId){
-  const container = $(containerId);
-  if(!container) return;
-  const list = data.lists[type] || [];
-  container.innerHTML = list.length ? list.map(item => `
-    <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${containerId}', '${textId}', '${item}', this)">
-      <span>${item}</span>
-      <span class="check-mark">✓</span>
+function renderNotes(){
+  const list = $('notesList');
+  if(!list) return;
+  if(!data.notes.length){
+    list.innerHTML = '<div class="empty">No notes saved yet.</div>';
+    return;
+  }
+  list.innerHTML = data.notes.map(n => `
+    <div class="listItem">
+      <div><small style="color:var(--muted)">${n.date}</small><div>${n.text}</div></div>
+      <button class="danger" onclick="deleteNote(${n.id})">Delete</button>
     </div>
-  `).join('') : '<span style="color:var(--muted);font-size:11px;padding:6px;">No options. Add in Strategies.</span>';
-  updateDropdownText(containerId, textId);
+  `).join('');
 }
 
-function renderManager(){
- let root=$('strategyManager');
- root.innerHTML=['KL','Entry','Bias','Narrative'].map(type=>`<div class="card"><div class="cardHead"><h3>${type}</h3></div><div class="toolbar" style="margin-top:10px"><input class="select" id="new${type}" placeholder="Add ${type}"><button class="primary" onclick="addList('${type}')">＋ Add</button></div><div class="list" style="margin-top:10px">${(data.lists[type]||[]).map((x,i)=>`<div class="listItem"><span>${x}</span><button class="danger" onclick="removeList('${type}',${i})">Delete</button></div>`).join('')}</div></div>`).join('');
- 
- renderCheckboxes('Bias', 'fBiasBox', 'dropBiasText');
- renderCheckboxes('Entry', 'fEntryBox', 'dropEntryText');
- renderCheckboxes('KL', 'fKLBox', 'dropKLText');
- renderCheckboxes('Narrative', 'fNarrativeBox', 'dropNarrativeText');
- updateFilterDropdowns();
+function saveNote(){
+  const text = val('noteText');
+  if(!text.trim()) return;
+  data.notes.unshift({id: Date.now(), date: new Date().toLocaleString(), text});
+  $('noteText').value = '';
+  persist();
+  toast('Note saved!');
 }
 
-function addList(type){const el=$('new'+type);const v=(el?.value||'').trim();if(v){if(!data.lists[type])data.lists[type]=[];if(!data.lists[type].includes(v))data.lists[type].push(v);persist();}}
-function removeList(type,i){data.lists[type].splice(i,1);persist()}
-function renderRecent(){let ts=data.trades.slice(0,5);$('recent').innerHTML=ts.length?ts.map(t=>`<tr><td>${t.date||'-'}</td><td>${t.symbol}</td><td>${t.entry||'-'}</td><td class="${t.r>=0?'up':'down'}">${t.r>=0?'+':''}${t.r}</td><td class="${t.pnl>=0?'up':'down'}">$${t.pnl}</td><td><span class="pill ${t.r<0?'red':''}">${t.r>0?'Win':t.r<0?'Loss':'BE'}</span></td></tr>`).join(''):'<tr><td colspan="6" class="empty">No trades yet.</td></tr>'}
+function deleteNote(id){
+  data.notes = data.notes.filter(n => n.id !== id);
+  persist();
+  toast('Note deleted!');
+}
+
+function renderAnalytics(){
+  // Simple placeholders for stats sections if needed
+  ['sessionStats', 'biasStats', 'symbolStats'].forEach(id => {
+    const el = $(id);
+    if(el) el.innerHTML = '<div style="color:var(--muted); font-size:12px;">Analytics updated automatically.</div>';
+  });
+}
 
 function renderAll(){
- if(data.theme) { 
-   $('themeSelect').value=data.theme; 
-   document.body.className='';
-   if(data.theme==='light') document.body.classList.add('theme-light');
-   if(data.theme==='blue') document.body.classList.add('theme-blue');
-   if(data.theme==='gray') document.body.classList.add('theme-gray');
- }
- renderMetrics();renderPerformanceChart();renderCalendar('calendarGridWrapper');renderRecent();updateFilterDropdowns();renderTrades();renderManager();
+  renderMetrics();
+  renderPerformanceChart();
+  renderCalendar();
+  renderTrades();
+  renderStrategiesManager();
+  renderDropdowns();
+  renderNotes();
+  renderAnalytics();
 }
 
-if($('fDate') && !$('fDate').value) $('fDate').value = new Date().toISOString().slice(0,10);
-if($('tradeSearch'))$('tradeSearch').addEventListener('input',renderTrades);
-if($('tradeResult'))$('tradeResult').addEventListener('change',renderTrades);
-if($('tradeEntryFilter'))$('tradeEntryFilter').addEventListener('change',renderTrades);
-if($('tradeKLFilter'))$('tradeKLFilter').addEventListener('change',renderTrades);
-renderAll();
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+  $('themeSelect').value = data.theme || 'dark';
+  changeTheme(data.theme || 'dark');
+  renderAll();
+});
 </script>
 </body>
 </html>
