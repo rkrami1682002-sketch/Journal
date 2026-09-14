@@ -638,7 +638,12 @@ function calculateMaxDrawdown() {
     let peak = 0;
     let maxDD = 0;
     let runningEquity = 0;
-    const sortedTrades = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    // الترتيب تصاعدياً من الأقدم للأحدث لحساب الدرو داون بدقة صحيحة
+    const sortedTrades = [...data.trades].sort((a, b) => {
+        let dateA = new Date((a.date || '') + ' ' + (a.time || '00:00'));
+        let dateB = new Date((b.date || '') + ' ' + (b.time || '00:00'));
+        return dateA - dateB;
+    });
 
     sortedTrades.forEach(trade => {
         runningEquity += (Number(trade.r) || 0);
@@ -666,8 +671,12 @@ function renderPerformanceChart(targetId = 'performanceChart') {
 
     const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
 
-    // ترتيب الصفقات تصاعدياً حسب التاريخ لضمان دقة الرسم التراكمي
-    let sorted = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    // تم تعديل الترتيب ليصبح تصاعدياً من الأقدم للأحدث (حسب التاريخ والوقت)
+    let sorted = [...data.trades].sort((a, b) => {
+        let dateA = new Date((a.date || '') + ' ' + (a.time || '00:00'));
+        let dateB = new Date((b.date || '') + ' ' + (b.time || '00:00'));
+        return dateA - dateB;
+    });
 
     let cumulative = 0;
     const points = [{ label: 'Start', value: 0, date: 'Start' }];
