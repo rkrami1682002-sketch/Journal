@@ -281,7 +281,17 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 
 <section id="analytics" class="page"><div class="head"><div><h1>Analytics</h1></div></div><div class="sectionGrid"><div class="card"><h3>Performance by Session</h3><div id="sessionStats"></div></div><div class="card"><h3>Performance by Bias</h3><div id="biasStats"></div></div><div class="card"><h3>Performance by Symbol</h3><div id="symbolStats"></div></div></div></section>
 
-<section id="strategies" class="page"><div class="head"><div><h1>Strategies & Options</h1><p>Customize KL, Entry, Bias and Narrative options.</p></div></div><div class="sectionGrid" id="strategyManager"></div></section>
+<section id="strategies" class="page">
+  <div class="head">
+    <div><h1>Strategies & Options</h1><p>Customize KL, Entry, Bias, Narrative options and manage backups.</p></div>
+    <div style="display:flex; gap:8px;">
+      <button class="primary" onclick="exportData()">💾 Export Backup</button>
+      <button class="secondary" onclick="$('importFile').click()">📂 Import Backup</button>
+      <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+    </div>
+  </div>
+  <div class="sectionGrid" id="strategyManager"></div>
+</section>
 
 <section id="notes" class="page"><div class="head"><div><h1>Journal & Notes</h1></div></div><div class="card"><div class="formGrid"><div class="field span3"><label>Quick Notes</label><textarea id="noteText"></textarea></div></div><div class="actions"><button class="primary" onclick="saveNote()">Save Note</button></div></div><div style="height:12px"></div><div class="card"><div class="list" id="notesList"></div></div></section>
 </main></div><div class="toast" id="toast"></div>
@@ -332,6 +342,42 @@ function encodeImage(input, targetId) {
     };
     reader.readAsDataURL(input.files[0]);
   }
+}
+
+// Backup Export & Import Functions
+function exportData(){
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `r_journal_backup_${new Date().toISOString().slice(0,10)}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+  toast('Backup exported successfully!');
+}
+
+function importData(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if(imported && imported.trades && imported.lists){
+        if(confirm('This will replace your current trades and settings with the backup file. Are you sure?')){
+          data = imported;
+          persist();
+          toast('Data imported successfully!');
+        }
+      } else {
+        alert('Invalid backup file format.');
+      }
+    } catch(err) {
+      alert('Error reading JSON file.');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
 }
 
 function toggleDropdown(dropId) {
