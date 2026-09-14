@@ -291,14 +291,14 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-const KEY='rjournal_pro_v8_clean';
+const KEY='rjournal_pro_v9_clean';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  theme:'dark',accountSize:25000,trades:[],notes:[],
  lists:{
-  KL:['HTF Trend','SMC / ICT','Liquidity','FVG'],
-  Entry:['Liquidity Sweep','BOS','Pullback'],
-  Bias:['Long','Short','Neutral'],
-  Narrative:['HTF Narrative','Order Flow','News']
+  KL:[],
+  Entry:[],
+  Bias:[],
+  Narrative:[]
  }
 };
 const $=id=>document.getElementById(id);
@@ -444,10 +444,11 @@ function renderStrategiesManager() {
     <div class="card">
       <h3>${k.title}</h3>
       <div style="display:flex; gap:8px; margin-bottom:10px;">
-        <input class="select" style="flex:1" id="newOpt_${k.key}" placeholder="Add ${k.title}...">
+        <input class="select" style="flex:1" id="newOpt_${k.key}" placeholder="Add ${k.title}..." onkeydown="if(event.key==='Enter')addStrategyItem('${k.key}')">
         <button class="primary" onclick="addStrategyItem('${k.key}')">+ Add</button>
       </div>
       <div class="list" style="max-height:200px; overflow-y:auto;">
+        ${(data.lists[k.key] || []).length === 0 ? '<div style="color:var(--muted); font-size:12px; padding:8px;">No options added yet.</div>' : ''}
         ${(data.lists[k.key] || []).map(item => `
           <div class="listItem">
             <span>${item}</span>
@@ -492,12 +493,16 @@ function renderDropdowns() {
     const info = map[boxId];
     const currentChecked = getCheckedValues(boxId);
     
-    box.innerHTML = (info.list || []).map(item => `
-      <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
-        <span>${item}</span>
-        <span class="check-mark">✓</span>
-      </div>
-    `).join('');
+    if((info.list || []).length === 0) {
+      box.innerHTML = `<div style="padding:10px; color:var(--muted); font-size:12px; text-align:center;">No options found.<br>Add them in Strategies page.</div>`;
+    } else {
+      box.innerHTML = (info.list || []).map(item => `
+        <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
+          <span>${item}</span>
+          <span class="check-mark">✓</span>
+        </div>
+      `).join('');
+    }
     
     setCheckedValues(boxId, currentChecked, info.text);
   });
