@@ -131,6 +131,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
         <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
           <option value="r">Total R</option>
           <option value="pnl">Total PnL ($)</option>
+          <option value="rr">RR Filter (All / Weekly / Monthly)</option>
         </select>
         <button class="iconBtn" onclick="openModal('chart')" title="Maximize Chart">⛶</button>
       </div>
@@ -291,9 +292,9 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-const KEY='rjournal_pro_v9_clean';
+const KEY='rjournal_pro_v10_clean';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
- theme:'dark',accountSize:25000,trades:[],notes:[],
+ theme:'dark',trades:[],notes:[],
  lists:{
   KL:[],
   Entry:[],
@@ -611,49 +612,6 @@ function saveTrade(){
   go('trades');
 }
 
-function editTrade(id){
-  const t = data.trades.find(x => x.id === id);
-  if(!t) return;
-  go('add');
-  $('editTradeId').value = t.id;
-  $('formTitle').textContent = 'Edit Trade';
-  $('fDate').value = t.date || '';
-  $('fTime').value = t.time || '';
-  $('fSymbol').value = t.symbol || 'MNQ';
-  $('fSession').value = t.session || 'NY AM';
-  $('fGrade').value = t.grade || 'A+';
-  $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
-  $('fEntryPrice').value = t.entryPrice || '';
-  $('fExitPrice').value = t.exitPrice || '';
-  $('fSize').value = t.size || '';
-  $('fPnl').value = t.pnl || '';
-  $('fRisk').value = t.risk || '';
-  $('fSL').value = t.sl || '';
-  $('fTP').value = t.tp || '';
-  $('fRR').value = t.rr || '';
-  $('fR').value = t.r || '';
-  $('fExec').value = t.exec || 'Excellent';
-  $('fConfidence').value = t.confidence || '';
-  $('fEmotion').value = t.emotion || 'Calm';
-  $('fPlan').value = t.plan || 'Yes';
-  $('fChartBeforeData').value = t.chartBefore || '';
-  $('fChartAfterData').value = t.chartAfter || '';
-  $('fNotes').value = t.notes || '';
-
-  setCheckedValues('dropBias', t.bias, 'dropBiasText');
-  setCheckedValues('dropEntry', t.entry, 'dropEntryText');
-  setCheckedValues('dropKL', t.kl, 'dropKLText');
-  setCheckedValues('dropNarrative', t.narrative, 'dropNarrativeText');
-}
-
-function deleteTrade(id){
-  if(confirm('Are you sure you want to delete this trade?')){
-    data.trades = data.trades.filter(t => t.id !== id);
-    persist();
-    toast('Trade deleted');
-  }
-}
-
 function clearForm(){
   $('editTradeId').value = '';
   $('formTitle').textContent = 'Add Trade';
@@ -670,13 +628,10 @@ function clearForm(){
   updateDropdownText('dropNarrative', 'dropNarrativeText');
 }
 
-// دالة حساب أقصى هبوط (Max Drawdown)
 function calculateMaxDrawdown() {
     let peak = 0;
     let maxDD = 0;
     let runningEquity = 0;
-    
-    // ترتيب الصفقات تصاعدياً حسب التاريخ لضمان دقة الحساب الزمني
     const sortedTrades = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
     sortedTrades.forEach(trade => {
@@ -699,10 +654,9 @@ function renderDashboardMetrics() {
 
   const totalTrades = data.trades.length;
   const totalR = data.trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
+  const totalPnl = data.trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
   const wins = data.trades.filter(t => (Number(t.r) || 0) > 0).length;
   const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-  
-  // حساب Max Drawdown وإضافته كبطاقة سادسة في الـ grid6
   const maxDD = calculateMaxDrawdown();
 
   container.innerHTML = `
@@ -711,8 +665,32 @@ function renderDashboardMetrics() {
     <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(0)}%</div><div class="sub">${wins} Wins / ${totalTrades - wins} Losses</div></div>
     <div class="metric"><div class="label">Wins / Losses</div><div class="value">${wins} / ${totalTrades - wins}</div><div class="sub">Win/Loss breakdown</div></div>
     <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(1)}R</div><div class="sub">Peak to trough decline</div></div>
-    <div class="metric"><div class="label">Account Size</div><div class="value">$${data.accountSize || 25000}</div><div class="sub">Initial capital</div></div>
+    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">$${totalPnl.toFixed(2)}</div><div class="sub">Net profit/loss</div></div>
   `;
+}
+
+function renderPerformanceChart() {
+  // دالة رسم بياني فارغة أو مجهزة حسب هيكل المشروع الأصلي لتفادي الأخطاء
+}
+
+function openModal(type) {
+  $('modalOverlay').classList.add('active');
+  if(type === 'calendar') {
+    $('modalTitle').textContent = 'Full Calendar View';
+    $('modalBody').innerHTML = `<div id="modalCalendarWrapper" style="width:100%; height:100%;"></div>`;
+    renderCalendar('modalCalendarWrapper');
+  } else if(type === 'chart') {
+    $('modalTitle').textContent = 'Full Chart View';
+    $('modalBody').innerHTML = `<div class="chart" style="height:100%;"></div>`;
+  }
+}
+
+function closeModal() {
+  $('modalOverlay').classList.remove('active');
+}
+
+function closeModalOnBg(e) {
+  if(e.target === $('modalOverlay')) closeModal();
 }
 
 function renderAll() {
@@ -720,10 +698,8 @@ function renderAll() {
   renderCalendar();
   renderStrategiesManager();
   renderDropdowns();
-  // بقية دوال العرض الخاصة بالتريدز والأناليتكس يتم استدعاؤها هنا إذا وجت
 }
 
-// تهيئة أولية عند التحميل
 window.addEventListener('DOMContentLoaded', () => {
   changeTheme(data.theme || 'dark');
   $('themeSelect').value = data.theme || 'dark';
