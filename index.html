@@ -73,14 +73,14 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 .modalBody .day strong{font-size:12px}
 .modalBody .day small{font-size:12px}
 
-/* Custom Dropdown Multi-select Styles */
+/* Compact Custom Dropdown Multi-select Styles */
 .custom-dropdown { position: relative; width: 100%; }
 .dropdown-select-btn { width: 100%; background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 10px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-.dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel2); border: 1px solid var(--line); border-radius: 9px; margin-top: 4px; max-height: 150px; overflow-y: auto; z-index: 10; padding: 6px; box-shadow: var(--shadow); }
+.dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; margin-top: 4px; max-height: 130px; overflow-y: auto; z-index: 10; padding: 4px; box-shadow: var(--shadow); }
 .dropdown-content.show { display: block; }
-.dropdown-content label { display: flex; align-items: center; gap: 8px; padding: 6px 8px; cursor: pointer; border-radius: 6px; font-size: 13px; }
-.dropdown-content label:hover { background: var(--panel); }
-.dropdown-content input[type="checkbox"] { accent-color: var(--green); cursor: pointer; }
+.dropdown-content label { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; cursor: pointer; border-radius: 6px; font-size: 13px; color: var(--text); }
+.dropdown-content label:hover { background: var(--panel2); }
+.dropdown-content input[type="checkbox"] { accent-color: var(--green); cursor: pointer; transform: scale(1.1); }
 
 .stats{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px}.stat{padding:13px;min-height:94px}.stat .v{font-size:20px;font-weight:750;margin:8px 0 4px}
 .row3{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-weight:500}.pill{padding:4px 7px;border-radius:12px;background:rgba(115,213,138,0.2);color:var(--green);font-size:10px}.pill.red{background:rgba(255,109,109,0.2);color:var(--red)}
@@ -172,12 +172,12 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Time</label><input id="fTime" type="time"></div>
   <div class="field"><label>Symbol</label><select id="fSymbol"><option>MNQ</option><option>MES</option><option>NQ</option><option>ES</option><option>Other</option></select></div>
   
-  <!-- قائمة منسدلة متعددة الخيارات لـ Bias -->
+  <!-- Bias -->
   <div class="field">
     <label>Bias (Multi-select)</label>
     <div class="custom-dropdown" id="dropBias">
       <div class="dropdown-select-btn" onclick="toggleDropdown('dropBias')">
-        <span id="dropBiasText">Select Bias...</span> <span>▼</span>
+        <span id="dropBiasText">Select options...</span> <span>▼</span>
       </div>
       <div class="dropdown-content" id="fBiasBox"></div>
     </div>
@@ -186,25 +186,36 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Session</label><select id="fSession"><option>NY AM</option><option>NY PM</option><option>London</option><option>Asia</option></select></div>
   <div class="field"><label>Setup Grade</label><select id="fGrade"><option>A+</option><option>A</option><option>B</option><option>C</option><option>F</option></select></div>
   
-  <!-- قائمة منسدلة متعددة الخيارات لـ Entry -->
+  <!-- Entry -->
   <div class="field">
     <label>Entry (Multi-select)</label>
     <div class="custom-dropdown" id="dropEntry">
       <div class="dropdown-select-btn" onclick="toggleDropdown('dropEntry')">
-        <span id="dropEntryText">Select Entry...</span> <span>▼</span>
+        <span id="dropEntryText">Select options...</span> <span>▼</span>
       </div>
       <div class="dropdown-content" id="fEntryBox"></div>
     </div>
   </div>
 
-  <!-- قائمة منسدلة متعددة الخيارات لـ KL -->
+  <!-- KL / Key Level -->
   <div class="field">
     <label>KL / Key Level (Multi-select)</label>
     <div class="custom-dropdown" id="dropKL">
       <div class="dropdown-select-btn" onclick="toggleDropdown('dropKL')">
-        <span id="dropKLText">Select KL...</span> <span>▼</span>
+        <span id="dropKLText">Select options...</span> <span>▼</span>
       </div>
       <div class="dropdown-content" id="fKLBox"></div>
+    </div>
+  </div>
+
+  <!-- Narrative -->
+  <div class="field">
+    <label>Narrative (Multi-select)</label>
+    <div class="custom-dropdown" id="dropNarrative">
+      <div class="dropdown-select-btn" onclick="toggleDropdown('dropNarrative')">
+        <span id="dropNarrativeText">Select options...</span> <span>▼</span>
+      </div>
+      <div class="dropdown-content" id="fNarrativeBox"></div>
     </div>
   </div>
 
@@ -235,7 +246,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 
 <section id="analytics" class="page"><div class="head"><div><h1>Analytics</h1></div></div><div class="sectionGrid"><div class="card"><h3>Performance by Session</h3><div id="sessionStats"></div></div><div class="card"><h3>Performance by Bias</h3><div id="biasStats"></div></div><div class="card"><h3>Performance by Symbol</h3><div id="symbolStats"></div></div></div></section>
 
-<section id="strategies" class="page"><div class="head"><div><h1>Strategies & Options</h1><p>Customize KL, Entry and Bias options.</p></div></div><div class="sectionGrid" id="strategyManager"></div></section>
+<section id="strategies" class="page"><div class="head"><div><h1>Strategies & Options</h1><p>Customize KL, Entry, Bias and Narrative options.</p></div></div><div class="sectionGrid" id="strategyManager"></div></section>
 
 <section id="rules" class="page"><div class="head"><div><h1>Rules</h1></div></div><div class="card"><div class="toolbar"><input id="ruleInput" class="select" placeholder="Add a rule"><button class="primary" onclick="addRule()">Add Rule</button></div><div class="list" id="rulesList"></div></div></section>
 
@@ -246,7 +257,12 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 const KEY='rjournal_pro_v6_clean';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  theme:'dark',accountSize:25000,trades:[],missed:[],rules:[],notes:[],
- lists:{KL:['HTF Trend','SMC / ICT','Liquidity'],Entry:['Liquidity Sweep','BOS','Pullback'],Bias:['Long','Short','Neutral']}
+ lists:{
+   KL:['HTF Trend','SMC / ICT','Liquidity','FVG'],
+   Entry:['Liquidity Sweep','BOS','Pullback'],
+   Bias:['Long','Short','Neutral'],
+   Narrative:['HTF Narrative','Order Flow','News']
+ }
 };
 const $=id=>document.getElementById(id);
 
@@ -348,6 +364,7 @@ function saveTrade(){
   grade:val('fGrade'),
   entry:getCheckedValues('fEntryBox'),
   kl:getCheckedValues('fKLBox'),
+  narrative:getCheckedValues('fNarrativeBox'),
   entryPrice:+val('fEntryPrice')||0,
   exitPrice:+val('fExitPrice')||0,
   size:+val('fSize')||0,
@@ -386,6 +403,7 @@ function editTrade(id){
  $('fSession').value=t.session;$('fGrade').value=t.grade;
  setCheckedValues('fEntryBox', t.entry, 'dropEntryText');
  setCheckedValues('fKLBox', t.kl, 'dropKLText');
+ setCheckedValues('fNarrativeBox', t.narrative, 'dropNarrativeText');
  $('fEntryPrice').value=t.entryPrice;$('fExitPrice').value=t.exitPrice;$('fSize').value=t.size;$('fPnl').value=t.pnl;$('fRisk').value=t.risk;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRR').value=t.plannedRR;$('fR').value=t.r;$('fExec').value=t.exec;$('fConfidence').value=t.confidence;$('fEmotion').value=t.emotion;$('fPlan').value=t.plan;
  $('fChartBeforeData').value=t.chartBefore||'';$('fChartBeforeFile').value='';
  $('fChartAfterData').value=t.chartAfter||'';$('fChartAfterFile').value='';
@@ -408,6 +426,7 @@ function clearForm(){
  setCheckedValues('fBiasBox', '', 'dropBiasText');
  setCheckedValues('fEntryBox', '', 'dropEntryText');
  setCheckedValues('fKLBox', '', 'dropKLText');
+ setCheckedValues('fNarrativeBox', '', 'dropNarrativeText');
  $('fDate').value = new Date().toISOString().slice(0,10);
  $('formTitle').textContent='Add Trade';
 }
@@ -641,18 +660,19 @@ function renderCheckboxes(type, containerId, textId){
   if(!container) return;
   const list = data.lists[type] || [];
   container.innerHTML = list.length ? list.map(item => `
-    <label><input type="checkbox" value="${item}" onchange="updateDropdownText('${containerId}', '${textId}')"> ${item}</label>
+    <label><span>${item}</span><input type="checkbox" value="${item}" onchange="updateDropdownText('${containerId}', '${textId}')"></label>
   `).join('') : '<span style="color:var(--muted);font-size:11px;padding:6px;">No options. Add in Strategies.</span>';
   updateDropdownText(containerId, textId);
 }
 
 function renderManager(){
  let root=$('strategyManager');
- root.innerHTML=['KL','Entry','Bias'].map(type=>`<div class="card"><div class="cardHead"><h3>${type}</h3></div><div class="toolbar" style="margin-top:10px"><input class="select" id="new${type}" placeholder="Add ${type}"><button class="primary" onclick="addList('${type}')">＋ Add</button></div><div class="list" style="margin-top:10px">${(data.lists[type]||[]).map((x,i)=>`<div class="listItem"><span>${x}</span><button class="danger" onclick="removeList('${type}',${i})">Delete</button></div>`).join('')}</div></div>`).join('');
+ root.innerHTML=['KL','Entry','Bias','Narrative'].map(type=>`<div class="card"><div class="cardHead"><h3>${type}</h3></div><div class="toolbar" style="margin-top:10px"><input class="select" id="new${type}" placeholder="Add ${type}"><button class="primary" onclick="addList('${type}')">＋ Add</button></div><div class="list" style="margin-top:10px">${(data.lists[type]||[]).map((x,i)=>`<div class="listItem"><span>${x}</span><button class="danger" onclick="removeList('${type}',${i})">Delete</button></div>`).join('')}</div></div>`).join('');
  
  renderCheckboxes('Bias', 'fBiasBox', 'dropBiasText');
  renderCheckboxes('Entry', 'fEntryBox', 'dropEntryText');
  renderCheckboxes('KL', 'fKLBox', 'dropKLText');
+ renderCheckboxes('Narrative', 'fNarrativeBox', 'dropNarrativeText');
 }
 
 function addList(type){const el=$('new'+type);const v=(el?.value||'').trim();if(v){if(!data.lists[type])data.lists[type]=[];if(!data.lists[type].includes(v))data.lists[type].push(v);persist();}}
