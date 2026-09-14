@@ -41,7 +41,9 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 
 .grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
 .metric,.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.metric{padding:15px;min-height:108px}.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:23px;font-weight:750;margin:8px 0}.up{color:var(--green)}.down{color:var(--red)}.sub{font-size:11px;color:var(--muted)}
+.metric{padding:15px;min-height:108px;cursor:pointer;transition:all 0.2s}
+.metric:hover{border-color:var(--green);transform:translateY(-2px)}
+.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:23px;font-weight:750;margin:8px 0}.up{color:var(--green)}.down{color:var(--red)}.sub{font-size:11px;color:var(--muted)}
 
 .row2{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:12px}
 .card{padding:15px}.card h3{font-size:14px;margin:0 0 10px}.cardHead{display:flex;justify-content:space-between;align-items:center}
@@ -638,7 +640,6 @@ function calculateMaxDrawdown() {
     let peak = 0;
     let maxDD = 0;
     let runningEquity = 0;
-    // الترتيب تصاعدياً من الأقدم للأحدث لحساب الدرو داون بدقة صحيحة
     const sortedTrades = [...data.trades].sort((a, b) => {
         let dateA = new Date((a.date || '') + ' ' + (a.time || '00:00'));
         let dateB = new Date((b.date || '') + ' ' + (b.time || '00:00'));
@@ -659,7 +660,6 @@ function calculateMaxDrawdown() {
     return maxDD;
 }
 
-// الرسم البياني مرتب زمنياً تصاعدياً (من الأقدم للأحدث)، مع نقل أرقام ومحور الـ Y إلى اليمين
 function renderPerformanceChart(targetId = 'performanceChart') {
     const container = $(targetId);
     if (!container) return;
@@ -671,7 +671,6 @@ function renderPerformanceChart(targetId = 'performanceChart') {
 
     const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
 
-    // تم تعديل الترتيب ليصبح تصاعدياً من الأقدم للأحدث (حسب التاريخ والوقت)
     let sorted = [...data.trades].sort((a, b) => {
         let dateA = new Date((a.date || '') + ' ' + (a.time || '00:00'));
         let dateB = new Date((b.date || '') + ' ' + (b.time || '00:00'));
@@ -699,7 +698,7 @@ function renderPerformanceChart(targetId = 'performanceChart') {
     const width = container.clientWidth || 600;
     const height = targetId === 'performanceChart' ? 280 : 450;
     const paddingLeft = 20;
-    const paddingRight = 65; // مساحة لمحور الأرقام على اليمين
+    const paddingRight = 65; 
     const paddingTop = 20;
     const paddingBottom = 40;
 
@@ -739,7 +738,6 @@ function renderPerformanceChart(targetId = 'performanceChart') {
         const yVal = minVal + (valRange / gridSteps) * i;
         const yPos = paddingTop + chartHeight - (i / gridSteps) * chartHeight;
         
-        // الأرقام أصبحت على اليمين (Right Y-Axis)
         svgContent += `
             <line x1="${paddingLeft}" y1="${yPos}" x2="${width - paddingRight}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/>
             <text x="${width - paddingRight + 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10" text-anchor="start">${chartType === 'pnl' ? '$' + yVal.toFixed(0) : yVal.toFixed(1)}</text>
@@ -781,11 +779,11 @@ function renderMetrics() {
   const maxDD = calculateMaxDrawdown();
 
   metricsEl.innerHTML = `
-    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged setups</div></div>
-    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
+    <div class="metric" onclick="openModal('total_trades')"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged setups</div></div>
+    <div class="metric" onclick="openModal('total_r')"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
     <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(1)}%</div><div class="sub">${wins} Wins</div></div>
     <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
-    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div><div class="sub">Net dollar return</div></div>
+    <div class="metric" onclick="openModal('total_pnl')"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div><div class="sub">Net dollar return</div></div>
     <div class="metric"><div class="label">Avg R / Trade</div><div class="value">${totalTrades > 0 ? (totalR / totalTrades).toFixed(2) : 0}R</div><div class="sub">Expectancy</div></div>
   `;
 }
@@ -946,6 +944,22 @@ function deleteNote(id) {
   toast('Note deleted');
 }
 
+function getWeekKey(dateStr) {
+  const d = new Date(dateStr);
+  if(isNaN(d)) return 'Unknown';
+  const startOfYear = new Date(d.getFullYear(), 0, 1);
+  const days = Math.floor((d - startOfYear) / (24 * 60 * 60 * 1000));
+  const weekNum = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+  return `${d.getFullYear()} - Week ${weekNum}`;
+}
+
+function getMonthKey(dateStr) {
+  const d = new Date(dateStr);
+  if(isNaN(d)) return 'Unknown';
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  return `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 function openModal(type) {
   const overlay = $('modalOverlay');
   const title = $('modalTitle');
@@ -960,7 +974,166 @@ function openModal(type) {
     title.textContent = 'Trading Calendar (Expanded)';
     body.innerHTML = `<div id="modalCalendarContainer"></div>`;
     renderCalendar('modalCalendarContainer');
+  } else if(type === 'total_trades') {
+    title.textContent = 'Total Trades - Filter & History';
+    body.innerHTML = `
+      <div style="margin-bottom:12px; display:flex; gap:10px;">
+        <select class="select" id="modalTradeFilter" onchange="updateModalTradesList()">
+          <option value="All">All Results</option>
+          <option value="Win">Win</option>
+          <option value="Loss">Loss</option>
+          <option value="Breakeven">Breakeven</option>
+        </select>
+      </div>
+      <div id="modalTradesContent"></div>
+    `;
+    updateModalTradesList();
+  } else if(type === 'total_r' || type === 'total_pnl') {
+    const isR = type === 'total_r';
+    title.textContent = isR ? 'Total R - Period Selector' : 'Total PnL ($) - Period Selector';
+    
+    // تجميع الأسابيع والشهور لكل التاريخ
+    const weeksSet = {};
+    const monthsSet = {};
+    data.trades.forEach(t => {
+      if(!t.date) return;
+      const wKey = getWeekKey(t.date);
+      const mKey = getMonthKey(t.date);
+      weeksSet[wKey] = true;
+      monthsSet[mKey] = true;
+    });
+
+    const weeks = Object.keys(weeksSet).sort().reverse();
+    const months = Object.keys(monthsSet).sort().reverse();
+
+    body.innerHTML = `
+      <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+        <select class="select" id="periodTypeSelect" onchange="updatePeriodOptions('${type}')">
+          <option value="weekly">Weekly View</option>
+          <option value="monthly">Monthly View</option>
+        </select>
+        <select class="select" id="periodSelect" onchange="renderPeriodStats('${type}')"></select>
+      </div>
+      <div id="periodStatsResult"></div>
+    `;
+    updatePeriodOptions(type);
   }
+}
+
+function updateModalTradesList() {
+  const filter = $('modalTradeFilter')?.value || 'All';
+  const container = $('modalTradesContent');
+  if(!container) return;
+
+  const filtered = data.trades.filter(t => {
+    const rVal = Number(t.r) || 0;
+    let res = 'Breakeven';
+    if(rVal > 0) res = 'Win';
+    else if(rVal < 0) res = 'Loss';
+    return filter === 'All' || res === filter;
+  });
+
+  if(filtered.length === 0) {
+    container.innerHTML = `<div class="empty">No trades found for this filter.</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="table">
+      <thead><tr><th>Date</th><th>Symbol</th><th>Status</th><th>R</th><th>P&L</th><th>Result</th></tr></thead>
+      <tbody>
+        ${filtered.map(t => {
+          const rVal = Number(t.r) || 0;
+          const pnlVal = Number(t.pnl) || 0;
+          return `
+            <tr>
+              <td>${t.date}</td>
+              <td><b>${t.symbol}</b></td>
+              <td>${t.tradeStatus || ''}</td>
+              <td class="${rVal >= 0 ? 'up' : 'down'}">${rVal >= 0 ? '+' : ''}${rVal}R</td>
+              <td class="${pnlVal >= 0 ? 'up' : 'down'}">${pnlVal >= 0 ? '+' : ''}$${pnlVal}</td>
+              <td><span class="${rVal >= 0 ? 'pill' : 'pill red'}">${rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE')}</span></td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function updatePeriodOptions(type) {
+  const periodType = $('periodTypeSelect')?.value || 'weekly';
+  const periodSelect = $('periodSelect');
+  if(!periodSelect) return;
+
+  const setObj = {};
+  data.trades.forEach(t => {
+    if(!t.date) return;
+    const key = periodType === 'weekly' ? getWeekKey(t.date) : getMonthKey(t.date);
+    setObj[key] = true;
+  });
+
+  const keys = Object.keys(setObj).sort().reverse();
+  if(keys.length === 0) {
+    periodSelect.innerHTML = `<option value="">No data available</option>`;
+    $('periodStatsResult.innerHTML') = `<div class="empty">No trades recorded yet.</div>`;
+    return;
+  }
+
+  periodSelect.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join('');
+  renderPeriodStats(type);
+}
+
+function renderPeriodStats(type) {
+  const periodType = $('periodTypeSelect')?.value || 'weekly';
+  const selectedKey = $('periodSelect')?.value;
+  const container = $('periodStatsResult');
+  if(!container || !selectedKey) return;
+
+  const filtered = data.trades.filter(t => {
+    if(!t.date) return false;
+    const key = periodType === 'weekly' ? getWeekKey(t.date) : getMonthKey(t.date);
+    return key === selectedKey;
+  });
+
+  const totalR = filtered.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
+  const totalPnl = filtered.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
+  const wins = filtered.filter(t => (Number(t.r) || 0) > 0).length;
+  const winRate = filtered.length > 0 ? (wins / filtered.length) * 100 : 0;
+
+  const isR = type === 'total_r';
+
+  container.innerHTML = `
+    <div style="background:var(--panel2); padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--line);">
+      <h4 style="margin:0 0 10px 0; color:var(--green);">${selectedKey} Summary</h4>
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+        <div><div style="color:var(--muted); font-size:11px;">Trades Count</div><div style="font-size:16px; font-weight:bold;">${filtered.length}</div></div>
+        <div><div style="color:var(--muted); font-size:11px;">Period R</div><div style="font-size:16px; font-weight:bold;" class="${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R</div></div>
+        <div><div style="color:var(--muted); font-size:11px;">Period PnL</div><div style="font-size:16px; font-weight:bold;" class="${totalPnl >= 0 ? 'up' : 'down'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div></div>
+      </div>
+    </div>
+    <table class="table">
+      <thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>R</th><th>P&L</th><th>Result</th></tr></thead>
+      <tbody>
+        ${filtered.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades in this period.</td></tr>` : 
+          filtered.map(t => {
+            const rVal = Number(t.r) || 0;
+            const pnlVal = Number(t.pnl) || 0;
+            return `
+              <tr>
+                <td>${t.date}</td>
+                <td><b>${t.symbol}</b></td>
+                <td>${t.entry || '-'}</td>
+                <td class="${rVal >= 0 ? 'up' : 'down'}">${rVal >= 0 ? '+' : ''}${rVal}R</td>
+                <td class="${pnlVal >= 0 ? 'up' : 'down'}">${pnlVal >= 0 ? '+' : ''}$${pnlVal}</td>
+                <td><span class="${rVal >= 0 ? 'pill' : 'pill red'}">${rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE')}</span></td>
+              </tr>
+            `;
+          }).join('')
+        }
+      </tbody>
+    </table>
+  `;
 }
 
 function closeModal() {
