@@ -30,15 +30,22 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .brand{display:flex;gap:10px;align-items:center;padding:4px 8px 22px}.brandmark{width:32px;height:30px;display:flex;align-items:end;gap:4px}.brandmark i{display:block;width:7px;background:var(--green);border-radius:3px}.brandmark i:nth-child(1){height:13px}.brandmark i:nth-child(2){height:21px}.brandmark i:nth-child(3){height:29px}.brand b{font-size:16px;letter-spacing:.6px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
 nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);text-align:left;padding:11px 12px;border-radius:10px;display:flex;gap:12px;align-items:center;opacity:0.8}.nav:hover,.nav.active{background:var(--panel2);color:var(--green);opacity:1}.nav span{width:18px;text-align:center;color:var(--muted)}
 .main{margin-left:240px;width:calc(100% - 240px);padding:18px 22px 30px}
-.top{height:48px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.search{width:320px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:10px 16px;color:var(--muted)}
+.top{height:48px;display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px}
 .topRight{display:flex;gap:10px;align-items:center}
 .head{display:flex;justify-content:space-between;align-items:end;margin:10px 0 16px}.head h1{font-size:24px;margin:0}.head p{margin:5px 0 0;color:var(--muted)}
-.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.metric,.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.metric{padding:15px;min-height:108px}.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:23px;font-weight:750;margin:8px 0}.up{color:var(--green)}.down{color:var(--red)}.sub{font-size:11px;color:var(--muted)}
-.row2{display:grid;grid-template-columns:1.4fr 1fr .72fr;gap:12px;margin-top:12px}.card{padding:15px}.card h3{font-size:14px;margin:0 0 10px}.cardHead{display:flex;justify-content:space-between;align-items:center}.select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;outline:none}
+
+/* شبكة المؤشرات العلوية: 6 أعمدة لملء العرض بالكامل */
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.metric,.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.metric{padding:15px;min-height:108px}.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:23px;font-weight:750;margin:8px 0}.up{color:var(--green)}.down{color:var(--red)}.sub{font-size:11px;color:var(--muted)}
+
+/* توسيع بطاقات السطر الثاني لملء مساحة الكارت المحذوف */
+.row2{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:12px}
+.card{padding:15px}.card h3{font-size:14px;margin:0 0 10px}.cardHead{display:flex;justify-content:space-between;align-items:center}.select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;outline:none}
 .chart{height:260px;position:relative}.chart svg{width:100%;height:100%}.legend{display:flex;gap:18px;color:var(--muted);font-size:11px;margin-bottom:3px}.legend b{color:var(--green)}
-.calGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(55px,1fr));gap:6px}.day{min-height:38px;border:1px solid var(--line);border-radius:7px;padding:4px 5px;text-align:center;background:var(--panel2)}.day.pos{background:rgba(115,213,138,0.15)}.day.neg{background:rgba(255,109,109,0.15)}.day strong{display:block;font-size:10px}.day small{font-size:10px}
-.bestgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.miniCard{border:1px solid var(--line);border-radius:11px;padding:12px;background:var(--panel2);min-height:115px}.miniCard .big{font-size:20px;font-weight:750;margin-top:8px}.miniCard small{color:var(--muted)}
+.calGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:6px}
+.day{min-height:42px;border:1px solid var(--line);border-radius:7px;padding:6px 5px;text-align:center;background:var(--panel2)}.day.pos{background:rgba(115,213,138,0.15)}.day.neg{background:rgba(255,109,109,0.15)}.day strong{display:block;font-size:11px}.day small{font-size:11px}
+
 .stats{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px}.stat{padding:13px;min-height:94px}.stat .v{font-size:20px;font-weight:750;margin:8px 0 4px}
 .row3{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-weight:500}.pill{padding:4px 7px;border-radius:12px;background:rgba(115,213,138,0.2);color:var(--green);font-size:10px}.pill.red{background:rgba(255,109,109,0.2);color:var(--red)}
 .journal{max-height:220px;overflow:auto}.bottomActions{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px}.action{padding:15px;background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--text);text-align:left}.action:hover{background:var(--panel2)}
@@ -64,7 +71,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </aside>
 <main class="main">
 <header class="top">
-  <div class="search">⌕ &nbsp; Search...</div>
   <div class="topRight">
     <label style="font-size:12px; color:var(--muted);">Theme:</label>
     <select class="select" id="themeSelect" onchange="changeTheme(this.value)">
@@ -77,12 +83,16 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 
 <section id="dashboard" class="page active">
  <div class="head"><div><h1>Dashboard</h1><p>Your trading performance at a glance</p></div></div>
+ 
+ <!-- المؤشرات الـ 6 وتشمل Max Drawdown -->
  <div class="grid6" id="metrics"></div>
+
+ <!-- السطر الثاني: تم توزيع المساحة بالكامل بين المخطط والتقويم بعد إزالة Best & Worst Days -->
  <div class="row2">
   <div class="card"><div class="cardHead"><h3>Performance Overview</h3></div><div class="legend"><b>● Total R</b></div><div class="chart" id="performanceChart"></div></div>
   <div class="card"><div class="cardHead"><h3>Trading Calendar</h3></div><div class="calGrid" id="calendarGrid" style="margin-top:15px"></div></div>
-  <div class="card"><h3>🏆 Best & Worst Days</h3><div class="bestgrid" id="bestWorst"></div></div>
  </div>
+
  <div class="stats" id="stats"></div>
  <div class="row3">
   <div class="card"><div class="cardHead"><h3>☷ Recent Trades</h3></div><div class="journal"><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>R</th><th>PnL</th><th>Result</th></tr></thead><tbody id="recent"></tbody></table></div></div>
@@ -184,12 +194,29 @@ function stats(){
  let ts=data.trades, r=ts.reduce((a,t)=>a+t.r,0), pnl=ts.reduce((a,t)=>a+t.pnl,0), wins=ts.filter(t=>t.r>0),loss=ts.filter(t=>t.r<0);
  let pf=loss.length?wins.reduce((a,t)=>a+t.r,0)/Math.abs(loss.reduce((a,t)=>a+t.r,0)):wins.length?Infinity:0;
  let wr=ts.length?wins.length/ts.length*100:0;
- return {ts,r,pnl,wins,loss,pf,wr};
+ 
+ // حساب أقصى تراجع Max Drawdown
+ let peak=0, maxDd=0, curr=0;
+ ts.slice().reverse().forEach(t=>{
+   curr += Number(t.r)||0;
+   if(curr > peak) peak = curr;
+   let dd = peak - curr;
+   if(dd > maxDd) maxDd = dd;
+ });
+
+ return {ts,r,pnl,wins,loss,pf,wr,maxDd};
 }
 
 function renderMetrics(){
  let s=stats();
- let arr=[['Total R',s.r.toFixed(1)+'R','Multiple',s.r>=0?'up':'down'],['Total P&L','$'+Math.round(s.pnl).toLocaleString(),'Account',s.pnl>=0?'up':'down'],['Win Rate',s.wr.toFixed(1)+'%','Wins',s.wr>=50?'up':'down'],['Average R:R',avgRR(),'Reward/Risk','up'],['Profit Factor',s.pf===Infinity?'∞':s.pf.toFixed(2),'Gross P/L','up']];
+ let arr=[
+   ['Total R',s.r.toFixed(1)+'R','Multiple',s.r>=0?'up':'down'],
+   ['Total P&L','$'+Math.round(s.pnl).toLocaleString(),'Account',s.pnl>=0?'up':'down'],
+   ['Win Rate',s.wr.toFixed(1)+'%','Wins',s.wr>=50?'up':'down'],
+   ['Average R:R',avgRR(),'Reward/Risk','up'],
+   ['Profit Factor',s.pf===Infinity?'∞':s.pf.toFixed(2),'Gross P/L','up'],
+   ['Max Drawdown','-'+s.maxDd.toFixed(1)+'R','Peak to Valley',s.maxDd===0?'up':'down']
+ ];
  $('metrics').innerHTML=arr.map(x=>`<div class="metric"><div class="label">${x[0]}</div><div class="value ${x[3]}">${x[1]}</div><div class="sub">${x[2]}</div></div>`).join('');
 }
 
@@ -203,7 +230,7 @@ function renderPerformanceChart(){
  let eq=0, vals=[0]; 
  ts.forEach(t=>{eq+=Number(t.r)||0;vals.push(eq)});
 
- const w=650,h=260,pad=35;
+ const w=750,h=260,pad=35;
  const min=Math.min(...vals, 0);
  const max=Math.max(...vals, 1);
  const span=(max-min)||1;
@@ -219,11 +246,11 @@ function renderPerformanceChart(){
 
  el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
    <g stroke="var(--line)" stroke-width="1">
-     <line x1="35" y1="35" x2="615" y2="35"/>
-     <line x1="35" y1="82" x2="615" y2="82"/>
-     <line x1="35" y1="130" x2="615" y2="130"/>
-     <line x1="35" y1="177" x2="615" y2="177"/>
-     <line x1="35" y1="225" x2="615" y2="225"/>
+     <line x1="35" y1="35" x2="715" y2="35"/>
+     <line x1="35" y1="82" x2="715" y2="82"/>
+     <line x1="35" y1="130" x2="715" y2="130"/>
+     <line x1="35" y1="177" x2="715" y2="177"/>
+     <line x1="35" y1="225" x2="715" y2="225"/>
    </g>
    <polygon points="${area}" fill="var(--green)" opacity=".15"/>
    <polyline points="${poly}" fill="none" stroke="var(--green)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
