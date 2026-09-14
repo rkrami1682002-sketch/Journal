@@ -73,7 +73,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 .modalBody .day strong{font-size:12px}
 .modalBody .day small{font-size:12px}
 
-/* Clean Dropdown Style matching Setup Grade style with Checkmark */
+/* Clean Dropdown Style with Checkmark */
 .custom-dropdown { position: relative; width: 100%; }
 .dropdown-select-btn { width: 100%; background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 10px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
 .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; margin-top: 4px; max-height: 160px; overflow-y: auto; z-index: 10; padding: 4px; box-shadow: var(--shadow); }
@@ -220,6 +220,16 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
     </div>
   </div>
 
+  <!-- Trade Status (New Field) -->
+  <div class="field">
+    <label>Trade Status</label>
+    <select id="fTradeStatus">
+      <option>In-Plan</option>
+      <option>Out-of-Plan</option>
+      <option>Missed Trade</option>
+    </select>
+  </div>
+
   <div class="field"><label>Entry Price</label><input id="fEntryPrice" type="number" step="any"></div>
   <div class="field"><label>Exit Price</label><input id="fExitPrice" type="number" step="any"></div>
   <div class="field"><label>Position Size</label><input id="fSize" type="number" step="1"></div>
@@ -241,7 +251,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
  </div><div class="actions"><button class="primary" onclick="saveTrade()">Save Trade</button><button class="secondary" onclick="clearForm()">Clear / Cancel</button></div></div>
 </section>
 
-<section id="trades" class="page"><div class="head"><div><h1>Trades Log</h1><p>Your complete trade history.</p></div><button class="primary" onclick="go('add')">＋ Add Trade</button></div><div class="card"><div class="toolbar"><input class="select" id="tradeSearch" placeholder="Search symbol, entry..."><select class="select" id="tradeResult"><option>All Results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Images</th><th>Actions</th></tr></thead><tbody id="tradesBody"></tbody></table></div></section>
+<section id="trades" class="page"><div class="head"><div><h1>Trades Log</h1><p>Your complete trade history.</p></div><button class="primary" onclick="go('add')">＋ Add Trade</button></div><div class="card"><div class="toolbar"><input class="select" id="tradeSearch" placeholder="Search symbol, entry..."><select class="select" id="tradeResult"><option>All Results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Status</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Images</th><th>Actions</th></tr></thead><tbody id="tradesBody"></tbody></table></div></section>
 
 <section id="missed" class="page"><div class="head"><div><h1>Missed Trades</h1></div></div><div class="card"><div class="formGrid"><div class="field"><label>Date</label><input id="mDate" type="date"></div><div class="field"><label>Symbol</label><input id="mSymbol"></div><div class="field"><label>Setup</label><input id="mSetup"></div><div class="field"><label>Potential R:R</label><input id="mRR"></div><div class="field span3"><label>Why missed?</label><textarea id="mWhy"></textarea></div></div><div class="actions"><button class="primary" onclick="saveMissed()">Save Missed Trade</button></div></div><div style="height:12px"></div><div class="card"><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>Potential R:R</th><th>Why</th></tr></thead><tbody id="missedBody"></tbody></table></div></section>
 
@@ -255,7 +265,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-const KEY='rjournal_pro_v6_clean';
+const KEY='rjournal_pro_v7_clean';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  theme:'dark',accountSize:25000,trades:[],missed:[],rules:[],notes:[],
  lists:{
@@ -376,6 +386,7 @@ function saveTrade(){
   entry:getCheckedValues('fEntryBox'),
   kl:getCheckedValues('fKLBox'),
   narrative:getCheckedValues('fNarrativeBox'),
+  tradeStatus:val('fTradeStatus'),
   entryPrice:+val('fEntryPrice')||0,
   exitPrice:+val('fExitPrice')||0,
   size:+val('fSize')||0,
@@ -415,6 +426,7 @@ function editTrade(id){
  setCheckedValues('fEntryBox', t.entry, 'dropEntryText');
  setCheckedValues('fKLBox', t.kl, 'dropKLText');
  setCheckedValues('fNarrativeBox', t.narrative, 'dropNarrativeText');
+ $('fTradeStatus').value=t.tradeStatus||'In-Plan';
  $('fEntryPrice').value=t.entryPrice;$('fExitPrice').value=t.exitPrice;$('fSize').value=t.size;$('fPnl').value=t.pnl;$('fRisk').value=t.risk;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRR').value=t.plannedRR;$('fR').value=t.r;$('fExec').value=t.exec;$('fConfidence').value=t.confidence;$('fEmotion').value=t.emotion;$('fPlan').value=t.plan;
  $('fChartBeforeData').value=t.chartBefore||'';$('fChartBeforeFile').value='';
  $('fChartAfterData').value=t.chartAfter||'';$('fChartAfterFile').value='';
@@ -438,6 +450,7 @@ function clearForm(){
  setCheckedValues('fEntryBox', '', 'dropEntryText');
  setCheckedValues('fKLBox', '', 'dropKLText');
  setCheckedValues('fNarrativeBox', '', 'dropNarrativeText');
+ $('fTradeStatus').value = 'In-Plan';
  $('fDate').value = new Date().toISOString().slice(0,10);
  $('formTitle').textContent='Add Trade';
 }
@@ -652,7 +665,7 @@ function renderTrades(){
  let q=($('tradeSearch')?.value||'').toLowerCase(),res=$('tradeResult')?.value||'All Results';
  $('tradesBody').innerHTML=data.trades.filter(t=>(!q||JSON.stringify(t).toLowerCase().includes(q))&&(res==='All Results'||(res==='Win'&&t.r>0)||(res==='Loss'&&t.r<0)||(res==='Breakeven'&&t.r===0))).map(t=>`
   <tr>
-    <td>${t.date}</td><td>${t.symbol}</td><td>${t.bias}</td><td>${t.entry||'-'}</td><td>${t.kl||'-'}</td>
+    <td>${t.date}</td><td>${t.symbol}</td><td><span class="pill" style="background:rgba(117,169,255,0.2);color:var(--blue);">${t.tradeStatus||'In-Plan'}</span></td><td>${t.bias}</td><td>${t.entry||'-'}</td><td>${t.kl||'-'}</td>
     <td class="${t.r>=0?'up':'down'}">${t.r>=0?'+':''}${t.r}R</td><td class="${t.pnl>=0?'up':'down'}">$${t.pnl}</td>
     <td>
       ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="window.open('${t.chartBefore}')" title="Before Chart">` : ''}
@@ -663,7 +676,7 @@ function renderTrades(){
       <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
       <button class="danger" onclick="deleteTrade(${t.id})">Delete</button>
     </td>
-  </tr>`).join('')||'<tr><td colspan="9" class="empty">No trades match.</td></tr>';
+  </tr>`).join('')||'<tr><td colspan="10" class="empty">No trades match.</td></tr>';
 }
 
 function renderCheckboxes(type, containerId, textId){
