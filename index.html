@@ -654,6 +654,111 @@ function calculateMaxDrawdown() {
     return maxDD;
 }
 
+// دالة الرسم البياني المحدثة والمصممة لتظهر الأرقام والتاريخ بدقة وتبدأ من الصفر
+function renderPerformanceChart(targetId = 'performanceChart') {
+    const container = $(targetId);
+    if (!container) return;
+
+    if (data.trades.length === 0) {
+        container.innerHTML = `<div class="empty">No trades logged yet</div>`;
+        return;
+    }
+
+    const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
+    const rrFilter = $('rrFilterSelect') ? $('rrFilterSelect').value : 'all';
+
+    let sorted = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+    let cumulative = 0;
+    const points = [{ label: 'Start', value: 0, date: 'Start' }];
+
+    sorted.forEach(t => {
+        let val = 0;
+        if (chartType === 'pnl') {
+            val = Number(t.pnl) || 0;
+        } else {
+            val = Number(t.r) || 0;
+        }
+        cumulative += val;
+        points.push({
+            label: t.date || '',
+            value: cumulative,
+            date: t.date || ''
+        });
+    });
+
+    const width = container.clientWidth || 600;
+    const height = targetId === 'performanceChart' ? 280 : 450;
+    const paddingLeft = 55;
+    const paddingRight = 20;
+    const paddingTop = 20;
+    const paddingBottom = 40;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    const values = points.map(p => p.value);
+    const minVal = Math.min(0, ...values);
+    const maxVal = Math.max(0, ...values);
+    const valRange = (maxVal - minVal) === 0 ? 1 : (maxVal - minVal);
+
+    const coords = points.map((p, i) => {
+        const x = paddingLeft + (i / (points.length - 1 || 1)) * chartWidth;
+        const y = paddingTop + chartHeight - ((p.value - minVal) / valRange) * chartHeight;
+        return { x, y, ...p };
+    });
+
+    const pathData = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ');
+    
+    const firstX = coords[0].x;
+    const lastX = coords[coords.length - 1].x;
+    const bottomY = paddingTop + chartHeight;
+    const areaPath = `${pathData} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
+
+    let svgContent = `
+        <svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;">
+            <defs>
+                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/>
+                </linearGradient>
+            </defs>
+    `;
+
+    const gridSteps = 5;
+    for (let i = 0; i <= gridSteps; i++) {
+        const yVal = minVal + (valRange / gridSteps) * i;
+        const yPos = paddingTop + chartHeight - (i / gridSteps) * chartHeight;
+        
+        svgContent += `
+            <line x1="${paddingLeft}" y1="${yPos}" x2="${width - paddingRight}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/>
+            <text x="${paddingLeft - 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10" text-anchor="end">${yVal.toFixed(1)}</text>
+        `;
+    }
+
+    const labelStep = Math.max(1, Math.floor(coords.length / 6));
+    coords.forEach((c, i) => {
+        if (i % labelStep === 0 || i === coords.length - 1) {
+            svgContent += `
+                <text x="${c.x}" y="${height - 10}" fill="var(--muted)" font-size="9" text-anchor="middle">${c.date}</text>
+                <line x1="${c.x}" y1="${paddingTop}" x2="${c.x}" y2="${paddingTop + chartHeight}" stroke="var(--line)" opacity="0.1"/>
+            `;
+        }
+    });
+
+    svgContent += `
+            <path d="${areaPath}" fill="url(#chartGradient)"/>
+            <path d="${pathData}" fill="none" stroke="var(--green)" stroke-width="2.5"/>
+    `;
+
+    coords.forEach(c => {
+        svgContent += `<circle cx="${c.x}" cy="${c.y}" r="3.5" fill="var(--green)" />`;
+    });
+
+    svgContent += `</svg>`;
+    container.innerHTML = svgContent;
+}
+
 function renderMetrics() {
   const metricsEl = $('metrics');
   if(!metricsEl) return;
@@ -661,130 +766,90 @@ function renderMetrics() {
   const totalTrades = data.trades.length;
   const totalR = data.trades.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
   const wins = data.trades.filter(t => (Number(t.r) || 0) > 0).length;
-  const losses = data.trades.filter(t => (Number(t.r) || 0) < 0).length;
-  const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
+  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
   const maxDD = calculateMaxDrawdown();
-  const totalPnl = data.trades.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
 
   metricsEl.innerHTML = `
-    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged trades</div></div>
-    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(1)}R</div><div class="sub">Cumulative R</div></div>
-    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate}%</div><div class="sub">${wins} Wins / ${losses} Losses</div></div>
-    <div class="metric"><div class="label">Wins / Losses</div><div class="value">${wins}/${losses}</div><div class="sub">Win/Loss breakdown</div></div>
-    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(1)}R</div><div class="sub">Peak to trough decline</div></div>
-    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">$${totalPnl.toFixed(2)}</div><div class="sub">Net profit/loss</div></div>
+    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged setups</div></div>
+    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
+    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(1)}%</div><div class="sub">${wins} Wins</div></div>
+    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
+    <div class="metric"><div class="label">Profit Factor</div><div class="value">--</div><div class="sub">Gross Win / Loss</div></div>
+    <div class="metric"><div class="label">Avg R / Trade</div><div class="value">${totalTrades > 0 ? (totalR / totalTrades).toFixed(2) : 0}R</div><div class="sub">Expectancy</div></div>
   `;
-}
-
-function renderStats() {
-  const statsEl = $('stats');
-  if(!statsEl) return;
-  statsEl.innerHTML = '';
-}
-
-function renderPerformanceChart() {
-  const chartEl = $('performanceChart');
-  if(!chartEl) return;
-
-  if(data.trades.length === 0) {
-    chartEl.innerHTML = `<div class="empty" style="display:flex; align-items:center; justify-content:center; height:100%;">No data available for chart</div>`;
-    return;
-  }
-
-  const sorted = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-  let cumulative = 0;
-  const points = sorted.map(t => {
-    cumulative += Number(t.r) || 0;
-    return cumulative;
-  });
-
-  const min = Math.min(0, ...points);
-  const max = Math.max(1, ...points);
-  const range = max - min || 1;
-  const height = 260;
-  const width = 600;
-  
-  const coords = points.map((val, i) => {
-    const x = (i / (points.length - 1 || 1)) * (width - 40) + 20;
-    const y = height - ((val - min) / range) * (height - 40) - 20;
-    return `${x},${y}`;
-  }).join(' ');
-
-  chartEl.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
-      <polyline fill="none" stroke="var(--green)" stroke-width="3" points="${coords}" />
-    </svg>
-  `;
-}
-
-function renderRecentTrades() {
-  const tbody = $('recent');
-  if(!tbody) return;
-  
-  const sorted = [...data.trades].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-  const recentTrades = sorted.slice(0, 5);
-
-  if(recentTrades.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:20px;">No trades logged yet.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = recentTrades.map(t => {
-    const rVal = Number(t.r) || 0;
-    const pnlVal = Number(t.pnl) || 0;
-    const resultClass = rVal >= 0 ? 'pill' : 'pill red';
-    const resultText = rVal >= 0 ? 'Win' : 'Loss';
-    
-    return `
-      <tr>
-        <td>${t.date || ''}</td>
-        <td><strong>${t.symbol || ''}</strong></td>
-        <td>${t.grade || '-'}</td>
-        <td class="${rVal >= 0 ? 'up' : 'down'}">${rVal >= 0 ? '+' : ''}${rVal}R</td>
-        <td class="${pnlVal >= 0 ? 'up' : 'down'}">$${pnlVal.toFixed(2)}</td>
-        <td><span class="${resultClass}">${resultText}</span></td>
-      </tr>
-    `;
-  }).join('');
 }
 
 function renderTrades() {
   const tbody = $('tradesBody');
   if(!tbody) return;
-  
   const search = ($('tradeSearch')?.value || '').toLowerCase();
   const filterRes = $('tradeResult')?.value || 'All';
 
   const filtered = data.trades.filter(t => {
     const matchSymbol = (t.symbol || '').toLowerCase().includes(search);
     const rVal = Number(t.r) || 0;
-    let matchRes = true;
-    if(filterRes === 'Win') matchRes = rVal > 0;
-    if(filterRes === 'Loss') matchRes = rVal < 0;
-    if(filterRes === 'Breakeven') matchRes = rVal === 0;
+    let res = 'Breakeven';
+    if(rVal > 0) res = 'Win';
+    else if(rVal < 0) res = 'Loss';
+
+    const matchRes = (filterRes === 'All' || res === filterRes);
     return matchSymbol && matchRes;
   });
 
-  if(filtered.length === 0) {
+  if(filtered.length === 0){
     tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--muted); padding:20px;">No trades found.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.map(t => {
     const rVal = Number(t.r) || 0;
-    const pnlVal = Number(t.pnl) || 0;
+    const isWin = rVal > 0;
+    const pillClass = isWin ? 'pill' : (rVal < 0 ? 'pill red' : 'pill');
+    const resText = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE');
+
     return `
       <tr>
         <td>${t.date || ''}</td>
-        <td><strong>${t.symbol || ''}</strong></td>
+        <td><b>${t.symbol || ''}</b></td>
         <td>${t.tradeStatus || ''}</td>
-        <td>${t.bias || ''}</td>
-        <td>${t.entry || ''}</td>
-        <td>${t.kl || ''}</td>
+        <td>${t.bias || '-'}</td>
+        <td>${t.entry || '-'}</td>
+        <td>${t.kl || '-'}</td>
         <td class="${rVal >= 0 ? 'up' : 'down'}">${rVal >= 0 ? '+' : ''}${rVal}R</td>
-        <td class="${pnlVal >= 0 ? 'up' : 'down'}">$${pnlVal.toFixed(2)}</td>
-        <td>${t.chartBefore ? '<span style="color:var(--green)">✓ Before</span>' : ''} ${t.chartAfter ? '<span style="color:var(--blue)">✓ After</span>' : ''}</td>
-        <td><button class="editBtn" onclick="editTrade(${t.id})">Edit</button><button class="danger" onclick="deleteTrade(${t.id})">Delete</button></td>
+        <td>$${t.pnl || 0}</td>
+        <td>
+          ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="showImgModal('${t.chartBefore}')">` : ''}
+          ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="showImgModal('${t.chartAfter}')">` : ''}
+        </td>
+        <td>
+          <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
+          <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderRecent() {
+  const tbody = $('recent');
+  if(!tbody) return;
+  const recentTrades = data.trades.slice(0, 5);
+  
+  if(recentTrades.length === 0){
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:15px;">No recent trades.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = recentTrades.map(t => {
+    const rVal = Number(t.r) || 0;
+    return `
+      <tr>
+        <td>${t.date || ''}</td>
+        <td><b>${t.symbol || ''}</b></td>
+        <td>${t.entry || '-'}</td>
+        <td class="${rVal >= 0 ? 'up' : 'down'}">${rVal >= 0 ? '+' : ''}${rVal}R</td>
+        <td>$${t.pnl || 0}</td>
+        <td><span class="${rVal >= 0 ? 'pill' : 'pill red'}">${rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE')}</span></td>
       </tr>
     `;
   }).join('');
@@ -794,8 +859,8 @@ function editTrade(id) {
   const t = data.trades.find(x => x.id === id);
   if(!t) return;
   go('add');
-  $('editTradeId').value = t.id;
   $('formTitle').textContent = 'Edit Trade';
+  $('editTradeId').value = t.id;
   $('fDate').value = t.date || '';
   $('fTime').value = t.time || '';
   $('fSymbol').value = t.symbol || 'MNQ';
@@ -833,57 +898,59 @@ function deleteTrade(id) {
   }
 }
 
-function renderAnalytics() {}
-function saveNote() {}
+function renderAnalytics() {
+  ['sessionStats', 'biasStats', 'symbolStats'].forEach(id => {
+    const el = $(id);
+    if(el) el.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics data compiling...</div>`;
+  });
+}
 
-function filterTradesByDate(dateStr) {
-  go('trades');
-  if($('tradeSearch')) {
-    $('tradeSearch').value = dateStr;
-    renderTrades();
+function saveNote() {
+  const text = val('noteText');
+  if(!text.trim()) return;
+  data.notes.unshift({ id: Date.now(), date: new Date().toLocaleDateString(), text });
+  persist();
+  $('noteText').value = '';
+  toast('Note saved!');
+  renderNotes();
+}
+
+function renderNotes() {
+  const list = $('notesList');
+  if(!list) return;
+  if(data.notes.length === 0){
+    list.innerHTML = `<div class="empty">No notes found.</div>`;
+    return;
   }
+  list.innerHTML = data.notes.map(n => `
+    <div class="listItem">
+      <div><small style="color:var(--muted)">${n.date}</small><div>${n.text}</div></div>
+      <button class="danger" onclick="deleteNote(${n.id})">Delete</button>
+    </div>
+  `).join('');
+}
+
+function deleteNote(id) {
+  data.notes = data.notes.filter(n => n.id !== id);
+  persist();
+  toast('Note deleted');
 }
 
 function openModal(type) {
-  $('modalOverlay').classList.add('active');
+  const overlay = $('modalOverlay');
+  const title = $('modalTitle');
   const body = $('modalBody');
+  overlay.classList.add('active');
+
   if(type === 'chart') {
-    $('modalTitle').textContent = 'Performance Overview (Fullscreen)';
-    body.innerHTML = `<div class="card" style="height:100%"><div class="chart" id="modalChart" style="height:100%"></div></div>`;
-    renderModalChart();
+    title.textContent = 'Performance Overview (Expanded)';
+    body.innerHTML = `<div class="chart" id="modalChartContainer" style="height:100%;"></div>`;
+    renderPerformanceChart('modalChartContainer');
   } else if(type === 'calendar') {
-    $('modalTitle').textContent = 'Trading Calendar (Fullscreen)';
-    body.innerHTML = `<div class="card" style="height:100%"><div id="modalCalendarGrid"></div></div>`;
-    renderCalendar('modalCalendarGrid');
+    title.textContent = 'Trading Calendar (Expanded)';
+    body.innerHTML = `<div id="modalCalendarContainer"></div>`;
+    renderCalendar('modalCalendarContainer');
   }
-}
-
-function renderModalChart() {
-  const chartEl = $('modalChart');
-  if(!chartEl) return;
-  if(data.trades.length === 0) {
-    chartEl.innerHTML = `<div class="empty" style="display:flex; align-items:center; justify-content:center; height:100%;">No data available</div>`;
-    return;
-  }
-  const sorted = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-  let cumulative = 0;
-  const points = sorted.map(t => { cumulative += Number(t.r) || 0; return cumulative; });
-  const min = Math.min(0, ...points);
-  const max = Math.max(1, ...points);
-  const range = max - min || 1;
-  const height = 450;
-  const width = 900;
-  const coords = points.map((val, i) => {
-    const x = (i / (points.length - 1 || 1)) * (width - 40) + 20;
-    const y = height - ((val - min) / range) * (height - 40) - 20;
-    return `${x},${y}`;
-  }).join(' ');
-
-  chartEl.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%; height:100%;">
-      <polyline fill="none" stroke="var(--green)" stroke-width="3" points="${coords}" />
-    </svg>
-  `;
 }
 
 function closeModal() {
@@ -891,23 +958,32 @@ function closeModal() {
 }
 
 function closeModalOnBg(e) {
-  if(e.target === $('modalOverlay')) closeModal();
+  if(e.target.id === 'modalOverlay') closeModal();
+}
+
+function showImgModal(src) {
+  const overlay = $('modalOverlay');
+  const title = $('modalTitle');
+  const body = $('modalBody');
+  overlay.classList.add('active');
+  title.textContent = 'Chart Image View';
+  body.innerHTML = `<div style="text-align:center;"><img src="${src}" style="max-width:100%; max-height:75vh; border-radius:8px; border:1px solid var(--line);"></div>`;
 }
 
 function renderAll() {
-  renderStrategiesManager();
-  renderDropdowns();
   renderMetrics();
   renderPerformanceChart();
-  renderCalendar('calendarGridWrapper');
-  renderStats();
-  renderRecentTrades();
+  renderCalendar();
+  renderRecent();
   renderTrades();
-  renderAnalytics();
+  renderDropdowns();
+  renderStrategiesManager();
+  renderNotes();
 }
 
-// Initial Load
+// تهيئة التطبيق عند الفتح
 changeTheme(data.theme || 'dark');
+$('themeSelect').value = data.theme || 'dark';
 renderAll();
 </script>
 </body>
