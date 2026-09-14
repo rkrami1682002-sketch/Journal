@@ -257,17 +257,11 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="card">
     <div class="toolbar">
       <input class="select" id="tradeSearch" placeholder="Search symbol...">
-      <select class="select" id="tradeResult">
+      <select class="select" id="tradeResult" onchange="renderTrades()">
         <option value="All">All Results</option>
         <option value="Win">Win</option>
         <option value="Loss">Loss</option>
         <option value="Breakeven">Breakeven</option>
-      </select>
-      <select class="select" id="tradeEntryFilter">
-        <option value="All">All Entries</option>
-      </select>
-      <select class="select" id="tradeKLFilter">
-        <option value="All">All KLs</option>
       </select>
     </div>
     <table class="table">
@@ -344,7 +338,6 @@ function encodeImage(input, targetId) {
  }
 }
 
-// Backup Export & Import Functions
 function exportData(){
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
   const downloadAnchor = document.createElement('a');
@@ -568,6 +561,110 @@ function changeCalMonth(delta, targetId) {
   renderCalendar(targetId);
 }
 
+function saveTrade(){
+  const id = $('editTradeId').value ? Number($('editTradeId').value) : Date.now();
+  const trade = {
+    id,
+    date: val('fDate'),
+    time: val('fTime'),
+    symbol: val('fSymbol'),
+    bias: getCheckedValues('dropBias'),
+    session: val('fSession'),
+    grade: val('fGrade'),
+    entry: getCheckedValues('dropEntry'),
+    kl: getCheckedValues('dropKL'),
+    narrative: getCheckedValues('dropNarrative'),
+    tradeStatus: val('fTradeStatus'),
+    entryPrice: val('fEntryPrice'),
+    exitPrice: val('fExitPrice'),
+    size: val('fSize'),
+    pnl: val('fPnl'),
+    risk: val('fRisk'),
+    sl: val('fSL'),
+    tp: val('fTP'),
+    rr: val('fRR'),
+    r: Number(val('fR')) || 0,
+    exec: val('fExec'),
+    confidence: val('fConfidence'),
+    emotion: val('fEmotion'),
+    plan: val('fPlan'),
+    chartBefore: val('fChartBeforeData'),
+    chartAfter: val('fChartAfterData'),
+    notes: val('fNotes')
+  };
+
+  const idx = data.trades.findIndex(t => t.id === id);
+  if(idx >= 0) {
+    data.trades[idx] = trade;
+  } else {
+    data.trades.unshift(trade);
+  }
+  
+  persist();
+  clearForm();
+  toast('Trade saved successfully!');
+  go('trades');
+}
+
+function editTrade(id){
+  const t = data.trades.find(x => x.id === id);
+  if(!t) return;
+  go('add');
+  $('editTradeId').value = t.id;
+  $('formTitle').textContent = 'Edit Trade';
+  $('fDate').value = t.date || '';
+  $('fTime').value = t.time || '';
+  $('fSymbol').value = t.symbol || 'MNQ';
+  $('fSession').value = t.session || 'NY AM';
+  $('fGrade').value = t.grade || 'A+';
+  $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
+  $('fEntryPrice').value = t.entryPrice || '';
+  $('fExitPrice').value = t.exitPrice || '';
+  $('fSize').value = t.size || '';
+  $('fPnl').value = t.pnl || '';
+  $('fRisk').value = t.risk || '';
+  $('fSL').value = t.sl || '';
+  $('fTP').value = t.tp || '';
+  $('fRR').value = t.rr || '';
+  $('fR').value = t.r || '';
+  $('fExec').value = t.exec || 'Excellent';
+  $('fConfidence').value = t.confidence || '';
+  $('fEmotion').value = t.emotion || 'Calm';
+  $('fPlan').value = t.plan || 'Yes';
+  $('fChartBeforeData').value = t.chartBefore || '';
+  $('fChartAfterData').value = t.chartAfter || '';
+  $('fNotes').value = t.notes || '';
+
+  setCheckedValues('dropBias', t.bias, 'dropBiasText');
+  setCheckedValues('dropEntry', t.entry, 'dropEntryText');
+  setCheckedValues('dropKL', t.kl, 'dropKLText');
+  setCheckedValues('dropNarrative', t.narrative, 'dropNarrativeText');
+}
+
+function deleteTrade(id){
+  if(confirm('Are you sure you want to delete this trade?')){
+    data.trades = data.trades.filter(t => t.id !== id);
+    persist();
+    toast('Trade deleted');
+  }
+}
+
+function clearForm(){
+  $('editTradeId').value = '';
+  $('formTitle').textContent = 'Add Trade';
+  $('fDate').value = new Date().toISOString().slice(0,10);
+  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => {
+    if($(id)) $(id).value = '';
+  });
+  ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => {
+    $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
+  });
+  updateDropdownText('dropBias', 'dropBiasText');
+  updateDropdownText('dropEntry', 'dropEntryText');
+  updateDropdownText('dropKL', 'dropKLText');
+  updateDropdownText('dropNarrative', 'dropNarrativeText');
+}
+
 function renderTrades(){
   const body = $('tradesBody');
   if(!body) return;
@@ -610,6 +707,80 @@ function renderTrades(){
   `).join('');
 }
 
+function renderMetrics(){
+  const m = $('metrics');
+  if(!m) return;
+  const total = data.trades.length;
+  const totalR = data.trades.reduce((s,t)=>s+(Number(t.r)||0),0);
+  const wins = data.trades.filter(t=>(Number(t.r)||0)>0).length;
+  const winRate = total > 0 ? ((wins/total)*100).toFixed(1) : 0;
+  
+  m.innerHTML = `
+    <div class="metric"><div class="label">Total Trades</div><div class="value">${total}</div></div>
+    <div class="metric"><div class="label">Total R</div><div class="value ${totalR>=0?'up':'down'}">${totalR>=0?'+':''}${totalR.toFixed(1)}R</div></div>
+    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate}%</div></div>
+    <div class="metric"><div class="label">Wins / Losses</div><div class="value">${wins} / ${total - wins}</div></div>
+  `;
+  
+  const recent = $('recent');
+  if(recent){
+    const recTrades = data.trades.slice(0, 5);
+    if(recTrades.length === 0){
+      recent.innerHTML = `<tr><td colspan="6" class="empty">No recent trades.</td></tr>`;
+    } else {
+      recent.innerHTML = recTrades.map(t => `
+        <tr>
+          <td>${t.date}</td>
+          <td><b>${t.symbol}</b></td>
+          <td>${t.grade || '-'}</td>
+          <td class="${t.r>=0?'up':'down'}">${t.r>=0?'+':''}${t.r}R</td>
+          <td>$${t.pnl || 0}</td>
+          <td><span class="pill ${t.r>=0?'':'red'}">${t.r>=0?'Win':'Loss'}</span></td>
+        </tr>
+      `).join('');
+    }
+  }
+}
+
+function renderPerformanceChart(){
+  const el = $('performanceChart');
+  if(!el) return;
+  const sorted = [...data.trades].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  let cum = 0;
+  const pts = sorted.map((t, i) => {
+    cum += Number(t.r) || 0;
+    return {i, cum, date: t.date};
+  });
+  
+  if(pts.length === 0){
+    el.innerHTML = '<div class="empty">No data for chart yet.</div>';
+    return;
+  }
+  
+  const minC = Math.min(0, ...pts.map(p=>p.cum));
+  const maxC = Math.max(0, ...pts.map(p=>p.cum));
+  const range = maxC - minC || 1;
+  
+  const w = el.clientWidth || 400;
+  const h = el.clientHeight || 260;
+  const pad = 30;
+  
+  const coords = pts.map(p => {
+    const x = pad + (p.i / (pts.length > 1 ? pts.length - 1 : 1)) * (w - pad * 2);
+    const y = h - pad - ((p.cum - minC) / range) * (h - pad * 2);
+    return {x, y, ...p};
+  });
+  
+  const pathD = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ');
+  
+  el.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}">
+      <path d="${pathD}" fill="none" stroke="var(--green)" stroke-width="2.5" />
+      ${coords.map(c => `<circle cx="${c.x}" cy="${c.y}" r="4" fill="var(--green)" />`).join('')}
+    </svg>
+  `;
+}
+
 function renderNotes(){
   const list = $('notesList');
   if(!list) return;
@@ -645,6 +816,57 @@ function renderAnalytics(){
     const el = $(id);
     if(el) el.innerHTML = '<div style="color:var(--muted); font-size:12px;">Analytics updated automatically.</div>';
   });
+}
+
+function openModal(type){
+  $('modalOverlay').classList.add('active');
+  const title = $('modalTitle');
+  const body = $('modalBody');
+  if(type === 'chart'){
+    title.textContent = 'Performance Overview (Expanded)';
+    body.innerHTML = '<div class="chart" id="modalChart" style="width:100%; height:100%"></div>';
+    setTimeout(() => {
+      const el = $('modalChart');
+      const sorted = [...data.trades].sort((a,b)=>new Date(a.date)-new Date(b.date));
+      let cum = 0;
+      const pts = sorted.map((t, i) => {
+        cum += Number(t.r) || 0;
+        return {i, cum};
+      });
+      if(pts.length === 0){ el.innerHTML = '<div class="empty">No data.</div>'; return; }
+      const minC = Math.min(0, ...pts.map(p=>p.cum));
+      const maxC = Math.max(0, ...pts.map(p=>p.cum));
+      const range = maxC - minC || 1;
+      const w = el.clientWidth || 800;
+      const h = el.clientHeight || 450;
+      const pad = 40;
+      const coords = pts.map(p => {
+        const x = pad + (p.i / (pts.length > 1 ? pts.length - 1 : 1)) * (w - pad * 2);
+        const y = h - pad - ((p.cum - minC) / range) * (h - pad * 2);
+        return {x, y, ...p};
+      });
+      const pathD = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ');
+      el.innerHTML = `<svg viewBox="0 0 ${w} ${h}"><path d="${pathD}" fill="none" stroke="var(--green)" stroke-width="3" />${coords.map(c=>`<circle cx="${c.x}" cy="${c.y}" r="5" fill="var(--green)" />`).join('')}</svg>`;
+    }, 50);
+  } else if(type === 'calendar'){
+    title.textContent = 'Trading Calendar (Expanded)';
+    body.innerHTML = '<div id="modalCalendarWrapper"></div>';
+    renderCalendar('modalCalendarWrapper');
+  }
+}
+
+function closeModal(){
+  $('modalOverlay').classList.remove('active');
+}
+
+function closeModalOnBg(e){
+  if(e.target === $('modalOverlay')) closeModal();
+}
+
+function filterTradesByDate(dateStr){
+  go('trades');
+  $('tradeSearch').value = dateStr;
+  renderTrades();
 }
 
 function renderAll(){
