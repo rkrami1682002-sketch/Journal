@@ -69,11 +69,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 .modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid var(--line);padding-bottom:10px}
 .modalHead h3{margin:0;font-size:18px}
 .modalBody{flex:1;overflow:auto}
-.modalBody .chart{height:500px}
-.modalBody .calGrid{gap:8px}
-.modalBody .day{min-height:75px;padding:8px}
-.modalBody .day strong{font-size:12px}
-.modalBody .day small{font-size:12px}
 
 /* Clean Dropdown Style with Checkmark */
 .custom-dropdown { position: relative; width: 100%; }
@@ -133,12 +128,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
         <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
           <option value="r">Total R</option>
           <option value="pnl">Total PnL ($)</option>
-        </select>
-        <select class="select" id="rrFilterSelect" onchange="renderPerformanceChart()">
-          <option value="all">RR Filter: All</option>
-          <option value="weekly">RR Filter: Weekly</option>
-          <option value="monthly">RR Filter: Monthly</option>
-          <option value="pnl_filter">PnL Filter</option>
         </select>
         <button class="iconBtn" onclick="openModal('chart')" title="Maximize Chart">⛶</button>
       </div>
@@ -245,8 +234,8 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div>
   <div class="field span2"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
   
-  <div class="field span3"><label>Before Chart Image (صورة قبل الدخول)</label><input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')"><input type="hidden" id="fChartBeforeData"></div>
-  <div class="field span3"><label>After Chart Image (صورة بعد الدخول)</label><input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')"><input type="hidden" id="fChartAfterData"></div>
+  <div class="field span3"><label>Before Chart Image</label><input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')"><input type="hidden" id="fChartBeforeData"></div>
+  <div class="field span3"><label>After Chart Image</label><input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')"><input type="hidden" id="fChartAfterData"></div>
 
   <div class="field span3"><label>Notes</label><textarea id="fNotes" placeholder="What happened? What did you learn?"></textarea></div>
  </div><div class="actions"><button class="primary" onclick="saveTrade()">Save Trade</button><button class="secondary" onclick="clearForm()">Clear / Cancel</button></div></div>
@@ -294,15 +283,10 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-const KEY='rjournal_pro_v11_clean';
+const KEY='rjournal_pro_v12_daterange';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  theme:'dark',trades:[],notes:[],
- lists:{
-  KL:[],
-  Entry:[],
-  Bias:[],
-  Narrative:[]
- }
+ lists:{ KL:[], Entry:[], Bias:[], Narrative:[] }
 };
 const $=id=>document.getElementById(id);
 
@@ -325,10 +309,7 @@ function go(page){
  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  if(page==='add' && !$('editTradeId').value) {
   const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  $('fDate').value = `${year}-${month}-${day}`;
+  $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
  }
  renderAll();scrollTo(0,0);
 }
@@ -338,9 +319,7 @@ function val(id){return $(id).value}
 function encodeImage(input, targetId) {
  if (input.files && input.files[0]) {
   const reader = new FileReader();
-  reader.onload = function(e) {
-   $(targetId).value = e.target.result;
-  };
+  reader.onload = function(e) { $(targetId).value = e.target.result; };
   reader.readAsDataURL(input.files[0]);
  }
 }
@@ -369,12 +348,8 @@ function importData(input){
           persist();
           toast('Data imported successfully!');
         }
-      } else {
-        alert('Invalid backup file format.');
-      }
-    } catch(err) {
-      alert('Error reading JSON file.');
-    }
+      } else { alert('Invalid backup file format.'); }
+    } catch(err) { alert('Error reading JSON file.'); }
     input.value = '';
   };
   reader.readAsText(file);
@@ -382,9 +357,7 @@ function importData(input){
 
 function toggleDropdown(dropId) {
   const content = $(dropId).querySelector('.dropdown-content');
-  document.querySelectorAll('.dropdown-content').forEach(d => {
-    if(d !== content) d.classList.remove('show');
-  });
+  document.querySelectorAll('.dropdown-content').forEach(d => { if(d !== content) d.classList.remove('show'); });
   content.classList.toggle('show');
 }
 
@@ -399,25 +372,16 @@ function updateDropdownText(boxId, textId) {
   const textEl = $(textId);
   if(!container || !textEl) return;
   const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
-    checked.push(opt.getAttribute('data-value'));
-  });
-  if(checked.length === 0){
-    textEl.textContent = "Select options...";
-    textEl.style.color = "var(--muted)";
-  } else {
-    textEl.textContent = checked.join(', ');
-    textEl.style.color = "var(--text)";
-  }
+  container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
+  if(checked.length === 0){ textEl.textContent = "Select options..."; textEl.style.color = "var(--muted)"; }
+  else { textEl.textContent = checked.join(', '); textEl.style.color = "var(--text)"; }
 }
 
 function getCheckedValues(containerId) {
   const container = $(containerId);
   if(!container) return '';
   const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
-    checked.push(opt.getAttribute('data-value'));
-  });
+  container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
   return checked.join(', ');
 }
 
@@ -427,11 +391,8 @@ function setCheckedValues(containerId, valuesStr, textId) {
   const arr = (valuesStr || '').split(',').map(s => s.trim());
   container.querySelectorAll('.dropdown-option').forEach(opt => {
     const val = opt.getAttribute('data-value');
-    if(arr.includes(val)){
-      opt.classList.add('selected');
-    } else {
-      opt.classList.remove('selected');
-    }
+    if(arr.includes(val)) opt.classList.add('selected');
+    else opt.classList.remove('selected');
   });
   updateDropdownText(containerId, textId);
 }
@@ -439,14 +400,7 @@ function setCheckedValues(containerId, valuesStr, textId) {
 function renderStrategiesManager() {
   const container = $('strategyManager');
   if(!container) return;
-  
-  const keys = [
-    {key: 'KL', title: 'KL'},
-    {key: 'Entry', title: 'Entry'},
-    {key: 'Bias', title: 'Bias'},
-    {key: 'Narrative', title: 'Narrative'}
-  ];
-
+  const keys = [{key: 'KL', title: 'KL'}, {key: 'Entry', title: 'Entry'}, {key: 'Bias', title: 'Bias'}, {key: 'Narrative', title: 'Narrative'}];
   container.innerHTML = keys.map(k => `
     <div class="card">
       <h3>${k.title}</h3>
@@ -457,10 +411,7 @@ function renderStrategiesManager() {
       <div class="list" style="max-height:200px; overflow-y:auto;">
          ${(data.lists[k.key] || []).length === 0 ? '<div style="color:var(--muted); font-size:12px; padding:8px;">No options added yet.</div>' : ''}
          ${(data.lists[k.key] || []).map(item => `
-          <div class="listItem">
-            <span>${item}</span>
-            <button class="danger" onclick="deleteStrategyItem('${k.key}', '${item}')">Delete</button>
-          </div>
+          <div class="listItem"><span>${item}</span><button class="danger" onclick="deleteStrategyItem('${k.key}', '${item}')">Delete</button></div>
         `).join('')}
       </div>
     </div>
@@ -472,18 +423,13 @@ function addStrategyItem(category) {
   if(!input || !input.value.trim()) return;
   const val = input.value.trim();
   if(!data.lists[category]) data.lists[category] = [];
-  if(!data.lists[category].includes(val)){
-    data.lists[category].push(val);
-    persist();
-    toast('Added successfully');
-  }
+  if(!data.lists[category].includes(val)){ data.lists[category].push(val); persist(); toast('Added successfully'); }
   input.value = '';
 }
 
 function deleteStrategyItem(category, item) {
   data.lists[category] = data.lists[category].filter(x => x !== item);
-  persist();
-  toast('Deleted successfully');
+  persist(); toast('Deleted successfully');
 }
 
 function renderDropdowns() {
@@ -493,24 +439,20 @@ function renderDropdowns() {
     'fBiasBox': {list: data.lists.Bias, box: 'dropBias', text: 'dropBiasText'},
     'fNarrativeBox': {list: data.lists.Narrative, box: 'dropNarrative', text: 'dropNarrativeText'}
   };
-
   Object.keys(map).forEach(boxId => {
     const box = $(boxId);
     if(!box) return;
     const info = map[boxId];
     const currentChecked = getCheckedValues(boxId);
-    
     if((info.list || []).length === 0) {
       box.innerHTML = `<div style="padding:10px; color:var(--muted); font-size:12px; text-align:center;">No options found.<br>Add them in Strategies page.</div>`;
     } else {
       box.innerHTML = (info.list || []).map(item => `
         <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
-          <span>${item}</span>
-          <span class="check-mark">✓</span>
+          <span>${item}</span><span class="check-mark">✓</span>
         </div>
       `).join('');
     }
-    
     setCheckedValues(boxId, currentChecked, info.text);
   });
 }
@@ -525,35 +467,24 @@ function renderCalendar(targetId='calendarGridWrapper') {
   if(!el) return;
   const year = currentCalDate.getFullYear();
   const month = currentCalDate.getMonth();
-  
   const firstDay = new Date(year, month, 1).getDay();
   const totalDays = new Date(year, month + 1, 0).getDate();
-  
   let daysHTML = '';
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   
-  for(let i = 0; i < firstDay; i++) {
-    daysHTML += `<div class="day emptyDay"></div>`;
-  }
-  
+  for(let i = 0; i < firstDay; i++) { daysHTML += `<div class="day emptyDay"></div>`; }
   for(let d = 1; d <= totalDays; d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const dayTrades = data.trades.filter(t => t.date === dateStr);
     const dayR = dayTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-    
-    let statusClass = '';
-    if(dayTrades.length > 0) {
-      statusClass = dayR >= 0 ? 'pos' : 'neg';
-    }
-    
+    let statusClass = dayTrades.length > 0 ? (dayR >= 0 ? 'pos' : 'neg') : '';
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const isToday = dateStr === todayStr ? 'today' : '';
     
     daysHTML += `
       <div class="day ${statusClass} ${isToday}" onclick="filterTradesByDate('${dateStr}')">
-        <strong>${d}</strong>
-        <small>${dayTrades.length > 0 ? (dayR >= 0 ? '+' : '') + dayR.toFixed(1) + 'R' : ''}</small>
+        <strong>${d}</strong><small>${dayTrades.length > 0 ? (dayR >= 0 ? '+' : '') + dayR.toFixed(1) + 'R' : ''}</small>
       </div>
     `;
   }
@@ -574,49 +505,30 @@ function changeCalMonth(delta, targetId) {
   renderCalendar(targetId);
 }
 
+function filterTradesByDate(dateStr) {
+  go('trades');
+  $('tradeSearch').value = dateStr;
+  renderTrades();
+}
+
 function saveTrade(){
   const id = $('editTradeId').value ? Number($('editTradeId').value) : Date.now();
   const trade = {
-    id,
-    date: val('fDate'),
-    time: val('fTime'),
-    symbol: val('fSymbol'),
-    bias: getCheckedValues('dropBias'),
-    session: val('fSession'),
-    grade: val('fGrade'),
-    entry: getCheckedValues('dropEntry'),
-    kl: getCheckedValues('dropKL'),
-    narrative: getCheckedValues('dropNarrative'),
-    tradeStatus: val('fTradeStatus'),
-    entryPrice: val('fEntryPrice'),
-    exitPrice: val('fExitPrice'),
-    size: val('fSize'),
-    pnl: val('fPnl'),
-    risk: val('fRisk'),
-    sl: val('fSL'),
-    tp: val('fTP'),
-    rr: val('fRR'),
-    r: Number(val('fR')) || 0,
-    exec: val('fExec'),
-    confidence: val('fConfidence'),
-    emotion: val('fEmotion'),
-    plan: val('fPlan'),
-    chartBefore: val('fChartBeforeData'),
-    chartAfter: val('fChartAfterData'),
-    notes: val('fNotes')
+    id, date: val('fDate'), time: val('fTime'), symbol: val('fSymbol'),
+    bias: getCheckedValues('dropBias'), session: val('fSession'), grade: val('fGrade'),
+    entry: getCheckedValues('dropEntry'), kl: getCheckedValues('dropKL'), narrative: getCheckedValues('dropNarrative'),
+    tradeStatus: val('fTradeStatus'), entryPrice: val('fEntryPrice'), exitPrice: val('fExitPrice'),
+    size: val('fSize'), pnl: val('fPnl'), risk: val('fRisk'), sl: val('fSL'), tp: val('fTP'),
+    rr: val('fRR'), r: Number(val('fR')) || 0, exec: val('fExec'), confidence: val('fConfidence'),
+    emotion: val('fEmotion'), plan: val('fPlan'), chartBefore: val('fChartBeforeData'),
+    chartAfter: val('fChartAfterData'), notes: val('fNotes')
   };
 
   const idx = data.trades.findIndex(t => t.id === id);
-  if(idx >= 0) {
-    data.trades[idx] = trade;
-  } else {
-    data.trades.unshift(trade);
-  }
+  if(idx >= 0) data.trades[idx] = trade;
+  else data.trades.unshift(trade);
   
-  persist();
-  clearForm();
-  toast('Trade saved successfully!');
-  go('trades');
+  persist(); clearForm(); toast('Trade saved successfully!'); go('trades');
 }
 
 function clearForm(){
@@ -624,9 +536,7 @@ function clearForm(){
   $('formTitle').textContent = 'Add Trade';
   const d = new Date();
   $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => {
-    if($(id)) $(id).value = '';
-  });
+  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => { if($(id)) $(id).value = ''; });
   ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => {
     $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
   });
@@ -637,132 +547,67 @@ function clearForm(){
 }
 
 function calculateMaxDrawdown() {
-    let peak = 0;
-    let maxDD = 0;
-    let runningEquity = 0;
-    const sortedTrades = [...data.trades].sort((a, b) => {
-        let dateA = new Date((a.date || '') + ' ' + (a.time || '00:00'));
-        let dateB = new Date((b.date || '') + ' ' + (b.time || '00:00'));
-        return dateA - dateB;
-    });
-
+    let peak = 0, maxDD = 0, runningEquity = 0;
+    const sortedTrades = [...data.trades].sort((a, b) => new Date((a.date || '') + ' ' + (a.time || '00:00')) - new Date((b.date || '') + ' ' + (b.time || '00:00')));
     sortedTrades.forEach(trade => {
         runningEquity += (Number(trade.r) || 0);
-        if (runningEquity > peak) {
-            peak = runningEquity;
-        }
+        if (runningEquity > peak) peak = runningEquity;
         let drawdown = peak - runningEquity;
-        if (drawdown > maxDD) {
-            maxDD = drawdown;
-        }
+        if (drawdown > maxDD) maxDD = drawdown;
     });
-
     return maxDD;
 }
 
 function renderPerformanceChart(targetId = 'performanceChart') {
     const container = $(targetId);
     if (!container) return;
-
-    if (data.trades.length === 0) {
-        container.innerHTML = `<div class="empty">No trades logged yet</div>`;
-        return;
-    }
+    if (data.trades.length === 0) { container.innerHTML = `<div class="empty">No trades logged yet</div>`; return; }
 
     const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
-
-    let sorted = [...data.trades].sort((a, b) => {
-        let dateA = new Date((a.date || '') + ' ' + (a.time || '00:00'));
-        let dateB = new Date((b.date || '') + ' ' + (b.time || '00:00'));
-        return dateA - dateB;
-    });
+    let sorted = [...data.trades].sort((a, b) => new Date((a.date || '') + ' ' + (a.time || '00:00')) - new Date((b.date || '') + ' ' + (b.time || '00:00')));
 
     let cumulative = 0;
     const points = [{ label: 'Start', value: 0, date: 'Start' }];
-
     sorted.forEach(t => {
-        let val = 0;
-        if (chartType === 'pnl') {
-            val = Number(t.pnl) || 0;
-        } else {
-            val = Number(t.r) || 0;
-        }
-        cumulative += val;
-        points.push({
-            label: t.date || '',
-            value: cumulative,
-            date: t.date || ''
-        });
+        cumulative += (chartType === 'pnl' ? Number(t.pnl) || 0 : Number(t.r) || 0);
+        points.push({ label: t.date || '', value: cumulative, date: t.date || '' });
     });
 
     const width = container.clientWidth || 600;
     const height = targetId === 'performanceChart' ? 280 : 450;
-    const paddingLeft = 20;
-    const paddingRight = 65; 
-    const paddingTop = 20;
-    const paddingBottom = 40;
-
+    const paddingLeft = 20, paddingRight = 65, paddingTop = 20, paddingBottom = 40;
     const chartWidth = width - paddingLeft - paddingRight;
     const chartHeight = height - paddingTop - paddingBottom;
-
     const values = points.map(p => p.value);
-    const minVal = Math.min(0, ...values);
-    const maxVal = Math.max(0, ...values);
+    const minVal = Math.min(0, ...values), maxVal = Math.max(0, ...values);
     let valRange = (maxVal - minVal) === 0 ? 1 : (maxVal - minVal);
 
-    const coords = points.map((p, i) => {
-        const x = paddingLeft + (i / (points.length - 1 || 1)) * chartWidth;
-        const y = paddingTop + chartHeight - ((p.value - minVal) / valRange) * chartHeight;
-        return { x, y, ...p };
-    });
+    const coords = points.map((p, i) => ({
+        x: paddingLeft + (i / (points.length - 1 || 1)) * chartWidth,
+        y: paddingTop + chartHeight - ((p.value - minVal) / valRange) * chartHeight,
+        ...p
+    }));
 
     const pathData = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ');
+    const areaPath = `${pathData} L ${coords[coords.length - 1].x} ${paddingTop + chartHeight} L ${coords[0].x} ${paddingTop + chartHeight} Z`;
+
+    let svgContent = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;"><defs><linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/></linearGradient></defs>`;
     
-    const firstX = coords[0].x;
-    const lastX = coords[coords.length - 1].x;
-    const bottomY = paddingTop + chartHeight;
-    const areaPath = `${pathData} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
-
-    let svgContent = `
-        <svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;">
-            <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
-                    <stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/>
-                </linearGradient>
-            </defs>
-    `;
-
-    const gridSteps = 5;
-    for (let i = 0; i <= gridSteps; i++) {
-        const yVal = minVal + (valRange / gridSteps) * i;
-        const yPos = paddingTop + chartHeight - (i / gridSteps) * chartHeight;
-        
-        svgContent += `
-            <line x1="${paddingLeft}" y1="${yPos}" x2="${width - paddingRight}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/>
-            <text x="${width - paddingRight + 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10" text-anchor="start">${chartType === 'pnl' ? '$' + yVal.toFixed(0) : yVal.toFixed(1)}</text>
-        `;
+    for (let i = 0; i <= 5; i++) {
+        const yVal = minVal + (valRange / 5) * i;
+        const yPos = paddingTop + chartHeight - (i / 5) * chartHeight;
+        svgContent += `<line x1="${paddingLeft}" y1="${yPos}" x2="${width - paddingRight}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/><text x="${width - paddingRight + 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10" text-anchor="start">${chartType === 'pnl' ? '$' + yVal.toFixed(0) : yVal.toFixed(1)}</text>`;
     }
 
     const labelStep = Math.max(1, Math.floor(coords.length / 6));
     coords.forEach((c, i) => {
         if (i % labelStep === 0 || i === coords.length - 1) {
-            svgContent += `
-                <text x="${c.x}" y="${height - 10}" fill="var(--muted)" font-size="9" text-anchor="middle">${c.date}</text>
-                <line x1="${c.x}" y1="${paddingTop}" x2="${c.x}" y2="${paddingTop + chartHeight}" stroke="var(--line)" opacity="0.1"/>
-            `;
+            svgContent += `<text x="${c.x}" y="${height - 10}" fill="var(--muted)" font-size="9" text-anchor="middle">${c.date}</text>`;
         }
     });
 
-    svgContent += `
-            <path d="${areaPath}" fill="url(#chartGradient)"/>
-            <path d="${pathData}" fill="none" stroke="var(--green)" stroke-width="2.5"/>
-    `;
-
-    coords.forEach(c => {
-        svgContent += `<circle cx="${c.x}" cy="${c.y}" r="3.5" fill="var(--green)" />`;
-    });
-
+    svgContent += `<path d="${areaPath}" fill="url(#chartGradient)"/><path d="${pathData}" fill="none" stroke="var(--green)" stroke-width="2.5"/>`;
+    coords.forEach(c => { svgContent += `<circle cx="${c.x}" cy="${c.y}" r="3.5" fill="var(--green)" />`; });
     svgContent += `</svg>`;
     container.innerHTML = svgContent;
 }
@@ -770,7 +615,6 @@ function renderPerformanceChart(targetId = 'performanceChart') {
 function renderMetrics() {
   const metricsEl = $('metrics');
   if(!metricsEl) return;
-
   const totalTrades = data.trades.length;
   const totalR = data.trades.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
   const totalPnl = data.trades.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
@@ -784,7 +628,7 @@ function renderMetrics() {
     <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(1)}%</div><div class="sub">${wins} Wins</div></div>
     <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
     <div class="metric" onclick="openModal('total_pnl')"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div><div class="sub">Net dollar return</div></div>
-    <div class="metric"><div class="label">Avg R / Trade</div><div class="value">${totalTrades > 0 ? (totalR / totalTrades).toFixed(2) : 0}R</div><div class="sub">Expectancy</div></div>
+    <div class="metric" onclick="openModal('total_trades')"><div class="label">Avg R / Trade</div><div class="value">${totalTrades > 0 ? (totalR / totalTrades).toFixed(2) : 0}R</div><div class="sub">Expectancy</div></div>
   `;
 }
 
@@ -795,14 +639,10 @@ function renderTrades() {
   const filterRes = $('tradeResult')?.value || 'All';
 
   const filtered = data.trades.filter(t => {
-    const matchSymbol = (t.symbol || '').toLowerCase().includes(search);
+    const matchSymbol = (t.symbol || '').toLowerCase().includes(search) || (t.date || '').includes(search);
     const rVal = Number(t.r) || 0;
-    let res = 'Breakeven';
-    if(rVal > 0) res = 'Win';
-    else if(rVal < 0) res = 'Loss';
-
-    const matchRes = (filterRes === 'All' || res === filterRes);
-    return matchSymbol && matchRes;
+    let res = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'Breakeven');
+    return matchSymbol && (filterRes === 'All' || res === filterRes);
   });
 
   if(filtered.length === 0){
@@ -813,7 +653,6 @@ function renderTrades() {
   tbody.innerHTML = filtered.map(t => {
     const rVal = Number(t.r) || 0;
     const pnlVal = Number(t.pnl) || 0;
-
     return `
       <tr>
         <td>${t.date || ''}</td>
@@ -841,11 +680,7 @@ function renderRecent() {
   const tbody = $('recent');
   if(!tbody) return;
   const recentTrades = data.trades.slice(0, 5);
-  
-  if(recentTrades.length === 0){
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:15px;">No recent trades.</td></tr>`;
-    return;
-  }
+  if(recentTrades.length === 0){ tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:15px;">No recent trades.</td></tr>`; return; }
 
   tbody.innerHTML = recentTrades.map(t => {
     const rVal = Number(t.r) || 0;
@@ -901,8 +736,7 @@ function editTrade(id) {
 function deleteTrade(id) {
   if(confirm('Are you sure you want to delete this trade?')) {
     data.trades = data.trades.filter(x => x.id !== id);
-    persist();
-    toast('Trade deleted successfully');
+    persist(); toast('Trade deleted successfully');
   }
 }
 
@@ -917,19 +751,13 @@ function saveNote() {
   const text = val('noteText');
   if(!text.trim()) return;
   data.notes.unshift({ id: Date.now(), date: new Date().toLocaleDateString(), text });
-  persist();
-  $('noteText').value = '';
-  toast('Note saved!');
-  renderNotes();
+  persist(); $('noteText').value = ''; toast('Note saved!'); renderNotes();
 }
 
 function renderNotes() {
   const list = $('notesList');
   if(!list) return;
-  if(data.notes.length === 0){
-    list.innerHTML = `<div class="empty">No notes found.</div>`;
-    return;
-  }
+  if(data.notes.length === 0){ list.innerHTML = `<div class="empty">No notes found.</div>`; return; }
   list.innerHTML = data.notes.map(n => `
     <div class="listItem">
       <div><small style="color:var(--muted)">${n.date}</small><div>${n.text}</div></div>
@@ -940,24 +768,7 @@ function renderNotes() {
 
 function deleteNote(id) {
   data.notes = data.notes.filter(n => n.id !== id);
-  persist();
-  toast('Note deleted');
-}
-
-function getWeekKey(dateStr) {
-  const d = new Date(dateStr);
-  if(isNaN(d)) return 'Unknown';
-  const startOfYear = new Date(d.getFullYear(), 0, 1);
-  const days = Math.floor((d - startOfYear) / (24 * 60 * 60 * 1000));
-  const weekNum = Math.ceil((days + startOfYear.getDay() + 1) / 7);
-  return `${d.getFullYear()} - Week ${weekNum}`;
-}
-
-function getMonthKey(dateStr) {
-  const d = new Date(dateStr);
-  if(isNaN(d)) return 'Unknown';
-  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  return `${months[d.getMonth()]} ${d.getFullYear()}`;
+  persist(); toast('Note deleted');
 }
 
 function openModal(type) {
@@ -975,9 +786,9 @@ function openModal(type) {
     body.innerHTML = `<div id="modalCalendarContainer"></div>`;
     renderCalendar('modalCalendarContainer');
   } else if(type === 'total_trades') {
-    title.textContent = 'Total Trades - Filter & History';
+    title.textContent = 'Total Trades - Win/Loss breakdown & History';
     body.innerHTML = `
-      <div style="margin-bottom:12px; display:flex; gap:10px;">
+      <div style="margin-bottom:12px; display:flex; gap:10px; align-items:center;">
         <select class="select" id="modalTradeFilter" onchange="updateModalTradesList()">
           <option value="All">All Results</option>
           <option value="Win">Win</option>
@@ -985,51 +796,66 @@ function openModal(type) {
           <option value="Breakeven">Breakeven</option>
         </select>
       </div>
+      <div id="modalTradeSummary" style="margin-bottom:12px;"></div>
       <div id="modalTradesContent"></div>
     `;
     updateModalTradesList();
   } else if(type === 'total_r' || type === 'total_pnl') {
     const isR = type === 'total_r';
-    title.textContent = isR ? 'Total R - Period Selector' : 'Total PnL ($) - Period Selector';
+    title.textContent = isR ? 'Total R - Custom Date Range' : 'Total PnL ($) - Custom Date Range';
     
-    // تجميع الأسابيع والشهور لكل التاريخ
-    const weeksSet = {};
-    const monthsSet = {};
-    data.trades.forEach(t => {
-      if(!t.date) return;
-      const wKey = getWeekKey(t.date);
-      const mKey = getMonthKey(t.date);
-      weeksSet[wKey] = true;
-      monthsSet[mKey] = true;
-    });
-
-    const weeks = Object.keys(weeksSet).sort().reverse();
-    const months = Object.keys(monthsSet).sort().reverse();
-
     body.innerHTML = `
-      <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
-        <select class="select" id="periodTypeSelect" onchange="updatePeriodOptions('${type}')">
-          <option value="weekly">Weekly View</option>
-          <option value="monthly">Monthly View</option>
-        </select>
-        <select class="select" id="periodSelect" onchange="renderPeriodStats('${type}')"></select>
+      <div style="display:flex; gap:10px; margin-bottom:15px; align-items:center; flex-wrap:wrap;">
+        <div><label style="font-size:11px; color:var(--muted); display:block;">From Date</label><input type="date" class="select" id="dateFrom" onchange="renderDateRangeStats('${type}')"></div>
+        <div><label style="font-size:11px; color:var(--muted); display:block;">To Date</label><input type="date" class="select" id="dateTo" onchange="renderDateRangeStats('${type}')"></div>
+        <button class="secondary" style="margin-top:16px;" onclick="resetDateRange('${type}')">Reset Range</button>
       </div>
-      <div id="periodStatsResult"></div>
+      <div id="dateRangeStatsResult"></div>
     `;
-    updatePeriodOptions(type);
+    
+    if(data.trades.length > 0) {
+      const dates = data.trades.map(t => t.date).filter(Boolean).sort();
+      $('dateFrom').value = dates[0] || '';
+      $('dateTo').value = dates[dates.length - 1] || '';
+    }
+    renderDateRangeStats(type);
   }
+}
+
+function resetDateRange(type) {
+  if(data.trades.length > 0) {
+    const dates = data.trades.map(t => t.date).filter(Boolean).sort();
+    $('dateFrom').value = dates[0] || '';
+    $('dateTo').value = dates[dates.length - 1] || '';
+  }
+  renderDateRangeStats(type);
 }
 
 function updateModalTradesList() {
   const filter = $('modalTradeFilter')?.value || 'All';
   const container = $('modalTradesContent');
+  const summaryEl = $('modalTradeSummary');
   if(!container) return;
+
+  const totalCount = data.trades.length;
+  const winsCount = data.trades.filter(t => (Number(t.r) || 0) > 0).length;
+  const lossCount = data.trades.filter(t => (Number(t.r) || 0) < 0).length;
+  const beCount = data.trades.filter(t => (Number(t.r) || 0) === 0).length;
+
+  if(summaryEl) {
+    summaryEl.innerHTML = `
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; background:var(--panel2); padding:10px; border-radius:8px; border:1px solid var(--line);">
+        <div><div style="font-size:11px; color:var(--muted);">Total</div><div style="font-weight:bold;">${totalCount}</div></div>
+        <div><div style="font-size:11px; color:var(--green);">Wins</div><div style="font-weight:bold; color:var(--green);">${winsCount}</div></div>
+        <div><div style="font-size:11px; color:var(--red);">Losses</div><div style="font-weight:bold; color:var(--red);">${lossCount}</div></div>
+        <div><div style="font-size:11px; color:var(--yellow);">Breakeven</div><div style="font-weight:bold; color:var(--yellow);">${beCount}</div></div>
+      </div>
+    `;
+  }
 
   const filtered = data.trades.filter(t => {
     const rVal = Number(t.r) || 0;
-    let res = 'Breakeven';
-    if(rVal > 0) res = 'Win';
-    else if(rVal < 0) res = 'Loss';
+    let res = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'Breakeven');
     return filter === 'All' || res === filter;
   });
 
@@ -1061,61 +887,39 @@ function updateModalTradesList() {
   `;
 }
 
-function updatePeriodOptions(type) {
-  const periodType = $('periodTypeSelect')?.value || 'weekly';
-  const periodSelect = $('periodSelect');
-  if(!periodSelect) return;
-
-  const setObj = {};
-  data.trades.forEach(t => {
-    if(!t.date) return;
-    const key = periodType === 'weekly' ? getWeekKey(t.date) : getMonthKey(t.date);
-    setObj[key] = true;
-  });
-
-  const keys = Object.keys(setObj).sort().reverse();
-  if(keys.length === 0) {
-    periodSelect.innerHTML = `<option value="">No data available</option>`;
-    $('periodStatsResult.innerHTML') = `<div class="empty">No trades recorded yet.</div>`;
-    return;
-  }
-
-  periodSelect.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join('');
-  renderPeriodStats(type);
-}
-
-function renderPeriodStats(type) {
-  const periodType = $('periodTypeSelect')?.value || 'weekly';
-  const selectedKey = $('periodSelect')?.value;
-  const container = $('periodStatsResult');
-  if(!container || !selectedKey) return;
+function renderDateRangeStats(type) {
+  const dateFrom = $('dateFrom')?.value;
+  const dateTo = $('dateTo')?.value;
+  const container = $('dateRangeStatsResult');
+  if(!container) return;
 
   const filtered = data.trades.filter(t => {
     if(!t.date) return false;
-    const key = periodType === 'weekly' ? getWeekKey(t.date) : getMonthKey(t.date);
-    return key === selectedKey;
+    if(dateFrom && t.date < dateFrom) return false;
+    if(dateTo && t.date > dateTo) return false;
+    return true;
   });
 
   const totalR = filtered.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
   const totalPnl = filtered.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
   const wins = filtered.filter(t => (Number(t.r) || 0) > 0).length;
+  const losses = filtered.filter(t => (Number(t.r) || 0) < 0).length;
   const winRate = filtered.length > 0 ? (wins / filtered.length) * 100 : 0;
 
-  const isR = type === 'total_r';
-
   container.innerHTML = `
-    <div style="background:var(--panel2); padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--line);">
-      <h4 style="margin:0 0 10px 0; color:var(--green);">${selectedKey} Summary</h4>
-      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
-        <div><div style="color:var(--muted); font-size:11px;">Trades Count</div><div style="font-size:16px; font-weight:bold;">${filtered.length}</div></div>
-        <div><div style="color:var(--muted); font-size:11px;">Period R</div><div style="font-size:16px; font-weight:bold;" class="${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R</div></div>
-        <div><div style="color:var(--muted); font-size:11px;">Period PnL</div><div style="font-size:16px; font-weight:bold;" class="${totalPnl >= 0 ? 'up' : 'down'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div></div>
+    <div style="background:var(--panel2); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid var(--line);">
+      <h4 style="margin:0 0 8px 0; color:var(--green);">Summary (${dateFrom || 'Start'} to ${dateTo || 'End'})</h4>
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;">
+        <div><div style="color:var(--muted); font-size:11px;">Trades Count</div><div style="font-size:15px; font-weight:bold;">${filtered.length} (W:${wins} / L:${losses})</div></div>
+        <div><div style="color:var(--muted); font-size:11px;">Win Rate</div><div style="font-size:15px; font-weight:bold;">${winRate.toFixed(1)}%</div></div>
+        <div><div style="color:var(--muted); font-size:11px;">Range R</div><div style="font-size:15px; font-weight:bold;" class="${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R</div></div>
+        <div><div style="color:var(--muted); font-size:11px;">Range PnL</div><div style="font-size:15px; font-weight:bold;" class="${totalPnl >= 0 ? 'up' : 'down'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div></div>
       </div>
     </div>
     <table class="table">
       <thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>R</th><th>P&L</th><th>Result</th></tr></thead>
       <tbody>
-        ${filtered.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades in this period.</td></tr>` : 
+        ${filtered.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades in this date range.</td></tr>` : 
           filtered.map(t => {
             const rVal = Number(t.r) || 0;
             const pnlVal = Number(t.pnl) || 0;
@@ -1136,13 +940,8 @@ function renderPeriodStats(type) {
   `;
 }
 
-function closeModal() {
-  $('modalOverlay').classList.remove('active');
-}
-
-function closeModalOnBg(e) {
-  if(e.target.id === 'modalOverlay') closeModal();
-}
+function closeModal() { $('modalOverlay').classList.remove('active'); }
+function closeModalOnBg(e) { if(e.target.id === 'modalOverlay') closeModal(); }
 
 function showImgModal(src) {
   const overlay = $('modalOverlay');
