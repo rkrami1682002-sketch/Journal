@@ -128,10 +128,17 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
     <div class="cardHead">
       <h3>Performance Overview</h3>
       <div class="cardActions">
+        <!-- القائمة الأولى: الرسم البياني -->
         <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
           <option value="r">Total R</option>
           <option value="pnl">Total PnL ($)</option>
-          <option value="rr">RR Filter (All / Weekly / Monthly)</option>
+        </select>
+        <!-- القائمة الثانية المستقلة: فلتر الـ RR و PnL -->
+        <select class="select" id="rrFilterSelect" onchange="renderPerformanceChart()">
+          <option value="all">RR Filter: All</option>
+          <option value="weekly">RR Filter: Weekly</option>
+          <option value="monthly">RR Filter: Monthly</option>
+          <option value="pnl_filter">PnL Filter</option>
         </select>
         <button class="iconBtn" onclick="openModal('chart')" title="Maximize Chart">⛶</button>
       </div>
@@ -322,7 +329,11 @@ function go(page){
  $(page).classList.add('active');
  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  if(page==='add' && !$('editTradeId').value) {
-  $('fDate').value = new Date().toISOString().slice(0,10);
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  $('fDate').value = `${year}-${month}-${day}`;
  }
  renderAll();scrollTo(0,0);
 }
@@ -540,7 +551,8 @@ function renderCalendar(targetId='calendarGridWrapper') {
       statusClass = dayR >= 0 ? 'pos' : 'neg';
     }
     
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const isToday = dateStr === todayStr ? 'today' : '';
     
     daysHTML += `
@@ -615,7 +627,8 @@ function saveTrade(){
 function clearForm(){
   $('editTradeId').value = '';
   $('formTitle').textContent = 'Add Trade';
-  $('fDate').value = new Date().toISOString().slice(0,10);
+  const d = new Date();
+  $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => {
     if($(id)) $(id).value = '';
   });
@@ -670,7 +683,7 @@ function renderDashboardMetrics() {
 }
 
 function renderPerformanceChart() {
-  // دالة رسم بياني فارغة أو مجهزة حسب هيكل المشروع الأصلي لتفادي الأخطاء
+  // دالة رسم بياني مجهزة لتفادي الأخطاء
 }
 
 function openModal(type) {
