@@ -292,7 +292,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-const KEY='rjournal_pro_v10_clean';
+const KEY='rjournal_pro_v11_clean';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  theme:'dark',trades:[],notes:[],
  lists:{
@@ -654,7 +654,7 @@ function calculateMaxDrawdown() {
     return maxDD;
 }
 
-// دالة الرسم البياني المحدثة والمصممة لتظهر الأرقام والتاريخ بدقة وتبدأ من الصفر
+// الرسم البياني مرتب زمنياً تصاعدياً (من الأقدم للأحدث)، مع نقل أرقام ومحور الـ Y إلى اليمين
 function renderPerformanceChart(targetId = 'performanceChart') {
     const container = $(targetId);
     if (!container) return;
@@ -665,8 +665,8 @@ function renderPerformanceChart(targetId = 'performanceChart') {
     }
 
     const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
-    const rrFilter = $('rrFilterSelect') ? $('rrFilterSelect').value : 'all';
 
+    // ترتيب الصفقات تصاعدياً حسب التاريخ لضمان دقة الرسم التراكمي
     let sorted = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
     let cumulative = 0;
@@ -689,8 +689,8 @@ function renderPerformanceChart(targetId = 'performanceChart') {
 
     const width = container.clientWidth || 600;
     const height = targetId === 'performanceChart' ? 280 : 450;
-    const paddingLeft = 55;
-    const paddingRight = 20;
+    const paddingLeft = 20;
+    const paddingRight = 65; // مساحة لمحور الأرقام على اليمين
     const paddingTop = 20;
     const paddingBottom = 40;
 
@@ -700,7 +700,7 @@ function renderPerformanceChart(targetId = 'performanceChart') {
     const values = points.map(p => p.value);
     const minVal = Math.min(0, ...values);
     const maxVal = Math.max(0, ...values);
-    const valRange = (maxVal - minVal) === 0 ? 1 : (maxVal - minVal);
+    let valRange = (maxVal - minVal) === 0 ? 1 : (maxVal - minVal);
 
     const coords = points.map((p, i) => {
         const x = paddingLeft + (i / (points.length - 1 || 1)) * chartWidth;
@@ -730,9 +730,10 @@ function renderPerformanceChart(targetId = 'performanceChart') {
         const yVal = minVal + (valRange / gridSteps) * i;
         const yPos = paddingTop + chartHeight - (i / gridSteps) * chartHeight;
         
+        // الأرقام أصبحت على اليمين (Right Y-Axis)
         svgContent += `
             <line x1="${paddingLeft}" y1="${yPos}" x2="${width - paddingRight}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/>
-            <text x="${paddingLeft - 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10" text-anchor="end">${yVal.toFixed(1)}</text>
+            <text x="${width - paddingRight + 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10" text-anchor="start">${chartType === 'pnl' ? '$' + yVal.toFixed(0) : yVal.toFixed(1)}</text>
         `;
     }
 
@@ -765,6 +766,7 @@ function renderMetrics() {
 
   const totalTrades = data.trades.length;
   const totalR = data.trades.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
+  const totalPnl = data.trades.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
   const wins = data.trades.filter(t => (Number(t.r) || 0) > 0).length;
   const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
   const maxDD = calculateMaxDrawdown();
@@ -774,7 +776,7 @@ function renderMetrics() {
     <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
     <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(1)}%</div><div class="sub">${wins} Wins</div></div>
     <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
-    <div class="metric"><div class="label">Profit Factor</div><div class="value">--</div><div class="sub">Gross Win / Loss</div></div>
+    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div><div class="sub">Net dollar return</div></div>
     <div class="metric"><div class="label">Avg R / Trade</div><div class="value">${totalTrades > 0 ? (totalR / totalTrades).toFixed(2) : 0}R</div><div class="sub">Expectancy</div></div>
   `;
 }
@@ -803,9 +805,7 @@ function renderTrades() {
 
   tbody.innerHTML = filtered.map(t => {
     const rVal = Number(t.r) || 0;
-    const isWin = rVal > 0;
-    const pillClass = isWin ? 'pill' : (rVal < 0 ? 'pill red' : 'pill');
-    const resText = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE');
+    const pnlVal = Number(t.pnl) || 0;
 
     return `
       <tr>
@@ -816,7 +816,7 @@ function renderTrades() {
         <td>${t.entry || '-'}</td>
         <td>${t.kl || '-'}</td>
         <td class="${rVal >= 0 ? 'up' : 'down'}">${rVal >= 0 ? '+' : ''}${rVal}R</td>
-        <td>$${t.pnl || 0}</td>
+        <td class="${pnlVal >= 0 ? 'up' : 'down'}">${pnlVal >= 0 ? '+' : ''}$${pnlVal}</td>
         <td>
           ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="showImgModal('${t.chartBefore}')">` : ''}
           ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="showImgModal('${t.chartAfter}')">` : ''}
@@ -842,13 +842,14 @@ function renderRecent() {
 
   tbody.innerHTML = recentTrades.map(t => {
     const rVal = Number(t.r) || 0;
+    const pnlVal = Number(t.pnl) || 0;
     return `
       <tr>
         <td>${t.date || ''}</td>
         <td><b>${t.symbol || ''}</b></td>
         <td>${t.entry || '-'}</td>
         <td class="${rVal >= 0 ? 'up' : 'down'}">${rVal >= 0 ? '+' : ''}${rVal}R</td>
-        <td>$${t.pnl || 0}</td>
+        <td class="${pnlVal >= 0 ? 'up' : 'down'}">${pnlVal >= 0 ? '+' : ''}$${pnlVal}</td>
         <td><span class="${rVal >= 0 ? 'pill' : 'pill red'}">${rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE')}</span></td>
       </tr>
     `;
@@ -981,7 +982,6 @@ function renderAll() {
   renderNotes();
 }
 
-// تهيئة التطبيق عند الفتح
 changeTheme(data.theme || 'dark');
 $('themeSelect').value = data.theme || 'dark';
 renderAll();
