@@ -1,6 +1,4 @@
-import re
-
-html_content = '''<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -34,7 +32,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,B
 button,input,select,textarea{font:inherit}button{cursor:pointer}
 .app{display:flex;min-height:100vh}
 .sidebar{width:240px;border-right:1px solid var(--line);background:var(--panel);padding:18px 14px;position:fixed;inset:0 auto 0 0;z-index:5}
-.brand{display:flex;gap:10px;align-items:center;padding:4px 8px 22px}.brandmark{width:32px;height:30px;display:flex;align-items:end;gap:4px}.brandmark i{display:block;width:7px;background:var(--green);border-radius:3px}.brandmark i:nth-child(1){height:13px}.brandmark i:nth-child(2){height:21px}.brandmark i:nth-child(3){height:29px}.brand b{font-size:16px;letter-spacing:.6px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.brand{display:flex;align-items:center;padding:10px 8px 25px}.brand b{font-size:17px;letter-spacing:.6px}
 nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);text-align:left;padding:11px 12px;border-radius:10px;display:flex;gap:12px;align-items:center;opacity:0.8}.nav:hover,.nav.active{background:var(--panel2);color:var(--green);opacity:1}.nav span{width:18px;text-align:center;color:var(--muted)}
 .main{margin-left:240px;width:calc(100% - 240px);padding:18px 22px 30px}
 .top{height:48px;display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px}
@@ -75,20 +73,24 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 .modalBody .day strong{font-size:12px}
 .modalBody .day small{font-size:12px}
 
+/* Multi-select Checkboxes Box */
+.multiBox{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;max-height:100px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.multiBox label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);cursor:pointer}
+.multiBox input[type="checkbox"]{accent-color:var(--green);cursor:pointer}
+
 .stats{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px}.stat{padding:13px;min-height:94px}.stat .v{font-size:20px;font-weight:750;margin:8px 0 4px}
 .row3{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-weight:500}.pill{padding:4px 7px;border-radius:12px;background:rgba(115,213,138,0.2);color:var(--green);font-size:10px}.pill.red{background:rgba(255,109,109,0.2);color:var(--red)}
 .journal{max-height:220px;overflow:auto}
 .page{display:none}.page.active{display:block}.sectionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.formCard{max-width:1000px}.formGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;outline:none}.field textarea{min-height:90px;resize:vertical}.span2{grid-column:span 2}.span3{grid-column:span 3}.actions{display:flex;gap:8px;margin-top:15px}.primary{background:var(--green);border:0;color:#0a160c;font-weight:750;border-radius:9px;padding:11px 16px}.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:11px 16px}
 .empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.toolbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px}.list{display:grid;gap:9px}.listItem{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px}.danger{color:var(--red);background:transparent;border:0;font-weight:bold;cursor:pointer}.editBtn{color:var(--green);background:transparent;border:0;font-weight:bold;cursor:pointer;margin-right:8px}
 .toast{position:fixed;right:20px;bottom:20px;background:var(--green);color:#000;padding:11px 15px;border-radius:10px;display:none;z-index:20;font-weight:bold}
-.chartLink{display:inline-block;padding:3px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--green);text-decoration:none;font-size:11px;margin-right:4px;}
-.chartLink:hover{border-color:var(--green)}
+.thumbImg{width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--line);cursor:pointer;margin-right:4px}
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="sidebar">
- <div class="brand"><div class="brandmark"><i></i><i></i><i></i></div><div><b>R JOURNAL</b><small>Trade Smarter · Improve Faster</small></div></div>
+ <div class="brand"><div><b>R JOURNAL</b></div></div>
  <nav>
   <button class="nav active" data-page="dashboard"><span>⌂</span>Dashboard</button>
   <button class="nav" data-page="add"><span>＋</span>Add Trade</button>
@@ -162,22 +164,43 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
  <div class="head"><div><h1 id="formTitle">Add Trade</h1><p>Capture the trade exactly as you executed it.</p></div></div>
  <div class="card formCard"><div class="formGrid">
   <input type="hidden" id="editTradeId">
-  <div class="field"><label>Date</label><input id="fDate" type="date"></div><div class="field"><label>Time</label><input id="fTime" type="time"></div><div class="field"><label>Symbol</label><select id="fSymbol"><option>MNQ</option><option>MES</option><option>NQ</option><option>ES</option><option>Other</option></select></div>
-  <div class="field"><label>Bias</label><select id="fBias"></select></div><div class="field"><label>Session</label><select id="fSession"><option>NY AM</option><option>NY PM</option><option>London</option><option>Asia</option></select></div><div class="field"><label>Setup Grade</label><select id="fGrade"><option>A+</option><option>A</option><option>B</option><option>C</option><option>F</option></select></div>
-  <div class="field"><label>Entry</label><select id="fEntry"></select></div><div class="field"><label>KL (Key Level)</label><select id="fKL"></select></div><div class="field"><label>Entry Price</label><input id="fEntryPrice" type="number" step="any"></div><div class="field"><label>Exit Price</label><input id="fExitPrice" type="number" step="any"></div>
-  <div class="field"><label>Position Size</label><input id="fSize" type="number" step="1"></div><div class="field"><label>P&L ($)</label><input id="fPnl" type="number" step="any"></div><div class="field"><label>Planned Risk ($)</label><input id="fRisk" type="number" step="any"></div>
-  <div class="field"><label>Stop Loss</label><input id="fSL" type="number" step="any"></div><div class="field"><label>Take Profit</label><input id="fTP" type="number" step="any"></div><div class="field"><label>Planned R:R</label><input id="fRR" type="number" step="any" placeholder="2.0"></div>
-  <div class="field"><label>Result (R)</label><input id="fR" type="number" step="any" placeholder="e.g. 1.5"></div><div class="field"><label>Execution Quality</label><select id="fExec"><option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option></select></div><div class="field"><label>Confidence</label><input id="fConfidence" type="number" min="1" max="10" placeholder="1–10"></div>
-  <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div><div class="field span2"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
+  <div class="field"><label>Date</label><input id="fDate" type="date"></div>
+  <div class="field"><label>Time</label><input id="fTime" type="time"></div>
+  <div class="field"><label>Symbol</label><select id="fSymbol"><option>MNQ</option><option>MES</option><option>NQ</option><option>ES</option><option>Other</option></select></div>
   
-  <div class="field span3"><label>Before Chart URL</label><input id="fChartBefore" type="url" placeholder="https://..."></div>
-  <div class="field span3"><label>After Chart URL</label><input id="fChartAfter" type="url" placeholder="https://..."></div>
+  <!-- Bias متعدد الخيارات -->
+  <div class="field"><label>Bias (Multi-select)</label><div class="multiBox" id="fBiasBox"></div></div>
+  <div class="field"><label>Session</label><select id="fSession"><option>NY AM</option><option>NY PM</option><option>London</option><option>Asia</option></select></div>
+  <div class="field"><label>Setup Grade</label><select id="fGrade"><option>A+</option><option>A</option><option>B</option><option>C</option><option>F</option></select></div>
+  
+  <!-- Entry متعدد الخيارات -->
+  <div class="field"><label>Entry (Multi-select)</label><div class="multiBox" id="fEntryBox"></div></div>
+  <!-- KL متعدد الخيارات -->
+  <div class="field"><label>KL / Key Level (Multi-select)</label><div class="multiBox" id="fKLBox"></div></div>
+
+  <div class="field"><label>Entry Price</label><input id="fEntryPrice" type="number" step="any"></div>
+  <div class="field"><label>Exit Price</label><input id="fExitPrice" type="number" step="any"></div>
+  <div class="field"><label>Position Size</label><input id="fSize" type="number" step="1"></div>
+  <div class="field"><label>P&L ($)</label><input id="fPnl" type="number" step="any"></div>
+  <div class="field"><label>Planned Risk ($)</label><input id="fRisk" type="number" step="any"></div>
+  <div class="field"><label>Stop Loss</label><input id="fSL" type="number" step="any"></div>
+  <div class="field"><label>Take Profit</label><input id="fTP" type="number" step="any"></div>
+  <div class="field"><label>Planned R:R</label><input id="fRR" type="number" step="any" placeholder="2.0"></div>
+  <div class="field"><label>Result (R)</label><input id="fR" type="number" step="any" placeholder="e.g. 1.5"></div>
+  <div class="field"><label>Execution Quality</label><select id="fExec"><option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option></select></div>
+  <div class="field"><label>Confidence</label><input id="fConfidence" type="number" min="1" max="10" placeholder="1–10"></div>
+  <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div>
+  <div class="field span2"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
+  
+  <!-- رفع الصور من الجهاز -->
+  <div class="field span3"><label>Before Chart Image (صورة قبل الدخول)</label><input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')"><input type="hidden" id="fChartBeforeData"></div>
+  <div class="field span3"><label>After Chart Image (صورة بعد الدخول)</label><input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')"><input type="hidden" id="fChartAfterData"></div>
 
   <div class="field span3"><label>Notes</label><textarea id="fNotes" placeholder="What happened? What did you learn?"></textarea></div>
  </div><div class="actions"><button class="primary" onclick="saveTrade()">Save Trade</button><button class="secondary" onclick="clearForm()">Clear / Cancel</button></div></div>
 </section>
 
-<section id="trades" class="page"><div class="head"><div><h1>Trades Log</h1><p>Your complete trade history.</p></div><button class="primary" onclick="go('add')">＋ Add Trade</button></div><div class="card"><div class="toolbar"><input class="select" id="tradeSearch" placeholder="Search symbol, entry..."><select class="select" id="tradeResult"><option>All Results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Charts</th><th>Actions</th></tr></thead><tbody id="tradesBody"></tbody></table></div></section>
+<section id="trades" class="page"><div class="head"><div><h1>Trades Log</h1><p>Your complete trade history.</p></div><button class="primary" onclick="go('add')">＋ Add Trade</button></div><div class="card"><div class="toolbar"><input class="select" id="tradeSearch" placeholder="Search symbol, entry..."><select class="select" id="tradeResult"><option>All Results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Images</th><th>Actions</th></tr></thead><tbody id="tradesBody"></tbody></table></div></section>
 
 <section id="missed" class="page"><div class="head"><div><h1>Missed Trades</h1></div></div><div class="card"><div class="formGrid"><div class="field"><label>Date</label><input id="mDate" type="date"></div><div class="field"><label>Symbol</label><input id="mSymbol"></div><div class="field"><label>Setup</label><input id="mSetup"></div><div class="field"><label>Potential R:R</label><input id="mRR"></div><div class="field span3"><label>Why missed?</label><textarea id="mWhy"></textarea></div></div><div class="actions"><button class="primary" onclick="saveMissed()">Save Missed Trade</button></div></div><div style="height:12px"></div><div class="card"><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>Potential R:R</th><th>Why</th></tr></thead><tbody id="missedBody"></tbody></table></div></section>
 
@@ -223,12 +246,62 @@ function go(page){
 document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
 function val(id){return $(id).value}
 
+function encodeImage(input, targetId) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      $(targetId).value = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function getCheckedValues(containerId) {
+  const container = $(containerId);
+  if(!container) return '';
+  const checked = [];
+  container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+    checked.push(cb.value);
+  });
+  return checked.join(', ');
+}
+
+function setCheckedValues(containerId, valuesStr) {
+  const container = $(containerId);
+  if(!container) return;
+  const arr = (valuesStr || '').split(',').map(s => s.trim());
+  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.checked = arr.includes(cb.value);
+  });
+}
+
 function saveTrade(){
  const editId=$('editTradeId').value;
  const t={
   id: editId ? Number(editId) : Date.now(),
-  date:val('fDate')||new Date().toISOString().slice(0,10),time:val('fTime'),symbol:val('fSymbol'),bias:val('fBias'),session:val('fSession'),grade:val('fGrade'),entry:val('fEntry'),kl:val('fKL'),entryPrice:+val('fEntryPrice')||0,exitPrice:+val('fExitPrice')||0,size:+val('fSize')||0,pnl:+val('fPnl')||0,risk:+val('fRisk')||0,sl:+val('fSL')||0,tp:+val('fTP')||0,plannedRR:+val('fRR')||0,r:+val('fR')||0,exec:val('fExec'),confidence:+val('fConfidence')||0,emotion:val('fEmotion'),plan:val('fPlan'),
-  chartBefore:val('fChartBefore'),chartAfter:val('fChartAfter'),
+  date:val('fDate')||new Date().toISOString().slice(0,10),
+  time:val('fTime'),
+  symbol:val('fSymbol'),
+  bias:getCheckedValues('fBiasBox'),
+  session:val('fSession'),
+  grade:val('fGrade'),
+  entry:getCheckedValues('fEntryBox'),
+  kl:getCheckedValues('fKLBox'),
+  entryPrice:+val('fEntryPrice')||0,
+  exitPrice:+val('fExitPrice')||0,
+  size:+val('fSize')||0,
+  pnl:+val('fPnl')||0,
+  risk:+val('fRisk')||0,
+  sl:+val('fSL')||0,
+  tp:+val('fTP')||0,
+  plannedRR:+val('fRR')||0,
+  r:+val('fR')||0,
+  exec:val('fExec'),
+  confidence:+val('fConfidence')||0,
+  emotion:val('fEmotion'),
+  plan:val('fPlan'),
+  chartBefore:val('fChartBeforeData'),
+  chartAfter:val('fChartAfterData'),
   notes:val('fNotes')
  };
 
@@ -247,8 +320,14 @@ function editTrade(id){
  const t=data.trades.find(x=>x.id===id);
  if(!t)return;
  $('editTradeId').value=t.id;
- $('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;$('fBias').value=t.bias;$('fSession').value=t.session;$('fGrade').value=t.grade;$('fEntry').value=t.entry;$('fKL').value=t.kl;$('fEntryPrice').value=t.entryPrice;$('fExitPrice').value=t.exitPrice;$('fSize').value=t.size;$('fPnl').value=t.pnl;$('fRisk').value=t.risk;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRR').value=t.plannedRR;$('fR').value=t.r;$('fExec').value=t.exec;$('fConfidence').value=t.confidence;$('fEmotion').value=t.emotion;$('fPlan').value=t.plan;
- $('fChartBefore').value=t.chartBefore||'';$('fChartAfter').value=t.chartAfter||'';
+ $('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;
+ setCheckedValues('fBiasBox', t.bias);
+ $('fSession').value=t.session;$('fGrade').value=t.grade;
+ setCheckedValues('fEntryBox', t.entry);
+ setCheckedValues('fKLBox', t.kl);
+ $('fEntryPrice').value=t.entryPrice;$('fExitPrice').value=t.exitPrice;$('fSize').value=t.size;$('fPnl').value=t.pnl;$('fRisk').value=t.risk;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRR').value=t.plannedRR;$('fR').value=t.r;$('fExec').value=t.exec;$('fConfidence').value=t.confidence;$('fEmotion').value=t.emotion;$('fPlan').value=t.plan;
+ $('fChartBeforeData').value=t.chartBefore||'';$('fChartBeforeFile').value='';
+ $('fChartAfterData').value=t.chartAfter||'';$('fChartAfterFile').value='';
  $('fNotes').value=t.notes;
  $('formTitle').textContent='Edit Trade';
  go('add');
@@ -264,7 +343,10 @@ function deleteTrade(id){
 
 function clearForm(){
  $('editTradeId').value='';
- ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBefore','fChartAfter','fNotes'].forEach(id=>$(id).value='');
+ ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeData','fChartAfterData','fChartBeforeFile','fChartAfterFile','fNotes'].forEach(id=>{if($(id))$(id).value='';});
+ setCheckedValues('fBiasBox', '');
+ setCheckedValues('fEntryBox', '');
+ setCheckedValues('fKLBox', '');
  $('fDate').value = new Date().toISOString().slice(0,10);
  $('formTitle').textContent='Add Trade';
 }
@@ -482,8 +564,8 @@ function renderTrades(){
     <td>${t.date}</td><td>${t.symbol}</td><td>${t.bias}</td><td>${t.entry||'-'}</td><td>${t.kl||'-'}</td>
     <td class="${t.r>=0?'up':'down'}">${t.r>=0?'+':''}${t.r}R</td><td class="${t.pnl>=0?'up':'down'}">$${t.pnl}</td>
     <td>
-      ${t.chartBefore ? `<a href="${t.chartBefore}" target="_blank" class="chartLink">Before</a>` : ''}
-      ${t.chartAfter ? `<a href="${t.chartAfter}" target="_blank" class="chartLink">After</a>` : ''}
+      ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="window.open('${t.chartBefore}')" title="Before Chart">` : ''}
+      ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="window.open('${t.chartAfter}')" title="After Chart">` : ''}
       ${!t.chartBefore && !t.chartAfter ? '-' : ''}
     </td>
     <td>
@@ -493,10 +575,22 @@ function renderTrades(){
   </tr>`).join('')||'<tr><td colspan="9" class="empty">No trades match.</td></tr>';
 }
 
+function renderCheckboxes(type, containerId){
+  const container = $(containerId);
+  if(!container) return;
+  const list = data.lists[type] || [];
+  container.innerHTML = list.length ? list.map(item => `
+    <label><input type="checkbox" value="${item}"> ${item}</label>
+  `).join('') : '<span style="color:var(--muted);font-size:11px">No options. Add in Strategies.</span>';
+}
+
 function renderManager(){
  let root=$('strategyManager');
  root.innerHTML=['KL','Entry','Bias'].map(type=>`<div class="card"><div class="cardHead"><h3>${type}</h3></div><div class="toolbar" style="margin-top:10px"><input class="select" id="new${type}" placeholder="Add ${type}"><button class="primary" onclick="addList('${type}')">＋ Add</button></div><div class="list" style="margin-top:10px">${(data.lists[type]||[]).map((x,i)=>`<div class="listItem"><span>${x}</span><button class="danger" onclick="removeList('${type}',${i})">Delete</button></div>`).join('')}</div></div>`).join('');
- ['fBias','fEntry','fKL'].forEach(id=>{let type=id==='fBias'?'Bias':id==='fEntry'?'Entry':'KL';if($(id))$(id).innerHTML=(data.lists[type]||[]).map(x=>`<option>${x}</option>`).join('')});
+ 
+ renderCheckboxes('Bias', 'fBiasBox');
+ renderCheckboxes('Entry', 'fEntryBox');
+ renderCheckboxes('KL', 'fKLBox');
 }
 
 function addList(type){const el=$('new'+type);const v=(el?.value||'').trim();if(v){if(!data.lists[type])data.lists[type]=[];if(!data.lists[type].includes(v))data.lists[type].push(v);persist();}}
@@ -520,6 +614,5 @@ if($('tradeSearch'))$('tradeSearch').addEventListener('input',renderTrades);
 if($('tradeResult'))$('tradeResult').addEventListener('change',renderTrades);
 renderAll();
 </script>
-</body></html>'''
-
-print("Code generated successfully")
+</body>
+</html>
