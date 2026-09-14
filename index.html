@@ -168,14 +168,11 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Time</label><input id="fTime" type="time"></div>
   <div class="field"><label>Symbol</label><select id="fSymbol"><option>MNQ</option><option>MES</option><option>NQ</option><option>ES</option><option>Other</option></select></div>
   
-  <!-- Bias متعدد الخيارات -->
   <div class="field"><label>Bias (Multi-select)</label><div class="multiBox" id="fBiasBox"></div></div>
   <div class="field"><label>Session</label><select id="fSession"><option>NY AM</option><option>NY PM</option><option>London</option><option>Asia</option></select></div>
   <div class="field"><label>Setup Grade</label><select id="fGrade"><option>A+</option><option>A</option><option>B</option><option>C</option><option>F</option></select></div>
   
-  <!-- Entry متعدد الخيارات -->
   <div class="field"><label>Entry (Multi-select)</label><div class="multiBox" id="fEntryBox"></div></div>
-  <!-- KL متعدد الخيارات -->
   <div class="field"><label>KL / Key Level (Multi-select)</label><div class="multiBox" id="fKLBox"></div></div>
 
   <div class="field"><label>Entry Price</label><input id="fEntryPrice" type="number" step="any"></div>
@@ -192,7 +189,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div>
   <div class="field span2"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
   
-  <!-- رفع الصور من الجهاز -->
   <div class="field span3"><label>Before Chart Image (صورة قبل الدخول)</label><input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')"><input type="hidden" id="fChartBeforeData"></div>
   <div class="field span3"><label>After Chart Image (صورة بعد الدخول)</label><input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')"><input type="hidden" id="fChartAfterData"></div>
 
