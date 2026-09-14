@@ -73,14 +73,15 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 .modalBody .day strong{font-size:12px}
 .modalBody .day small{font-size:12px}
 
-/* Compact Custom Dropdown Multi-select Styles */
+/* Clean Dropdown Style matching Setup Grade style with Checkmark */
 .custom-dropdown { position: relative; width: 100%; }
 .dropdown-select-btn { width: 100%; background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 10px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-.dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; margin-top: 4px; max-height: 130px; overflow-y: auto; z-index: 10; padding: 4px; box-shadow: var(--shadow); }
+.dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; margin-top: 4px; max-height: 160px; overflow-y: auto; z-index: 10; padding: 4px; box-shadow: var(--shadow); }
 .dropdown-content.show { display: block; }
-.dropdown-content label { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; cursor: pointer; border-radius: 6px; font-size: 13px; color: var(--text); }
-.dropdown-content label:hover { background: var(--panel2); }
-.dropdown-content input[type="checkbox"] { accent-color: var(--green); cursor: pointer; transform: scale(1.1); }
+.dropdown-option { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer; border-radius: 6px; font-size: 13px; color: var(--text); transition: background 0.15s; }
+.dropdown-option:hover { background: var(--panel2); }
+.dropdown-option .check-mark { opacity: 0; font-weight: bold; color: var(--green); font-size: 14px; }
+.dropdown-option.selected .check-mark { opacity: 1; }
 
 .stats{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px}.stat{padding:13px;min-height:94px}.stat .v{font-size:20px;font-weight:750;margin:8px 0 4px}
 .row3{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-weight:500}.pill{padding:4px 7px;border-radius:12px;background:rgba(115,213,138,0.2);color:var(--green);font-size:10px}.pill.red{background:rgba(255,109,109,0.2);color:var(--red)}
@@ -315,13 +316,18 @@ window.addEventListener('click', function(e) {
   }
 });
 
+function toggleOption(containerId, textId, itemVal, optElement) {
+  optElement.classList.toggle('selected');
+  updateDropdownText(containerId, textId);
+}
+
 function updateDropdownText(boxId, textId) {
   const container = $(boxId);
   const textEl = $(textId);
   if(!container || !textEl) return;
   const checked = [];
-  container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-    checked.push(cb.value);
+  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
+    checked.push(opt.getAttribute('data-value'));
   });
   if(checked.length === 0){
     textEl.textContent = "Select options...";
@@ -336,8 +342,8 @@ function getCheckedValues(containerId) {
   const container = $(containerId);
   if(!container) return '';
   const checked = [];
-  container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-    checked.push(cb.value);
+  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
+    checked.push(opt.getAttribute('data-value'));
   });
   return checked.join(', ');
 }
@@ -346,8 +352,13 @@ function setCheckedValues(containerId, valuesStr, textId) {
   const container = $(containerId);
   if(!container) return;
   const arr = (valuesStr || '').split(',').map(s => s.trim());
-  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    cb.checked = arr.includes(cb.value);
+  container.querySelectorAll('.dropdown-option').forEach(opt => {
+    const val = opt.getAttribute('data-value');
+    if(arr.includes(val)){
+      opt.classList.add('selected');
+    } else {
+      opt.classList.remove('selected');
+    }
   });
   updateDropdownText(containerId, textId);
 }
@@ -660,7 +671,10 @@ function renderCheckboxes(type, containerId, textId){
   if(!container) return;
   const list = data.lists[type] || [];
   container.innerHTML = list.length ? list.map(item => `
-    <label><span>${item}</span><input type="checkbox" value="${item}" onchange="updateDropdownText('${containerId}', '${textId}')"></label>
+    <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${containerId}', '${textId}', '${item}', this)">
+      <span>${item}</span>
+      <span class="check-mark">✓</span>
+    </div>
   `).join('') : '<span style="color:var(--muted);font-size:11px;padding:6px;">No options. Add in Strategies.</span>';
   updateDropdownText(containerId, textId);
 }
