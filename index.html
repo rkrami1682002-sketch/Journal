@@ -1,4 +1,6 @@
-<!doctype html>
+import re
+
+html_content = '''<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -22,6 +24,11 @@ body.theme-blue {
  --green:#38ef7d;--red:#ff5252;--shadow:0 10px 30px rgba(0,0,0,.35);
 }
 
+body.theme-gray {
+ --bg:#121212;--panel:#1e1e1e;--panel2:#2a2a2a;--line:#3a3a3a;--text:#f5f5f5;--muted:#aaaaaa;
+ --green:#9e9e9e;--red:#cf6679;--shadow:0 10px 30px rgba(0,0,0,.4);
+}
+
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;transition:background 0.3s, color 0.3s}
 button,input,select,textarea{font:inherit}button{cursor:pointer}
@@ -39,17 +46,43 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 .metric{padding:15px;min-height:108px}.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:23px;font-weight:750;margin:8px 0}.up{color:var(--green)}.down{color:var(--red)}.sub{font-size:11px;color:var(--muted)}
 
 .row2{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:12px}
-.card{padding:15px}.card h3{font-size:14px;margin:0 0 10px}.cardHead{display:flex;justify-content:space-between;align-items:center}.select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;outline:none}
-.chart{height:280px;position:relative}.chart svg{width:100%;height:100%}.legend{display:flex;gap:18px;color:var(--muted);font-size:11px;margin-bottom:3px}.legend b{color:var(--green)}
-.calGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:6px}
-.day{min-height:42px;border:1px solid var(--line);border-radius:7px;padding:6px 5px;text-align:center;background:var(--panel2);cursor:pointer;transition:transform 0.1s, border-color 0.1s;}.day:hover{transform:scale(1.04);border-color:var(--green);}.day.pos{background:rgba(115,213,138,0.15)}.day.neg{background:rgba(255,109,109,0.15)}.day strong{display:block;font-size:11px}.day small{font-size:11px}
+.card{padding:15px}.card h3{font-size:14px;margin:0 0 10px}.cardHead{display:flex;justify-content:space-between;align-items:center}
+.cardActions{display:flex;gap:8px;align-items:center}
+.iconBtn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.2s}
+.iconBtn:hover{border-color:var(--green);color:var(--green)}
+.select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;outline:none}
+.chart{height:280px;position:relative}.chart svg{width:100%;height:100%}
+
+/* Monthly Calendar Styles */
+.calHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.calHeader span{font-weight:bold;font-size:13px;color:var(--green)}
+.calNavBtn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:2px 8px;cursor:pointer}
+.calNavBtn:hover{border-color:var(--green)}
+.calWeekDays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:bold}
+.calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.day{min-height:48px;border:1px solid var(--line);border-radius:7px;padding:4px 3px;text-align:center;background:var(--panel2);cursor:pointer;transition:transform 0.1s, border-color 0.1s;display:flex;flex-direction:column;justify-content:space-between;}.day:hover{transform:scale(1.04);border-color:var(--green);}.day.today{border:2px solid var(--green);box-shadow: 0 0 8px rgba(115,213,138,0.4);}.day.pos{background:rgba(115,213,138,0.15);border-color:rgba(115,213,138,0.4)}.day.neg{background:rgba(255,109,109,0.15);border-color:rgba(255,109,109,0.4)}.day.emptyDay{background:transparent;border:0;cursor:default}.day strong{display:block;font-size:10px;color:var(--muted)}.day small{font-size:10px;font-weight:bold}
+
+/* Modal Styles */
+.modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:99;padding:20px}
+.modalOverlay.active{display:flex}
+.modalCard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);width:100%;max-width:1000px;max-height:90vh;display:flex;flex-direction:column;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.5);position:relative;overflow:hidden}
+.modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.modalHead h3{margin:0;font-size:18px}
+.modalBody{flex:1;overflow:auto}
+.modalBody .chart{height:500px}
+.modalBody .calGrid{gap:8px}
+.modalBody .day{min-height:75px;padding:8px}
+.modalBody .day strong{font-size:12px}
+.modalBody .day small{font-size:12px}
 
 .stats{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px}.stat{padding:13px;min-height:94px}.stat .v{font-size:20px;font-weight:750;margin:8px 0 4px}
 .row3{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-weight:500}.pill{padding:4px 7px;border-radius:12px;background:rgba(115,213,138,0.2);color:var(--green);font-size:10px}.pill.red{background:rgba(255,109,109,0.2);color:var(--red)}
-.journal{max-height:220px;overflow:auto}.bottomActions{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px}.action{padding:15px;background:var(--panel);border:1px solid var(--line);border-radius:11px;color:var(--text);text-align:left}.action:hover{background:var(--panel2)}
+.journal{max-height:220px;overflow:auto}
 .page{display:none}.page.active{display:block}.sectionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.formCard{max-width:1000px}.formGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;outline:none}.field textarea{min-height:90px;resize:vertical}.span2{grid-column:span 2}.span3{grid-column:span 3}.actions{display:flex;gap:8px;margin-top:15px}.primary{background:var(--green);border:0;color:#0a160c;font-weight:750;border-radius:9px;padding:11px 16px}.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:11px 16px}
 .empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.toolbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px}.list{display:grid;gap:9px}.listItem{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px}.danger{color:var(--red);background:transparent;border:0;font-weight:bold;cursor:pointer}.editBtn{color:var(--green);background:transparent;border:0;font-weight:bold;cursor:pointer;margin-right:8px}
 .toast{position:fixed;right:20px;bottom:20px;background:var(--green);color:#000;padding:11px 15px;border-radius:10px;display:none;z-index:20;font-weight:bold}
+.chartLink{display:inline-block;padding:3px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--green);text-decoration:none;font-size:11px;margin-right:4px;}
+.chartLink:hover{border-color:var(--green)}
 </style>
 </head>
 <body>
@@ -75,6 +108,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
       <option value="dark">Dark Emerald</option>
       <option value="light">Light Gray</option>
       <option value="blue">Midnight Blue</option>
+      <option value="gray">Neutral Dark Gray</option>
     </select>
   </div>
 </header>
@@ -88,14 +122,23 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="card">
     <div class="cardHead">
       <h3>Performance Overview</h3>
-      <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
-        <option value="r">Total R</option>
-        <option value="pnl">Total PnL ($)</option>
-      </select>
+      <div class="cardActions">
+        <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
+          <option value="r">Total R</option>
+          <option value="pnl">Total PnL ($)</option>
+        </select>
+        <button class="iconBtn" onclick="openModal('chart')" title="Maximize Chart">⛶</button>
+      </div>
     </div>
     <div class="chart" id="performanceChart" style="margin-top:10px"></div>
   </div>
-  <div class="card"><div class="cardHead"><h3>Trading Calendar</h3></div><div class="calGrid" id="calendarGrid" style="margin-top:15px"></div></div>
+  <div class="card">
+    <div class="cardHead">
+      <h3>Trading Calendar</h3>
+      <button class="iconBtn" onclick="openModal('calendar')" title="Maximize Calendar">⛶</button>
+    </div>
+    <div id="calendarGridWrapper" style="margin-top:10px"></div>
+  </div>
  </div>
 
  <div class="stats" id="stats"></div>
@@ -103,6 +146,17 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="card"><div class="cardHead"><h3>☷ Recent Trades</h3></div><div class="journal"><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>R</th><th>PnL</th><th>Result</th></tr></thead><tbody id="recent"></tbody></table></div></div>
  </div>
 </section>
+
+<!-- Fullscreen Modal Container -->
+<div class="modalOverlay" id="modalOverlay" onclick="closeModalOnBg(event)">
+  <div class="modalCard">
+    <div class="modalHead">
+      <h3 id="modalTitle">Full Screen View</h3>
+      <button class="iconBtn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modalBody" id="modalBody"></div>
+  </div>
+</div>
 
 <section id="add" class="page">
  <div class="head"><div><h1 id="formTitle">Add Trade</h1><p>Capture the trade exactly as you executed it.</p></div></div>
@@ -114,12 +168,16 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Position Size</label><input id="fSize" type="number" step="1"></div><div class="field"><label>P&L ($)</label><input id="fPnl" type="number" step="any"></div><div class="field"><label>Planned Risk ($)</label><input id="fRisk" type="number" step="any"></div>
   <div class="field"><label>Stop Loss</label><input id="fSL" type="number" step="any"></div><div class="field"><label>Take Profit</label><input id="fTP" type="number" step="any"></div><div class="field"><label>Planned R:R</label><input id="fRR" type="number" step="any" placeholder="2.0"></div>
   <div class="field"><label>Result (R)</label><input id="fR" type="number" step="any" placeholder="e.g. 1.5"></div><div class="field"><label>Execution Quality</label><select id="fExec"><option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option></select></div><div class="field"><label>Confidence</label><input id="fConfidence" type="number" min="1" max="10" placeholder="1–10"></div>
-  <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div><div class="field"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
+  <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div><div class="field span2"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
+  
+  <div class="field span3"><label>Before Chart URL</label><input id="fChartBefore" type="url" placeholder="https://..."></div>
+  <div class="field span3"><label>After Chart URL</label><input id="fChartAfter" type="url" placeholder="https://..."></div>
+
   <div class="field span3"><label>Notes</label><textarea id="fNotes" placeholder="What happened? What did you learn?"></textarea></div>
  </div><div class="actions"><button class="primary" onclick="saveTrade()">Save Trade</button><button class="secondary" onclick="clearForm()">Clear / Cancel</button></div></div>
 </section>
 
-<section id="trades" class="page"><div class="head"><div><h1>Trades Log</h1><p>Your complete trade history.</p></div><button class="primary" onclick="go('add')">＋ Add Trade</button></div><div class="card"><div class="toolbar"><input class="select" id="tradeSearch" placeholder="Search symbol, entry..."><select class="select" id="tradeResult"><option>All Results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Actions</th></tr></thead><tbody id="tradesBody"></tbody></table></div></section>
+<section id="trades" class="page"><div class="head"><div><h1>Trades Log</h1><p>Your complete trade history.</p></div><button class="primary" onclick="go('add')">＋ Add Trade</button></div><div class="card"><div class="toolbar"><input class="select" id="tradeSearch" placeholder="Search symbol, entry..."><select class="select" id="tradeResult"><option>All Results</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Charts</th><th>Actions</th></tr></thead><tbody id="tradesBody"></tbody></table></div></section>
 
 <section id="missed" class="page"><div class="head"><div><h1>Missed Trades</h1></div></div><div class="card"><div class="formGrid"><div class="field"><label>Date</label><input id="mDate" type="date"></div><div class="field"><label>Symbol</label><input id="mSymbol"></div><div class="field"><label>Setup</label><input id="mSetup"></div><div class="field"><label>Potential R:R</label><input id="mRR"></div><div class="field span3"><label>Why missed?</label><textarea id="mWhy"></textarea></div></div><div class="actions"><button class="primary" onclick="saveMissed()">Save Missed Trade</button></div></div><div style="height:12px"></div><div class="card"><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>Potential R:R</th><th>Why</th></tr></thead><tbody id="missedBody"></tbody></table></div></section>
 
@@ -140,17 +198,28 @@ let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
 };
 const $=id=>document.getElementById(id);
 
+let currentCalDate = new Date();
+
 function changeTheme(theme){
   data.theme=theme;
   document.body.className='';
   if(theme==='light') document.body.classList.add('theme-light');
   if(theme==='blue') document.body.classList.add('theme-blue');
+  if(theme==='gray') document.body.classList.add('theme-gray');
   persist();
 }
 
 function persist(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
 function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
-function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));renderAll();scrollTo(0,0)}
+function go(page){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  $(page).classList.add('active');
+  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+  if(page==='add' && !$('editTradeId').value) {
+    $('fDate').value = new Date().toISOString().slice(0,10);
+  }
+  renderAll();scrollTo(0,0);
+}
 document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
 function val(id){return $(id).value}
 
@@ -158,7 +227,9 @@ function saveTrade(){
  const editId=$('editTradeId').value;
  const t={
   id: editId ? Number(editId) : Date.now(),
-  date:val('fDate')||new Date().toISOString().slice(0,10),time:val('fTime'),symbol:val('fSymbol'),bias:val('fBias'),session:val('fSession'),grade:val('fGrade'),entry:val('fEntry'),kl:val('fKL'),entryPrice:+val('fEntryPrice')||0,exitPrice:+val('fExitPrice')||0,size:+val('fSize')||0,pnl:+val('fPnl')||0,risk:+val('fRisk')||0,sl:+val('fSL')||0,tp:+val('fTP')||0,plannedRR:+val('fRR')||0,r:+val('fR')||0,exec:val('fExec'),confidence:+val('fConfidence')||0,emotion:val('fEmotion'),plan:val('fPlan'),notes:val('fNotes')
+  date:val('fDate')||new Date().toISOString().slice(0,10),time:val('fTime'),symbol:val('fSymbol'),bias:val('fBias'),session:val('fSession'),grade:val('fGrade'),entry:val('fEntry'),kl:val('fKL'),entryPrice:+val('fEntryPrice')||0,exitPrice:+val('fExitPrice')||0,size:+val('fSize')||0,pnl:+val('fPnl')||0,risk:+val('fRisk')||0,sl:+val('fSL')||0,tp:+val('fTP')||0,plannedRR:+val('fRR')||0,r:+val('fR')||0,exec:val('fExec'),confidence:+val('fConfidence')||0,emotion:val('fEmotion'),plan:val('fPlan'),
+  chartBefore:val('fChartBefore'),chartAfter:val('fChartAfter'),
+  notes:val('fNotes')
  };
 
  if(editId){
@@ -176,7 +247,9 @@ function editTrade(id){
  const t=data.trades.find(x=>x.id===id);
  if(!t)return;
  $('editTradeId').value=t.id;
- $('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;$('fBias').value=t.bias;$('fSession').value=t.session;$('fGrade').value=t.grade;$('fEntry').value=t.entry;$('fKL').value=t.kl;$('fEntryPrice').value=t.entryPrice;$('fExitPrice').value=t.exitPrice;$('fSize').value=t.size;$('fPnl').value=t.pnl;$('fRisk').value=t.risk;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRR').value=t.plannedRR;$('fR').value=t.r;$('fExec').value=t.exec;$('fConfidence').value=t.confidence;$('fEmotion').value=t.emotion;$('fPlan').value=t.plan;$('fNotes').value=t.notes;
+ $('fDate').value=t.date;$('fTime').value=t.time;$('fSymbol').value=t.symbol;$('fBias').value=t.bias;$('fSession').value=t.session;$('fGrade').value=t.grade;$('fEntry').value=t.entry;$('fKL').value=t.kl;$('fEntryPrice').value=t.entryPrice;$('fExitPrice').value=t.exitPrice;$('fSize').value=t.size;$('fPnl').value=t.pnl;$('fRisk').value=t.risk;$('fSL').value=t.sl;$('fTP').value=t.tp;$('fRR').value=t.plannedRR;$('fR').value=t.r;$('fExec').value=t.exec;$('fConfidence').value=t.confidence;$('fEmotion').value=t.emotion;$('fPlan').value=t.plan;
+ $('fChartBefore').value=t.chartBefore||'';$('fChartAfter').value=t.chartAfter||'';
+ $('fNotes').value=t.notes;
  $('formTitle').textContent='Edit Trade';
  go('add');
 }
@@ -191,7 +264,8 @@ function deleteTrade(id){
 
 function clearForm(){
  $('editTradeId').value='';
- ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fNotes'].forEach(id=>$(id).value='');
+ ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBefore','fChartAfter','fNotes'].forEach(id=>$(id).value='');
+ $('fDate').value = new Date().toISOString().slice(0,10);
  $('formTitle').textContent='Add Trade';
 }
 
@@ -226,8 +300,8 @@ function renderMetrics(){
 
 function avgRR(){if(!data.trades.length)return '0.0';let a=data.trades.filter(t=>t.plannedRR>0);return a.length?'1 : '+(a.reduce((s,t)=>s+t.plannedRR,0)/a.length).toFixed(1):'0.0'}
 
-function renderPerformanceChart(){
- const el=$('performanceChart'); if(!el)return;
+function renderPerformanceChart(targetId='performanceChart'){
+ const el=$(targetId); if(!el)return;
  const ts=data.trades.slice().reverse();
  if(!ts.length){el.innerHTML='<div class="empty" style="margin-top:35px">Add trades to see performance.</div>';return}
  
@@ -240,7 +314,10 @@ function renderPerformanceChart(){
    dates.push(t.date ? t.date.slice(5) : '');
  });
 
- const w=750, h=260, padL=60, padR=20, padT=20, padB=35;
+ const isModal = targetId === 'modalBody';
+ const w = isModal ? 900 : 750;
+ const h = isModal ? 480 : 260;
+ const padL=60, padR=20, padT=20, padB=35;
  const min=Math.min(...vals, 0);
  const max=Math.max(...vals, 1);
  const span=(max-min)||1;
@@ -264,7 +341,7 @@ function renderPerformanceChart(){
 
  const formatVal = (v) => type === 'r' ? (v >= 0 ? '+' : '') + v.toFixed(1) + 'R' : (v >= 0 ? '$' : '-$') + Math.abs(Math.round(v));
 
- el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+ const html = `<div class="chart" style="height:${h}px"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
    <g stroke="var(--line)" stroke-width="1">
      ${yLabels.map((v, i) => {
        const y = padT + (i * (h - padT - padB) / 4);
@@ -288,11 +365,40 @@ function renderPerformanceChart(){
    <polygon points="${area}" fill="var(--green)" opacity=".15"/>
    <polyline points="${poly}" fill="none" stroke="var(--green)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
    ${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--green)"/>`).join('')}
- </svg>`;
+ </svg></div>`;
+
+ el.innerHTML = html;
 }
 
-// دالة تحويل المستخدم لصفحة Trades وتصفية الصفقات باليوم المحدد
+function openModal(type){
+  const overlay = $('modalOverlay');
+  const title = $('modalTitle');
+  
+  overlay.classList.add('active');
+  if(type === 'chart'){
+    title.textContent = 'Performance Overview (Expanded)';
+    renderPerformanceChart('modalBody');
+  } else if(type === 'calendar'){
+    title.textContent = 'Trading Calendar (Expanded)';
+    renderCalendar('modalBody');
+  }
+}
+
+function closeModal(){
+  $('modalOverlay').classList.remove('active');
+  $('modalBody').innerHTML = '';
+}
+
+function closeModalOnBg(e){
+  if(e.target === $('modalOverlay')) closeModal();
+}
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') closeModal();
+});
+
 function filterTradesByDate(dateStr){
+ closeModal();
  go('trades');
  if($('tradeSearch')){
   $('tradeSearch').value = dateStr;
@@ -300,14 +406,73 @@ function filterTradesByDate(dateStr){
  }
 }
 
-function renderCalendar(id){
- let ts=data.trades||[];let grid=$(id);if(!grid)return;
- if(!ts.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;padding:20px">No trades recorded yet.</div>';return}
- let byDate={};ts.forEach(t=>{if(t.date){byDate[t.date]=(byDate[t.date]||0)+(Number(t.r)||0)}});
- grid.innerHTML=Object.keys(byDate).sort().map(d=>{
-   let r=byDate[d];
-   return `<div class="day ${r>0?'pos':r<0?'neg':''}" onclick="filterTradesByDate('${d}')" title="Click to view trades for ${d}"><strong>${d.slice(5)}</strong><small class="${r<0?'down':r>0?'up':''}">${r>0?'+':''}${r.toFixed(1)}R</small></div>`
- }).join('');
+function changeCalMonth(delta, targetId){
+  currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+  renderCalendar(targetId);
+}
+
+function renderCalendar(targetId='calendarGridWrapper'){
+ const wrapper = $(targetId); if(!wrapper) return;
+ const ts = data.trades || [];
+
+ const year = currentCalDate.getFullYear();
+ const month = currentCalDate.getMonth();
+ 
+ const todayObj = new Date();
+ const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
+
+ const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+ 
+ const firstDayIndex = new Date(year, month, 1).getDay();
+ const totalDays = new Date(year, month + 1, 0).getDate();
+
+ let byDate = {};
+ ts.forEach(t => {
+   if(t.date) {
+     byDate[t.date] = (byDate[t.date] || 0) + (Number(t.r) || 0);
+   }
+ });
+
+ let monthTotalR = 0;
+ for(let d = 1; d <= totalDays; d++){
+   let dayStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+   if(byDate[dayStr]) monthTotalR += byDate[dayStr];
+ }
+
+ let html = `
+   <div class="calHeader">
+     <button class="calNavBtn" onclick="changeCalMonth(-1, '${targetId}')">❮</button>
+     <span>${monthNames[month]} ${year} (${monthTotalR >= 0 ? '+' : ''}${monthTotalR.toFixed(1)}R)</span>
+     <button class="calNavBtn" onclick="changeCalMonth(1, '${targetId}')">❯</button>
+   </div>
+   <div class="calWeekDays">
+     <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+   </div>
+   <div class="calGrid">
+ `;
+
+ for(let i = 0; i < firstDayIndex; i++){
+   html += `<div class="day emptyDay"></div>`;
+ }
+
+ for(let day = 1; day <= totalDays; day++){
+   let dayStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+   let r = byDate[dayStr];
+   let hasTrade = r !== undefined;
+   let isToday = dayStr === todayStr;
+
+   html += `
+     <div class="day ${isToday ? 'today' : ''} ${hasTrade ? (r > 0 ? 'pos' : r < 0 ? 'neg' : '') : ''}" 
+          ${hasTrade ? `onclick="filterTradesByDate('${dayStr}')"` : ''} 
+          title="${isToday ? 'Today ' : ''}${hasTrade ? `Trades on ${dayStr}` : ''}">
+       <strong>${day}${isToday ? ' •' : ''}</strong>
+       ${hasTrade ? `<small class="${r < 0 ? 'down' : r > 0 ? 'up' : ''}">${r > 0 ? '+' : ''}${r.toFixed(1)}R</small>` : '<small style="opacity:0.2">-</small>'}
+     </div>
+   `;
+ }
+
+ html += `</div>`;
+ wrapper.innerHTML = html;
 }
 
 function renderTrades(){
@@ -317,10 +482,15 @@ function renderTrades(){
     <td>${t.date}</td><td>${t.symbol}</td><td>${t.bias}</td><td>${t.entry||'-'}</td><td>${t.kl||'-'}</td>
     <td class="${t.r>=0?'up':'down'}">${t.r>=0?'+':''}${t.r}R</td><td class="${t.pnl>=0?'up':'down'}">$${t.pnl}</td>
     <td>
+      ${t.chartBefore ? `<a href="${t.chartBefore}" target="_blank" class="chartLink">Before</a>` : ''}
+      ${t.chartAfter ? `<a href="${t.chartAfter}" target="_blank" class="chartLink">After</a>` : ''}
+      ${!t.chartBefore && !t.chartAfter ? '-' : ''}
+    </td>
+    <td>
       <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
       <button class="danger" onclick="deleteTrade(${t.id})">Delete</button>
     </td>
-  </tr>`).join('')||'<tr><td colspan="8" class="empty">No trades match.</td></tr>';
+  </tr>`).join('')||'<tr><td colspan="9" class="empty">No trades match.</td></tr>';
 }
 
 function renderManager(){
@@ -334,12 +504,22 @@ function removeList(type,i){data.lists[type].splice(i,1);persist()}
 function renderRecent(){let ts=data.trades.slice(0,5);$('recent').innerHTML=ts.length?ts.map(t=>`<tr><td>${t.date||'-'}</td><td>${t.symbol}</td><td>${t.entry||'-'}</td><td class="${t.r>=0?'up':'down'}">${t.r>=0?'+':''}${t.r}</td><td class="${t.pnl>=0?'up':'down'}">$${t.pnl}</td><td><span class="pill ${t.r<0?'red':''}">${t.r>0?'Win':t.r<0?'Loss':'BE'}</span></td></tr>`).join(''):'<tr><td colspan="6" class="empty">No trades yet.</td></tr>'}
 
 function renderAll(){
- if(data.theme) { $('themeSelect').value=data.theme; document.body.className=data.theme==='light'?'theme-light':data.theme==='blue'?'theme-blue':''; }
- renderMetrics();renderPerformanceChart();renderCalendar('calendarGrid');renderRecent();renderTrades();renderManager();
+ if(data.theme) { 
+   $('themeSelect').value=data.theme; 
+   document.body.className='';
+   if(data.theme==='light') document.body.classList.add('theme-light');
+   if(data.theme==='blue') document.body.classList.add('theme-blue');
+   if(data.theme==='gray') document.body.classList.add('theme-gray');
+ }
+ renderMetrics();renderPerformanceChart();renderCalendar('calendarGridWrapper');renderRecent();renderTrades();renderManager();
 }
 
+if($('fDate') && !$('fDate').value) $('fDate').value = new Date().toISOString().slice(0,10);
+if($('mDate') && !$('mDate').value) $('mDate').value = new Date().toISOString().slice(0,10);
 if($('tradeSearch'))$('tradeSearch').addEventListener('input',renderTrades);
 if($('tradeResult'))$('tradeResult').addEventListener('change',renderTrades);
 renderAll();
 </script>
-</body></html>
+</body></html>'''
+
+print("Code generated successfully")
