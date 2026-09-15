@@ -1,103 +1,612 @@
+أكيد. هذا الكود كامل تبعك، والتغيير فقط بالألوان. ما غيّرت الوظائف أو الخانات أو ترتيب الصفحات أو طريقة حفظ البيانات.
+
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0d1a10">
+<meta name="theme-color" content="#151515">
 <title>R Journal</title>
 <style>
 :root{
- --bg:#081109;--panel:#0e1b11;--panel2:#122116;--line:#263a29;--text:#eef5ee;--muted:#91a294;
- --green:#73d58a;--green2:#b6e9a5;--red:#ff6d6d;--yellow:#e8c66a;--purple:#a79cff;--blue:#75a9ff;
- --shadow:0 10px 30px rgba(0,0,0,.22);--radius:14px;
+ --bg:#151515;
+ --panel:#1d1d1d;
+ --panel2:#252525;
+ --line:#363636;
+ --text:#ffffff;
+ --muted:#ffffff;
+ --green:#22c55e;
+ --green2:#4ade80;
+ --red:#ef4444;
+ --yellow:#e8c66a;
+ --purple:#a79cff;
+ --blue:#75a9ff;
+ --shadow:0 10px 30px rgba(0,0,0,.30);
+ --radius:14px;
 }
-
 body.theme-light {
- --bg:#f4f6f5;--panel:#ffffff;--panel2:#e9ece9;--line:#d1d8d2;--text:#1a231b;--muted:#5f6e61;
- --green:#10b981;--red:#ef4444;--shadow:0 4px 20px rgba(0,0,0,0.06);
+ --bg:#f4f4f4;
+ --panel:#ffffff;
+ --panel2:#eeeeee;
+ --line:#d1d1d1;
+ --text:#ffffff;
+ --muted:#ffffff;
+ --green:#22c55e;
+ --green2:#4ade80;
+ --red:#ef4444;
+ --shadow:0 4px 20px rgba(0,0,0,0.06);
 }
-
 body.theme-blue {
- --bg:#090d16;--panel:#101726;--panel2:#162035;--line:#202e4a;--text:#edf2f7;--muted:#8fa0be;
- --green:#38ef7d;--red:#ff5252;--shadow:0 10px 30px rgba(0,0,0,.35);
+ --bg:#101010;
+ --panel:#191919;
+ --panel2:#222222;
+ --line:#353535;
+ --text:#ffffff;
+ --muted:#ffffff;
+ --green:#22c55e;
+ --green2:#4ade80;
+ --red:#ef4444;
+ --shadow:0 10px 30px rgba(0,0,0,.35);
 }
-
 body.theme-gray {
- --bg:#121212;--panel:#1e1e1e;--panel2:#2a2a2a;--line:#3a3a3a;--text:#f5f5f5;--muted:#aaaaaa;
- --green:#9e9e9e;--red:#cf6679;--shadow:0 10px 30px rgba(0,0,0,.4);
+ --bg:#151515;
+ --panel:#1f1f1f;
+ --panel2:#292929;
+ --line:#3a3a3a;
+ --text:#ffffff;
+ --muted:#ffffff;
+ --green:#22c55e;
+ --green2:#4ade80;
+ --red:#ef4444;
+ --shadow:0 10px 30px rgba(0,0,0,.4);
 }
-
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;transition:background 0.3s, color 0.3s}
-button,input,select,textarea{font:inherit}button{cursor:pointer}
+body{
+ margin:0;
+ background:var(--bg);
+ color:var(--text);
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+ font-size:14px;
+ transition:background 0.3s,color 0.3s
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
 .app{display:flex;min-height:100vh}
-.sidebar{width:240px;border-right:1px solid var(--line);background:var(--panel);padding:18px 14px;position:fixed;inset:0 auto 0 0;z-index:5}
-.brand{display:flex;align-items:center;padding:10px 8px 25px}.brand b{font-size:17px;letter-spacing:.6px}
-nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);text-align:left;padding:11px 12px;border-radius:10px;display:flex;gap:12px;align-items:center;opacity:0.8}.nav:hover,.nav.active{background:var(--panel2);color:var(--green);opacity:1}.nav span{width:18px;text-align:center;color:var(--muted)}
-.main{margin-left:240px;width:calc(100% - 240px);padding:18px 22px 30px}
-.top{height:48px;display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px}
-.topRight{display:flex;gap:10px;align-items:center}
-.head{display:flex;justify-content:space-between;align-items:end;margin:10px 0 16px}.head h1{font-size:24px;margin:0}.head p{margin:5px 0 0;color:var(--muted)}
-
-.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
-.metric,.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.metric{padding:15px;min-height:108px}.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:23px;font-weight:750;margin:8px 0}.up{color:var(--green)}.down{color:var(--red)}.sub{font-size:11px;color:var(--muted)}
-
-.row2{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:12px}
-.card{padding:15px}.card h3{font-size:14px;margin:0 0 10px}.cardHead{display:flex;justify-content:space-between;align-items:center}
-.cardActions{display:flex;gap:8px;align-items:center}
-.iconBtn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.2s}
-.iconBtn:hover{border-color:var(--green);color:var(--green)}
-.select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;outline:none}
-.chart{height:280px;position:relative}.chart svg{width:100%;height:100%}
-
+.sidebar{
+ width:240px;
+ border-right:1px solid var(--line);
+ background:var(--panel);
+ padding:18px 14px;
+ position:fixed;
+ inset:0 auto 0 0;
+ z-index:5
+}
+.brand{
+ display:flex;
+ align-items:center;
+ padding:10px 8px 25px
+}
+.brand b{
+ font-size:17px;
+ letter-spacing:.6px
+}
+nav{display:grid;gap:5px}
+.nav{
+ border:0;
+ background:transparent;
+ color:var(--text);
+ text-align:left;
+ padding:11px 12px;
+ border-radius:10px;
+ display:flex;
+ gap:12px;
+ align-items:center;
+ opacity:0.8
+}
+.nav:hover,.nav.active{
+ background:var(--panel2);
+ color:var(--green);
+ opacity:1
+}
+.nav span{
+ width:18px;
+ text-align:center;
+ color:var(--muted)
+}
+.main{
+ margin-left:240px;
+ width:calc(100% - 240px);
+ padding:18px 22px 30px
+}
+.top{
+ height:48px;
+ display:flex;
+ justify-content:flex-end;
+ align-items:center;
+ margin-bottom:12px
+}
+.topRight{
+ display:flex;
+ gap:10px;
+ align-items:center
+}
+.head{
+ display:flex;
+ justify-content:space-between;
+ align-items:end;
+ margin:10px 0 16px
+}
+.head h1{
+ font-size:24px;
+ margin:0
+}
+.head p{
+ margin:5px 0 0;
+ color:var(--muted)
+}
+.grid6{
+ display:grid;
+ grid-template-columns:repeat(6,1fr);
+ gap:12px
+}
+.metric,.card{
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:var(--radius);
+ box-shadow:var(--shadow)
+}
+.metric{
+ padding:15px;
+ min-height:108px
+}
+.metric .label{
+ color:var(--muted);
+ font-size:12px
+}
+.metric .value{
+ font-size:23px;
+ font-weight:750;
+ margin:8px 0
+}
+.up{color:var(--green)}
+.down{color:var(--red)}
+.sub{font-size:11px;color:var(--muted)}
+.row2{
+ display:grid;
+ grid-template-columns:1.5fr 1fr;
+ gap:12px;
+ margin-top:12px
+}
+.card{padding:15px}
+.card h3{
+ font-size:14px;
+ margin:0 0 10px
+}
+.cardHead{
+ display:flex;
+ justify-content:space-between;
+ align-items:center
+}
+.cardActions{
+ display:flex;
+ gap:8px;
+ align-items:center
+}
+.iconBtn{
+ background:var(--panel2);
+ border:1px solid var(--line);
+ color:var(--text);
+ border-radius:8px;
+ padding:6px 10px;
+ cursor:pointer;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ transition:0.2s
+}
+.iconBtn:hover{
+ border-color:var(--green);
+ color:var(--green)
+}
+.select{
+ background:var(--panel2);
+ border:1px solid var(--line);
+ color:var(--text);
+ border-radius:8px;
+ padding:7px 10px;
+ outline:none
+}
+.chart{
+ height:280px;
+ position:relative
+}
+.chart svg{
+ width:100%;
+ height:100%
+}
 /* Monthly Calendar Styles */
-.calHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.calHeader span{font-weight:bold;font-size:13px;color:var(--green)}
-.calNavBtn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:2px 8px;cursor:pointer}
-.calNavBtn:hover{border-color:var(--green)}
-.calWeekDays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:bold}
-.calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.day{min-height:48px;border:1px solid var(--line);border-radius:7px;padding:4px 3px;text-align:center;background:var(--panel2);cursor:pointer;transition:transform 0.1s, border-color 0.1s;display:flex;flex-direction:column;justify-content:space-between;}.day:hover{transform:scale(1.04);border-color:var(--green);}.day.today{border:2px solid var(--green);box-shadow: 0 0 8px rgba(115,213,138,0.4);}.day.pos{background:rgba(115,213,138,0.15);border-color:rgba(115,213,138,0.4)}.day.neg{background:rgba(255,109,109,0.15);border-color:rgba(255,109,109,0.4)}.day.emptyDay{background:transparent;border:0;cursor:default}.day strong{display:block;font-size:10px;color:var(--muted)}.day small{font-size:10px;font-weight:bold}
-
+.calHeader{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:10px
+}
+.calHeader span{
+ font-weight:bold;
+ font-size:13px;
+ color:var(--green)
+}
+.calNavBtn{
+ background:var(--panel2);
+ border:1px solid var(--line);
+ color:var(--text);
+ border-radius:6px;
+ padding:2px 8px;
+ cursor:pointer
+}
+.calNavBtn:hover{
+ border-color:var(--green)
+}
+.calWeekDays{
+ display:grid;
+ grid-template-columns:repeat(7,1fr);
+ gap:4px;
+ text-align:center;
+ font-size:10px;
+ color:var(--muted);
+ margin-bottom:4px;
+ font-weight:bold
+}
+.calGrid{
+ display:grid;
+ grid-template-columns:repeat(7,1fr);
+ gap:4px
+}
+.day{
+ min-height:48px;
+ border:1px solid var(--line);
+ border-radius:7px;
+ padding:4px 3px;
+ text-align:center;
+ background:var(--panel2);
+ cursor:pointer;
+ transition:transform 0.1s,border-color 0.1s;
+ display:flex;
+ flex-direction:column;
+ justify-content:space-between
+}
+.day:hover{
+ transform:scale(1.04);
+ border-color:var(--green)
+}
+.day.today{
+ border:2px solid var(--green);
+ box-shadow:0 0 8px rgba(34,197,94,0.4)
+}
+.day.pos{
+ background:rgba(34,197,94,0.15);
+ border-color:rgba(34,197,94,0.4)
+}
+.day.neg{
+ background:rgba(239,68,68,0.15);
+ border-color:rgba(239,68,68,0.4)
+}
+.day.emptyDay{
+ background:transparent;
+ border:0;
+ cursor:default
+}
+.day strong{
+ display:block;
+ font-size:10px;
+ color:var(--muted)
+}
+.day small{
+ font-size:10px;
+ font-weight:bold
+}
 /* Modal Styles */
-.modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:99;padding:20px}
+.modalOverlay{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,0.75);
+ backdrop-filter:blur(4px);
+ display:none;
+ align-items:center;
+ justify-content:center;
+ z-index:99;
+ padding:20px
+}
 .modalOverlay.active{display:flex}
-.modalCard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);width:100%;max-width:1000px;max-height:90vh;display:flex;flex-direction:column;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.5);position:relative;overflow:hidden}
-.modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid var(--line);padding-bottom:10px}
-.modalHead h3{margin:0;font-size:18px}
-.modalBody{flex:1;overflow:auto}
+.modalCard{
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:var(--radius);
+ width:100%;
+ max-width:1000px;
+ max-height:90vh;
+ display:flex;
+ flex-direction:column;
+ padding:20px;
+ box-shadow:0 20px 50px rgba(0,0,0,0.5);
+ position:relative;
+ overflow:hidden
+}
+.modalHead{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:15px;
+ border-bottom:1px solid var(--line);
+ padding-bottom:10px
+}
+.modalHead h3{
+ margin:0;
+ font-size:18px
+}
+.modalBody{
+ flex:1;
+ overflow:auto
+}
 .modalBody .chart{height:500px}
 .modalBody .calGrid{gap:8px}
-.modalBody .day{min-height:75px;padding:8px}
+.modalBody .day{
+ min-height:75px;
+ padding:8px
+}
 .modalBody .day strong{font-size:12px}
 .modalBody .day small{font-size:12px}
-
 /* Clean Dropdown Style with Checkmark */
-.custom-dropdown { position: relative; width: 100%; }
-.dropdown-select-btn { width: 100%; background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 10px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-.dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; margin-top: 4px; max-height: 160px; overflow-y: auto; z-index: 10; padding: 4px; box-shadow: var(--shadow); }
-.dropdown-content.show { display: block; }
-.dropdown-option { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer; border-radius: 6px; font-size: 13px; color: var(--text); transition: background 0.15s; }
-.dropdown-option:hover { background: var(--panel2); }
-.dropdown-option .check-mark { opacity: 0; font-weight: bold; color: var(--green); font-size: 14px; }
-.dropdown-option.selected .check-mark { opacity: 1; }
-
-.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px}.stat{padding:13px;min-height:94px}.stat .v{font-size:20px;font-weight:750;margin:8px 0 4px}
-.row3{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-weight:500}.pill{padding:4px 7px;border-radius:12px;background:rgba(115,213,138,0.2);color:var(--green);font-size:10px}.pill.red{background:rgba(255,109,109,0.2);color:var(--red)}
-.journal{max-height:280px;overflow:auto}
-.page{display:none}.page.active{display:block}.sectionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.formCard{max-width:1000px}.formGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;outline:none}.field textarea{min-height:90px;resize:vertical}.span2{grid-column:span 2}.span3{grid-column:span 3}.actions{display:flex;gap:8px;margin-top:15px}.primary{background:var(--green);border:0;color:#0a160c;font-weight:750;border-radius:9px;padding:11px 16px}.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:11px 16px}
-.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
-.toolbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.list{display:grid;gap:9px}
-.listItem{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
-.danger{color:var(--red);background:transparent;border:0;font-weight:bold;cursor:pointer}
-.editBtn{color:var(--green);background:transparent;border:0;font-weight:bold;cursor:pointer;margin-right:8px}
-.toast{position:fixed;right:20px;bottom:20px;background:var(--green);color:#000;padding:11px 15px;border-radius:10px;display:none;z-index:20;font-weight:bold}
-.thumbImg{width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--line);cursor:pointer;margin-right:4px}
-.dateFilter{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
-.dateFilter input{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px;outline:none;font-size:12px}
-.tradesSummary{display:flex;gap:15px;align-items:center;color:var(--muted);font-size:13px;background:var(--panel2);padding:8px 15px;border-radius:8px;border:1px solid var(--line);margin-bottom:10px}
+.custom-dropdown{
+ position:relative;
+ width:100%
+}
+.dropdown-select-btn{
+ width:100%;
+ background:var(--panel2);
+ border:1px solid var(--line);
+ color:var(--text);
+ border-radius:9px;
+ padding:10px;
+ text-align:left;
+ cursor:pointer;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ font-size:14px
+}
+.dropdown-content{
+ display:none;
+ position:absolute;
+ top:100%;
+ left:0;
+ right:0;
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:9px;
+ margin-top:4px;
+ max-height:160px;
+ overflow-y:auto;
+ z-index:10;
+ padding:4px;
+ box-shadow:var(--shadow)
+}
+.dropdown-content.show{display:block}
+.dropdown-option{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:8px 12px;
+ cursor:pointer;
+ border-radius:6px;
+ font-size:13px;
+ color:var(--text);
+ transition:background 0.15s
+}
+.dropdown-option:hover{background:var(--panel2)}
+.dropdown-option .check-mark{
+ opacity:0;
+ font-weight:bold;
+ color:var(--green);
+ font-size:14px
+}
+.dropdown-option.selected .check-mark{opacity:1}
+.stats{
+ display:grid;
+ grid-template-columns:repeat(7,1fr);
+ gap:12px;
+ margin-top:12px
+}
+.stat{
+ padding:13px;
+ min-height:94px
+}
+.stat .v{
+ font-size:20px;
+ font-weight:750;
+ margin:8px 0 4px
+}
+.row3{
+ display:grid;
+ grid-template-columns:1fr;
+ gap:12px;
+ margin-top:12px
+}
+.table{
+ width:100%;
+ border-collapse:collapse
+}
+.table th,.table td{
+ padding:10px 8px;
+ border-bottom:1px solid var(--line);
+ text-align:left;
+ font-size:12px
+}
+.table th{
+ color:var(--muted);
+ font-weight:500
+}
+.pill{
+ padding:4px 7px;
+ border-radius:12px;
+ background:rgba(34,197,94,0.2);
+ color:var(--green);
+ font-size:10px
+}
+.pill.red{
+ background:rgba(239,68,68,0.2);
+ color:var(--red)
+}
+.journal{
+ max-height:280px;
+ overflow:auto
+}
+.page{display:none}
+.page.active{display:block}
+.sectionGrid{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:12px
+}
+.formCard{max-width:1000px}
+.formGrid{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:12px
+}
+.field label{
+ display:block;
+ color:var(--muted);
+ font-size:11px;
+ margin-bottom:6px
+}
+.field input,.field select,.field textarea{
+ width:100%;
+ background:var(--panel2);
+ border:1px solid var(--line);
+ color:var(--text);
+ border-radius:9px;
+ padding:10px;
+ outline:none
+}
+.field textarea{
+ min-height:90px;
+ resize:vertical
+}
+.span2{grid-column:span 2}
+.span3{grid-column:span 3}
+.actions{
+ display:flex;
+ gap:8px;
+ margin-top:15px
+}
+.primary{
+ background:var(--green);
+ border:0;
+ color:#07100a;
+ font-weight:750;
+ border-radius:9px;
+ padding:11px 16px
+}
+.secondary{
+ background:var(--panel2);
+ border:1px solid var(--line);
+ color:var(--text);
+ border-radius:9px;
+ padding:11px 16px
+}
+.empty{
+ padding:40px;
+ text-align:center;
+ color:var(--muted);
+ border:1px dashed var(--line);
+ border-radius:12px
+}
+.toolbar{
+ display:flex;
+ justify-content:space-between;
+ gap:10px;
+ margin-bottom:12px;
+ flex-wrap:wrap;
+ align-items:center
+}
+.list{
+ display:grid;
+ gap:9px
+}
+.listItem{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ background:var(--panel2);
+ border:1px solid var(--line);
+ border-radius:10px;
+ padding:11px 13px
+}
+.danger{
+ color:var(--red);
+ background:transparent;
+ border:0;
+ font-weight:bold;
+ cursor:pointer
+}
+.editBtn{
+ color:var(--green);
+ background:transparent;
+ border:0;
+ font-weight:bold;
+ cursor:pointer;
+ margin-right:8px
+}
+.toast{
+ position:fixed;
+ right:20px;
+ bottom:20px;
+ background:var(--green);
+ color:#000;
+ padding:11px 15px;
+ border-radius:10px;
+ display:none;
+ z-index:20;
+ font-weight:bold
+}
+.thumbImg{
+ width:36px;
+ height:36px;
+ object-fit:cover;
+ border-radius:4px;
+ border:1px solid var(--line);
+ cursor:pointer;
+ margin-right:4px
+}
+.dateFilter{
+ display:flex;
+ gap:8px;
+ align-items:center;
+ color:var(--muted);
+ font-size:12px
+}
+.dateFilter input{
+ background:var(--panel2);
+ border:1px solid var(--line);
+ color:var(--text);
+ border-radius:8px;
+ padding:6px;
+ outline:none;
+ font-size:12px
+}
+.tradesSummary{
+ display:flex;
+ gap:15px;
+ align-items:center;
+ color:var(--muted);
+ font-size:13px;
+ background:var(--panel2);
+ padding:8px 15px;
+ border-radius:8px;
+ border:1px solid var(--line);
+ margin-bottom:10px
+}
 </style>
 </head>
 <body>
@@ -125,47 +634,64 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
     </select>
   </div>
 </header>
-
 <section id="dashboard" class="page active">
- <div class="head"><div><h1>Dashboard</h1><p>Your trading performance at a glance</p></div></div>
- 
+ <div class="head">
+  <div>
+   <h1>Dashboard</h1>
+   <p>Your trading performance at a glance</p>
+  </div>
+ </div>
  <div class="grid6" id="metrics"></div>
-
  <div class="row2">
   <div class="card">
-    <div class="cardHead">
-      <h3>Performance Overview</h3>
-      <div class="cardActions">
-        <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
-          <option value="r">Total R</option>
-          <option value="pnl">Total PnL ($)</option>
-        </select>
-        <select class="select" id="rrFilterSelect" onchange="renderPerformanceChart()">
-          <option value="all">RR Filter: All</option>
-          <option value="weekly">RR Filter: Weekly</option>
-          <option value="monthly">RR Filter: Monthly</option>
-          <option value="pnl_filter">PnL Filter</option>
-        </select>
-        <button class="iconBtn" onclick="openModal('chart')" title="Maximize Chart">⛶</button>
-      </div>
+   <div class="cardHead">
+    <h3>Performance Overview</h3>
+    <div class="cardActions">
+      <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
+        <option value="r">Total R</option>
+        <option value="pnl">Total PnL ($)</option>
+      </select>
+      <select class="select" id="rrFilterSelect" onchange="renderPerformanceChart()">
+        <option value="all">RR Filter: All</option>
+        <option value="weekly">RR Filter: Weekly</option>
+        <option value="monthly">RR Filter: Monthly</option>
+        <option value="pnl_filter">PnL Filter</option>
+      </select>
+      <button class="iconBtn" onclick="openModal('chart')" title="Maximize Chart">⛶</button>
     </div>
-    <div class="chart" id="performanceChart" style="margin-top:10px"></div>
+   </div>
+   <div class="chart" id="performanceChart" style="margin-top:10px"></div>
   </div>
   <div class="card">
-    <div class="cardHead">
-      <h3>Trading Calendar</h3>
-      <button class="iconBtn" onclick="openModal('calendar')" title="Maximize Calendar">⛶</button>
-    </div>
-    <div id="calendarGridWrapper" style="margin-top:10px"></div>
+   <div class="cardHead">
+    <h3>Trading Calendar</h3>
+    <button class="iconBtn" onclick="openModal('calendar')" title="Maximize Calendar">⛶</button>
+   </div>
+   <div id="calendarGridWrapper" style="margin-top:10px"></div>
   </div>
  </div>
-
  <div class="stats" id="stats"></div>
  <div class="row3">
-  <div class="card"><div class="cardHead"><h3>☷ Recent Trades</h3></div><div class="journal"><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>R</th><th>PnL</th><th>Result</th></tr></thead><tbody id="recent"></tbody></table></div></div>
+  <div class="card">
+   <div class="cardHead"><h3>☷ Recent Trades</h3></div>
+   <div class="journal">
+    <table class="table">
+     <thead>
+      <tr>
+       <th>Date</th>
+       <th>Symbol</th>
+       <th>Setup</th>
+       <th>R</th>
+       <th>PnL</th>
+       <th>Result</th>
+      </tr>
+     </thead>
+     <tbody id="recent"></tbody>
+    </table>
+   </div>
+  </div>
  </div>
 </section>
-
 <!-- Fullscreen Modal Container -->
 <div class="modalOverlay" id="modalOverlay" onclick="closeModalOnBg(event)">
   <div class="modalCard">
@@ -176,58 +702,93 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
     <div class="modalBody" id="modalBody"></div>
   </div>
 </div>
-
 <section id="add" class="page">
- <div class="head"><div><h1 id="formTitle">Add Trade</h1><p>Capture the trade exactly as you executed it.</p></div></div>
- <div class="card formCard"><div class="formGrid">
+ <div class="head">
+  <div>
+   <h1 id="formTitle">Add Trade</h1>
+   <p>Capture the trade exactly as you executed it.</p>
+  </div>
+ </div>
+ <div class="card formCard">
+  <div class="formGrid">
   <input type="hidden" id="editTradeId">
-  <div class="field"><label>Date</label><input id="fDate" type="date"></div>
-  <div class="field"><label>Time</label><input id="fTime" type="time"></div>
-  <div class="field"><label>Symbol</label><select id="fSymbol"><option>MNQ</option><option>MES</option><option>NQ</option><option>ES</option><option>Other</option></select></div>
-  
+  <div class="field">
+   <label>Date</label>
+   <input id="fDate" type="date">
+  </div>
+  <div class="field">
+   <label>Time</label>
+   <input id="fTime" type="time">
+  </div>
+  <div class="field">
+   <label>Symbol</label>
+   <select id="fSymbol">
+    <option>MNQ</option>
+    <option>MES</option>
+    <option>NQ</option>
+    <option>ES</option>
+    <option>Other</option>
+   </select>
+  </div>
   <div class="field">
     <label>Bias (Multi-select)</label>
     <div class="custom-dropdown" id="dropBias">
       <div class="dropdown-select-btn" onclick="toggleDropdown('dropBias')">
-        <span id="dropBiasText">Select options...</span> <span>▼</span>
+        <span id="dropBiasText">Select options...</span>
+        <span>▼</span>
       </div>
       <div class="dropdown-content" id="fBiasBox"></div>
     </div>
   </div>
-
-  <div class="field"><label>Session</label><select id="fSession"><option>NY AM</option><option>NY PM</option><option>London</option><option>Asia</option></select></div>
-  <div class="field"><label>Setup Grade</label><select id="fGrade"><option>A+</option><option>A</option><option>B</option><option>C</option><option>F</option></select></div>
-  
+  <div class="field">
+   <label>Session</label>
+   <select id="fSession">
+    <option>NY AM</option>
+    <option>NY PM</option>
+    <option>London</option>
+    <option>Asia</option>
+   </select>
+  </div>
+  <div class="field">
+   <label>Setup Grade</label>
+   <select id="fGrade">
+    <option>A+</option>
+    <option>A</option>
+    <option>B</option>
+    <option>C</option>
+    <option>F</option>
+   </select>
+  </div>
   <div class="field">
     <label>Entry (Multi-select)</label>
     <div class="custom-dropdown" id="dropEntry">
       <div class="dropdown-select-btn" onclick="toggleDropdown('dropEntry')">
-        <span id="dropEntryText">Select options...</span> <span>▼</span>
+        <span id="dropEntryText">Select options...</span>
+        <span>▼</span>
       </div>
       <div class="dropdown-content" id="fEntryBox"></div>
     </div>
   </div>
-
   <div class="field">
     <label>KL / Key Level (Multi-select)</label>
     <div class="custom-dropdown" id="dropKL">
       <div class="dropdown-select-btn" onclick="toggleDropdown('dropKL')">
-        <span id="dropKLText">Select options...</span> <span>▼</span>
+        <span id="dropKLText">Select options...</span>
+        <span>▼</span>
       </div>
       <div class="dropdown-content" id="fKLBox"></div>
     </div>
   </div>
-
   <div class="field">
     <label>Narrative (Multi-select)</label>
     <div class="custom-dropdown" id="dropNarrative">
       <div class="dropdown-select-btn" onclick="toggleDropdown('dropNarrative')">
-        <span id="dropNarrativeText">Select options...</span> <span>▼</span>
+        <span id="dropNarrativeText">Select options...</span>
+        <span>▼</span>
       </div>
       <div class="dropdown-content" id="fNarrativeBox"></div>
     </div>
   </div>
-
   <div class="field">
     <label>Trade Status</label>
     <select id="fTradeStatus">
@@ -236,40 +797,119 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
       <option>Missed Trade</option>
     </select>
   </div>
-
-  <div class="field"><label>Entry Price</label><input id="fEntryPrice" type="number" step="any"></div>
-  <div class="field"><label>Exit Price</label><input id="fExitPrice" type="number" step="any"></div>
-  <div class="field"><label>Position Size</label><input id="fSize" type="number" step="1"></div>
-  <div class="field"><label>P&L ($)</label><input id="fPnl" type="number" step="any"></div>
-  <div class="field"><label>Planned Risk ($)</label><input id="fRisk" type="number" step="any"></div>
-  <div class="field"><label>Stop Loss</label><input id="fSL" type="number" step="any"></div>
-  <div class="field"><label>Take Profit</label><input id="fTP" type="number" step="any"></div>
-  <div class="field"><label>Planned R:R</label><input id="fRR" type="number" step="any" placeholder="2.0"></div>
-  <div class="field"><label>Result (R)</label><input id="fR" type="number" step="any" placeholder="e.g. 1.5"></div>
-  <div class="field"><label>Execution Quality</label><select id="fExec"><option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option></select></div>
-  <div class="field"><label>Confidence</label><input id="fConfidence" type="number" min="1" max="10" placeholder="1–10"></div>
-  <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div>
-  <div class="field span2"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
-  
-  <div class="field span3"><label>Before Chart Image (صورة قبل الدخول)</label><input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')"><input type="hidden" id="fChartBeforeData"></div>
-  <div class="field span3"><label>After Chart Image (صورة بعد الدخول)</label><input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')"><input type="hidden" id="fChartAfterData"></div>
-
-  <div class="field span3"><label>Notes</label><textarea id="fNotes" placeholder="What happened? What did you learn?"></textarea></div>
- </div><div class="actions"><button class="primary" onclick="saveTrade()">Save Trade</button><button class="secondary" onclick="clearForm()">Clear / Cancel</button></div></div>
+  <div class="field">
+   <label>Entry Price</label>
+   <input id="fEntryPrice" type="number" step="any">
+  </div>
+  <div class="field">
+   <label>Exit Price</label>
+   <input id="fExitPrice" type="number" step="any">
+  </div>
+  <div class="field">
+   <label>Position Size</label>
+   <input id="fSize" type="number" step="1">
+  </div>
+  <div class="field">
+   <label>P&L ($)</label>
+   <input id="fPnl" type="number" step="any">
+  </div>
+  <div class="field">
+   <label>Planned Risk ($)</label>
+   <input id="fRisk" type="number" step="any">
+  </div>
+  <div class="field">
+   <label>Stop Loss</label>
+   <input id="fSL" type="number" step="any">
+  </div>
+  <div class="field">
+   <label>Take Profit</label>
+   <input id="fTP" type="number" step="any">
+  </div>
+  <div class="field">
+   <label>Planned R:R</label>
+   <input id="fRR" type="number" step="any" placeholder="2.0">
+  </div>
+  <div class="field">
+   <label>Result (R)</label>
+   <input id="fR" type="number" step="any" placeholder="e.g. 1.5">
+  </div>
+  <div class="field">
+   <label>Execution Quality</label>
+   <select id="fExec">
+    <option>Excellent</option>
+    <option>Good</option>
+    <option>Average</option>
+    <option>Poor</option>
+   </select>
+  </div>
+  <div class="field">
+   <label>Confidence</label>
+   <input id="fConfidence" type="number" min="1" max="10" placeholder="1–10">
+  </div>
+  <div class="field">
+   <label>Emotional Drift</label>
+   <select id="fEmotion">
+    <option>Calm</option>
+    <option>Confident</option>
+    <option>FOMO</option>
+    <option>Revenge</option>
+    <option>Fear</option>
+    <option>Greed</option>
+    <option>Overtraded</option>
+   </select>
+  </div>
+  <div class="field span2">
+   <label>Plan Followed</label>
+   <select id="fPlan">
+    <option>Yes</option>
+    <option>Partially</option>
+    <option>No</option>
+   </select>
+  </div>
+  <div class="field span3">
+   <label>Before Chart Image (صورة قبل الدخول)</label>
+   <input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')">
+   <input type="hidden" id="fChartBeforeData">
+  </div>
+  <div class="field span3">
+   <label>After Chart Image (صورة بعد الدخول)</label>
+   <input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')">
+   <input type="hidden" id="fChartAfterData">
+  </div>
+  <div class="field span3">
+   <label>Notes</label>
+   <textarea id="fNotes" placeholder="What happened? What did you learn?"></textarea>
+  </div>
+ </div>
+ <div class="actions">
+  <button class="primary" onclick="saveTrade()">Save Trade</button>
+  <button class="secondary" onclick="clearForm()">Clear / Cancel</button>
+ </div>
+ </div>
 </section>
-
 <section id="trades" class="page">
   <div class="head">
-    <div><h1>Trades Log</h1><p>Your complete trade history.</p></div>
+    <div>
+      <h1>Trades Log</h1>
+      <p>Your complete trade history.</p>
+    </div>
     <button class="primary" onclick="go('add')">＋ Add Trade</button>
   </div>
   <div class="card">
     <div class="toolbar">
       <div style="display:flex; gap:10px; flex:1; flex-wrap:wrap;">
-        <input class="select" id="tradeSearch" placeholder="Search symbol..." oninput="renderTrades()" style="flex:1; min-width:150px;">
+        <input
+          class="select"
+          id="tradeSearch"
+          placeholder="Search symbol..."
+          oninput="renderTrades()"
+          style="flex:1; min-width:150px;"
+        >
         <div class="dateFilter">
-          From: <input type="date" id="dateFrom" onchange="renderTrades()">
-          To: <input type="date" id="dateTo" onchange="renderTrades()">
+          From:
+          <input type="date" id="dateFrom" onchange="renderTrades()">
+          To:
+          <input type="date" id="dateTo" onchange="renderTrades()">
         </div>
       </div>
       <select class="select" id="tradeResult" onchange="renderTrades()" style="min-width:130px;">
@@ -279,29 +919,59 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
         <option value="Breakeven">Breakeven</option>
       </select>
     </div>
-
     <div id="tradesSummary" class="tradesSummary" style="display:none;">
       <span>Filtered: <strong id="summaryCount">0</strong></span>
       <span>Total R: <strong id="summaryTotalR">0.00R</strong></span>
       <span>Total P&L: <strong id="summaryTotalPnl">$0.00</strong></span>
     </div>
-
     <div class="journal">
       <table class="table">
         <thead>
-          <tr><th>Date</th><th>Symbol</th><th>Status</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Images</th><th>Actions</th></tr>
+          <tr>
+            <th>Date</th>
+            <th>Symbol</th>
+            <th>Status</th>
+            <th>Bias</th>
+            <th>Entry</th>
+            <th>KL</th>
+            <th>R</th>
+            <th>P&L</th>
+            <th>Images</th>
+            <th>Actions</th>
+          </tr>
         </thead>
         <tbody id="tradesBody"></tbody>
       </table>
     </div>
   </div>
 </section>
-
-<section id="analytics" class="page"><div class="head"><div><h1>Analytics</h1></div></div><div class="sectionGrid"><div class="card"><h3>Performance by Session</h3><div id="sessionStats"></div></div><div class="card"><h3>Performance by Bias</h3><div id="biasStats"></div></div><div class="card"><h3>Performance by Symbol</h3><div id="symbolStats"></div></div></div></section>
-
+<section id="analytics" class="page">
+ <div class="head">
+  <div>
+   <h1>Analytics</h1>
+  </div>
+ </div>
+ <div class="sectionGrid">
+  <div class="card">
+   <h3>Performance by Session</h3>
+   <div id="sessionStats"></div>
+  </div>
+  <div class="card">
+   <h3>Performance by Bias</h3>
+   <div id="biasStats"></div>
+  </div>
+  <div class="card">
+   <h3>Performance by Symbol</h3>
+   <div id="symbolStats"></div>
+  </div>
+ </div>
+</section>
 <section id="strategies" class="page">
   <div class="head">
-    <div><h1>Strategies & Options</h1><p>Customize KL, Entry, Bias, Narrative options and manage backups.</p></div>
+    <div>
+      <h1>Strategies & Options</h1>
+      <p>Customize KL, Entry, Bias, Narrative options and manage backups.</p>
+    </div>
     <div style="display:flex; gap:8px;">
       <button class="primary" onclick="exportData()">💾 Export Backup</button>
       <button class="secondary" onclick="$('importFile').click()">📂 Import Backup</button>
@@ -310,19 +980,46 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   </div>
   <div class="sectionGrid" id="strategyManager"></div>
 </section>
-
-<section id="notes" class="page"><div class="head"><div><h1>Journal & Notes</h1></div></div><div class="card"><div class="formGrid"><div class="field span3"><label>Quick Notes</label><textarea id="noteText"></textarea></div></div><div class="actions"><button class="primary" onclick="saveNote()">Save Note</button></div></div><div style="height:12px"></div><div class="card"><div class="list" id="notesList"></div></div></section>
-</main></div><div class="toast" id="toast"></div>
-
+<section id="notes" class="page">
+ <div class="head">
+  <div>
+   <h1>Journal & Notes</h1>
+  </div>
+ </div>
+ <div class="card">
+  <div class="formGrid">
+   <div class="field span3">
+    <label>Quick Notes</label>
+    <textarea id="noteText"></textarea>
+   </div>
+  </div>
+  <div class="actions">
+   <button class="primary" onclick="saveNote()">Save Note</button>
+  </div>
+ </div>
+ <div style="height:12px"></div>
+ <div class="card">
+  <div class="list" id="notesList"></div>
+ </div>
+</section>
+</main>
+</div>
+<div class="toast" id="toast"></div>
 <script>
 const KEY='rjournal_pro_v11_clean';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
- theme:'dark',trades:[],notes:[],
- lists:{KL:[],Entry:[],Bias:[],Narrative:[]}
+ theme:'dark',
+ trades:[],
+ notes:[],
+ lists:{
+  KL:[],
+  Entry:[],
+  Bias:[],
+  Narrative:[]
+ }
 };
 const $=id=>document.getElementById(id);
 let currentCalDate = new Date();
-
 function changeTheme(theme){
  data.theme=theme;
  document.body.className='';
@@ -331,626 +1028,74 @@ function changeTheme(theme){
  if(theme==='gray') document.body.classList.add('theme-gray');
  persist();
 }
-
-function persist(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
-function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
+function persist(){
+ localStorage.setItem(KEY,JSON.stringify(data));
+ renderAll()
+}
+function toast(t){
+ $('toast').textContent=t;
+ $('toast').style.display='block';
+ setTimeout(()=>$('toast').style.display='none',1800)
+}
 function go(page){
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  $(page).classList.add('active');
- document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
- if(page==='add' && !$('editTradeId').value) {
+ document.querySelectorAll('.nav').forEach(x=>
+   x.classList.toggle('active',x.dataset.page===page)
+ );
+ if(page==='add' && !$('editTradeId').value){
   const d = new Date();
-  $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  $('fDate').value =
+   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
  }
- renderAll();scrollTo(0,0);
+ renderAll();
+ scrollTo(0,0);
 }
-document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
-function val(id){return $(id).value}
-
-function encodeImage(input, targetId) {
- if (input.files && input.files[0]) {
+document.querySelectorAll('.nav,[data-page]').forEach(x=>
+ x.addEventListener('click',()=>go(x.dataset.page))
+);
+function val(id){
+ return $(id).value
+}
+function encodeImage(input,targetId){
+ if(input.files && input.files[0]){
   const reader = new FileReader();
-  reader.onload = function(e) { $(targetId).value = e.target.result; };
+  reader.onload=function(e){
+   $(targetId).value=e.target.result;
+  };
   reader.readAsDataURL(input.files[0]);
  }
 }
-
 function exportData(){
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `r_journal_backup_${new Date().toISOString().slice(0,10)}.json`);
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-  toast('Backup exported successfully!');
+ const dataStr =
+  "data:text/json;charset=utf-8,"+
+  encodeURIComponent(JSON.stringify(data));
+ const downloadAnchor=document.createElement('a');
+ downloadAnchor.setAttribute("href",dataStr);
+ downloadAnchor.setAttribute(
+  "download",
+  `r_journal_backup_${new Date().toISOString().slice(0,10)}.json`
+ );
+ document.body.appendChild(downloadAnchor);
+ downloadAnchor.click();
+ downloadAnchor.remove();
+ toast('Backup exported successfully!');
 }
-
 function importData(input){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const imported = JSON.parse(e.target.result);
-      if(imported && imported.trades && imported.lists){
-        if(confirm('This will replace your current trades and settings with the backup file. Are you sure?')){
-          data = imported;
-          persist();
-          toast('Data imported successfully!');
-        }
-      } else { alert('Invalid backup file format.'); }
-    } catch(err) { alert('Error reading JSON file.'); }
-    input.value = '';
-  };
-  reader.readAsText(file);
-}
-
-function toggleDropdown(dropId) {
-  const content = $(dropId).querySelector('.dropdown-content');
-  document.querySelectorAll('.dropdown-content').forEach(d => { if(d !== content) d.classList.remove('show'); });
-  content.classList.toggle('show');
-}
-
-window.addEventListener('click', function(e) {
-  if (!e.target.closest('.custom-dropdown')) {
-    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
-  }
-});
-
-function updateDropdownText(boxId, textId) {
-  const container = $(boxId), textEl = $(textId);
-  if(!container || !textEl) return;
-  const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
-  textEl.textContent = checked.length === 0 ? "Select options..." : checked.join(', ');
-  textEl.style.color = checked.length === 0 ? "var(--muted)" : "var(--text)";
-}
-
-function getCheckedValues(containerId) {
-  const container = $(containerId);
-  if(!container) return '';
-  const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
-  return checked.join(', ');
-}
-
-function setCheckedValues(containerId, valuesStr, textId) {
-  const container = $(containerId);
-  if(!container) return;
-  const arr = (valuesStr || '').split(',').map(s => s.trim());
-  container.querySelectorAll('.dropdown-option').forEach(opt => {
-    const val = opt.getAttribute('data-value');
-    if(arr.includes(val)) opt.classList.add('selected');
-    else opt.classList.remove('selected');
-  });
-  updateDropdownText(containerId, textId);
-}
-
-function renderStrategiesManager() {
-  const container = $('strategyManager');
-  if(!container) return;
-  const keys = [{key: 'KL', title: 'KL'}, {key: 'Entry', title: 'Entry'}, {key: 'Bias', title: 'Bias'}, {key: 'Narrative', title: 'Narrative'}];
-  container.innerHTML = keys.map(k => `
-    <div class="card">
-      <h3>${k.title}</h3>
-      <div style="display:flex; gap:8px; margin-bottom:10px;">
-        <input class="select" style="flex:1" id="newOpt_${k.key}" placeholder="Add ${k.title}..." onkeydown="if(event.key==='Enter')addStrategyItem('${k.key}')">
-        <button class="primary" onclick="addStrategyItem('${k.key}')">+ Add</button>
-      </div>
-      <div class="list" style="max-height:200px; overflow-y:auto;">
-         ${(data.lists[k.key] || []).length === 0 ? '<div style="color:var(--muted); font-size:12px; padding:8px;">No options added yet.</div>' : ''}
-         ${(data.lists[k.key] || []).map(item => `
-          <div class="listItem">
-            <span>${item}</span>
-            <button class="danger" onclick="deleteStrategyItem('${k.key}', '${item}')">Delete</button>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-}
-
-function addStrategyItem(category) {
-  const input = $(`newOpt_${category}`);
-  if(!input || !input.value.trim()) return;
-  const val = input.value.trim();
-  if(!data.lists[category]) data.lists[category] = [];
-  if(!data.lists[category].includes(val)){
-    data.lists[category].push(val);
-    persist();
-    toast('Added successfully');
-  }
-  input.value = '';
-}
-
-function deleteStrategyItem(category, item) {
-  data.lists[category] = data.lists[category].filter(x => x !== item);
-  persist();
-  toast('Deleted successfully');
-}
-
-function renderDropdowns() {
-  const map = {
-    'fKLBox': {list: data.lists.KL, box: 'dropKL', text: 'dropKLText'},
-    'fEntryBox': {list: data.lists.Entry, box: 'dropEntry', text: 'dropEntryText'},
-    'fBiasBox': {list: data.lists.Bias, box: 'dropBias', text: 'dropBiasText'},
-    'fNarrativeBox': {list: data.lists.Narrative, box: 'dropNarrative', text: 'dropNarrativeText'}
-  };
-  Object.keys(map).forEach(boxId => {
-    const box = $(boxId);
-    if(!box) return;
-    const info = map[boxId];
-    const currentChecked = getCheckedValues(boxId);
-    box.innerHTML = (info.list || []).length === 0 ? `<div style="padding:10px; color:var(--muted); font-size:12px; text-align:center;">No options found.<br>Add them in Strategies page.</div>` : (info.list || []).map(item => `
-      <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
-        <span>${item}</span>
-        <span class="check-mark">✓</span>
-      </div>
-    `).join('');
-    setCheckedValues(boxId, currentChecked, info.text);
-  });
-}
-
-function toggleOption(containerId, textId, itemVal, optElement) {
-  optElement.classList.toggle('selected');
-  updateDropdownText(containerId, textId);
-}
-
-function renderCalendar(targetId='calendarGridWrapper') {
-  const el = $(targetId);
-  if(!el) return;
-  const year = currentCalDate.getFullYear(), month = currentCalDate.getMonth();
-  const firstDay = new Date(year, month, 1).getDay(), totalDays = new Date(year, month + 1, 0).getDate();
-  let daysHTML = '';
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  for(let i = 0; i < firstDay; i++) daysHTML += `<div class="day emptyDay"></div>`;
-  for(let d = 1; d <= totalDays; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const dayTrades = data.trades.filter(t => t.date === dateStr);
-    const dayR = dayTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-    const statusClass = dayTrades.length > 0 ? (dayR >= 0 ? 'pos' : 'neg') : '';
-    const now = new Date(), todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const isToday = dateStr === todayStr ? 'today' : '';
-    daysHTML += `
-      <div class="day ${statusClass} ${isToday}" onclick="filterTradesByDate('${dateStr}')">
-        <strong>${d}</strong>
-        <small>${dayTrades.length > 0 ? (dayR >= 0 ? '+' : '') + dayR.toFixed(1) + 'R' : ''}</small>
-      </div>
-    `;
-  }
-  el.innerHTML = `
-    <div class="calHeader">
-      <button class="calNavBtn" onclick="changeCalMonth(-1, '${targetId}')">◀</button>
-      <span>${monthNames[month]} ${year}</span>
-      <button class="calNavBtn" onclick="changeCalMonth(1, '${targetId}')">▶</button>
-    </div>
-    <div class="calWeekDays"><div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div></div>
-    <div class="calGrid">${daysHTML}</div>
-  `;
-}
-
-function changeCalMonth(delta, targetId) {
-  currentCalDate.setMonth(currentCalDate.getMonth() + delta);
-  renderCalendar(targetId);
-}
-
-function filterTradesByDate(dateStr) {
-  go('trades');
-  $('dateFrom').value = dateStr;
-  $('dateTo').value = dateStr;
-  $('tradeSearch').value = '';
-  $('tradeResult').value = 'All';
-  renderTrades();
-}
-
-function saveTrade(){
-  const id = $('editTradeId').value ? Number($('editTradeId').value) : Date.now();
-  const trade = {
-    id,
-    date: val('fDate'), time: val('fTime'), symbol: val('fSymbol'),
-    bias: getCheckedValues('dropBias'), session: val('fSession'), grade: val('fGrade'),
-    entry: getCheckedValues('dropEntry'), kl: getCheckedValues('dropKL'), narrative: getCheckedValues('dropNarrative'),
-    tradeStatus: val('fTradeStatus'), entryPrice: val('fEntryPrice'), exitPrice: val('fExitPrice'),
-    size: val('fSize'), pnl: val('fPnl'), risk: val('fRisk'), sl: val('fSL'), tp: val('fTP'),
-    rr: val('fRR'), r: Number(val('fR')) || 0, exec: val('fExec'), confidence: val('fConfidence'),
-    emotion: val('fEmotion'), plan: val('fPlan'), chartBefore: val('fChartBeforeData'),
-    chartAfter: val('fChartAfterData'), notes: val('fNotes')
-  };
-  const idx = data.trades.findIndex(t => t.id === id);
-  if(idx >= 0) data.trades[idx] = trade; else data.trades.unshift(trade);
-  persist(); clearForm(); toast('Trade saved successfully!'); go('trades');
-}
-
-function clearForm(){
-  $('editTradeId').value = '';
-  $('formTitle').textContent = 'Add Trade';
-  const d = new Date();
-  $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => { if($(id)) $(id).value = ''; });
-  ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => { $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected')); });
-  updateDropdownText('dropBias', 'dropBiasText'); updateDropdownText('dropEntry', 'dropEntryText');
-  updateDropdownText('dropKL', 'dropKLText'); updateDropdownText('dropNarrative', 'dropNarrativeText');
-  $('fSymbol').selectedIndex = 0; $('fSession').selectedIndex = 0; $('fGrade').selectedIndex = 0;
-  $('fTradeStatus').selectedIndex = 0; $('fExec').selectedIndex = 0; $('fEmotion').selectedIndex = 0; $('fPlan').selectedIndex = 0;
-}
-
-function editTrade(id){
-  const t = data.trades.find(x => x.id === id);
-  if(!t) return;
-  go('add');
-  $('editTradeId').value = t.id;
-  $('formTitle').textContent = 'Edit Trade';
-  $('fDate').value = t.date || '';
-  $('fTime').value = t.time || '';
-  $('fSymbol').value = t.symbol || 'MNQ';
-  $('fSession').value = t.session || 'NY AM';
-  $('fGrade').value = t.grade || 'A+';
-  $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
-  $('fEntryPrice').value = t.entryPrice || '';
-  $('fExitPrice').value = t.exitPrice || '';
-  $('fSize').value = t.size || '';
-  $('fPnl').value = t.pnl || '';
-  $('fRisk').value = t.risk || '';
-  $('fSL').value = t.sl || '';
-  $('fTP').value = t.tp || '';
-  $('fRR').value = t.rr || '';
-  $('fR').value = t.r || '';
-  $('fExec').value = t.exec || 'Excellent';
-  $('fConfidence').value = t.confidence || '';
-  $('fEmotion').value = t.emotion || 'Calm';
-  $('fPlan').value = t.plan || 'Yes';
-  $('fChartBeforeData').value = t.chartBefore || '';
-  $('fChartAfterData').value = t.chartAfter || '';
-  $('fNotes').value = t.notes || '';
-
-  setCheckedValues('dropBias', t.bias, 'dropBiasText');
-  setCheckedValues('dropEntry', t.entry, 'dropEntryText');
-  setCheckedValues('dropKL', t.kl, 'dropKLText');
-  setCheckedValues('dropNarrative', t.narrative, 'dropNarrativeText');
-}
-
-function deleteTrade(id){
-  if(confirm('Are you sure you want to delete this trade?')){
-    data.trades = data.trades.filter(x => x.id !== id);
-    persist();
-    toast('Trade deleted successfully');
-  }
-}
-
-function renderTrades(){
-  const search = ($('tradeSearch').value || '').toLowerCase();
-  const dateFrom = $('dateFrom').value;
-  const dateTo = $('dateTo').value;
-  const resFilter = $('tradeResult').value;
-
-  const filtered = data.trades.filter(t => {
-    const symbolMatch = (t.symbol || '').toLowerCase().includes(search);
-    const dateMatch = (!dateFrom || t.date >= dateFrom) && (!dateTo || t.date <= dateTo);
-    const rVal = Number(t.r) || 0;
-    const resType = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'Breakeven');
-    const resultMatch = resFilter === 'All' || resType === resFilter;
-    return symbolMatch && dateMatch && resultMatch;
-  });
-
-  const sumBox = $('tradesSummary');
-  if(dateFrom || dateTo || search || resFilter !== 'All'){
-    sumBox.style.display = 'flex';
-    $('summaryCount').textContent = filtered.length;
-    const totalR = filtered.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
-    const totalPnl = filtered.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
-    $('summaryTotalR').textContent = (totalR >= 0 ? '+' : '') + totalR.toFixed(2) + 'R';
-    $('summaryTotalPnl').textContent = (totalPnl >= 0 ? '+' : '-') + '$' + Math.abs(totalPnl).toFixed(2);
-  } else {
-    sumBox.style.display = 'none';
-  }
-
-  const tbody = $('tradesBody');
-  if(!tbody) return;
-  tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:var(--muted); padding:30px;">No trades found.</td></tr>` : filtered.map(t => {
-    const rVal = Number(t.r) || 0;
-    const pnlVal = Number(t.pnl) || 0;
-    const isWin = rVal >= 0;
-    return `
-      <tr>
-        <td>${t.date || ''}</td>
-        <td><strong>${t.symbol || ''}</strong></td>
-        <td><span style="font-size:11px; color:var(--muted);">${t.tradeStatus || 'In-Plan'}</span></td>
-        <td><span style="font-size:11px;">${t.bias || '-'}</span></td>
-        <td><span style="font-size:11px;">${t.entry || '-'}</span></td>
-        <td><span style="font-size:11px;">${t.kl || '-'}</span></td>
-        <td class="${isWin ? 'up' : 'down'}"><strong>${(rVal >= 0 ? '+' : '') + rVal.toFixed(2)}R</strong></td>
-        <td class="${pnlVal >= 0 ? 'up' : 'down'}"><strong>${(pnlVal >= 0 ? '+' : '-') + '$' + Math.abs(pnlVal).toFixed(2)}</strong></td>
-        <td>
-          ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="showImageModal('${t.chartBefore}')">` : ''}
-          ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="showImageModal('${t.chartAfter}')">` : ''}
-        </td>
-        <td>
-          <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
-          <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function showImageModal(src){
-  $('modalTitle').textContent = 'Chart Image Preview';
-  $('modalBody').innerHTML = `<div style="text-align:center;"><img src="${src}" style="max-width:100%; border-radius:10px; border:1px solid var(--line);"></div>`;
-  $('modalOverlay').classList.add('active');
-}
-
-function closeModal(){
-  $('modalOverlay').classList.remove('active');
-}
-
-function closeModalOnBg(e){
-  if(e.target === $('modalOverlay')) closeModal();
-}
-
-function openModal(type){
-  $('modalOverlay').classList.add('active');
-  if(type === 'chart'){
-    $('modalTitle').textContent = 'Performance Overview (Expanded)';
-    $('modalBody').innerHTML = `<div class="chart" id="modalChartContainer" style="height:500px;"></div>`;
-    renderPerformanceChart('modalChartContainer');
-  } else if(type === 'calendar'){
-    $('modalTitle').textContent = 'Trading Calendar (Expanded)';
-    $('modalBody').innerHTML = `<div id="modalCalendarContainer"></div>`;
-    renderCalendar('modalCalendarContainer');
-  }
-}
-
-function renderMetrics(){
-  const trades = data.trades;
-  const totalTrades = trades.length;
-  const totalR = trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-  const wins = trades.filter(t => (Number(t.r) || 0) > 0).length;
-  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-  
-  let cum = 0, peak = 0, maxDD = 0;
-  [...trades].reverse().forEach(t => {
-    cum += Number(t.r) || 0;
-    if(cum > peak) peak = cum;
-    const dd = peak - cum;
-    if(dd > maxDD) maxDD = dd;
-  });
-
-  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  const expectancy = totalTrades > 0 ? totalR / totalTrades : 0;
-
-  $('metrics').innerHTML = `
-    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged setups</div></div>
-    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${(totalR >= 0 ? '+' : '') + totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
-    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(1)}%</div><div class="sub">${wins} Wins</div></div>
-    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
-    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '-')}$${Math.abs(totalPnl).toFixed(2)}</div><div class="sub">Net dollar return</div></div>
-    <div class="metric"><div class="label">Avg R / Trade</div><div class="value ${expectancy >= 0 ? 'up' : 'down'}">${(expectancy >= 0 ? '+' : '') + expectancy.toFixed(2)}R</div><div class="sub">Expectancy</div></div>
-  `;
-}
-
-function renderStats(){
-  const trades = data.trades;
-  const totalTrades = trades.length;
-  const totalR = trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  const wins = trades.filter(t => (Number(t.r) || 0) > 0).length;
-  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-  const bestTrade = trades.reduce((max, t) => Math.max(max, Number(t.r) || 0), 0);
-  const worstTrade = trades.reduce((min, t) => Math.min(min, Number(t.r) || 0), 0);
-  const profitFactor = Math.abs(trades.filter(t => (Number(t.r) || 0) > 0).reduce((s, t) => s + Number(t.r), 0) / (trades.filter(t => (Number(t.r) || 0) < 0).reduce((s, t) => s + Number(t.r), 0) || 1));
-
-  const recentContainer = $('recent');
-  if(recentContainer){
-    recentContainer.innerHTML = trades.slice(0, 5).map(t => {
-      const rVal = Number(t.r) || 0;
-      const pnlVal = Number(t.pnl) || 0;
-      const isWin = rVal >= 0;
-      return `
-        <tr>
-          <td>${t.date || ''}</td>
-          <td>${t.symbol || ''}</td>
-          <td>${t.grade || '-'}</td>
-          <td class="${isWin ? 'up' : 'down'}">${(rVal >= 0 ? '+' : '') + rVal.toFixed(2)}R</td>
-          <td class="${pnlVal >= 0 ? 'up' : 'down'}">${(pnlVal >= 0 ? '+' : '-')}$${Math.abs(pnlVal).toFixed(2)}</td>
-          <td><span class="pill ${isWin ? '' : 'red'}">${isWin ? 'Win' : 'Loss'}</span></td>
-        </tr>
-      `;
-    }).join('') || `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades yet</td></tr>`;
-  }
-}
-
-function renderAnalytics(){
-  const trades = data.trades;
-  const groupBy = (key) => {
-    const map = {};
-    trades.forEach(t => {
-      const k = t[key] || 'Unspecified';
-      if(!map[k]) map[k] = {count: 0, r: 0, pnl: 0};
-      map[k].count++;
-      map[k].r += Number(t.r) || 0;
-      map[k].pnl += Number(t.pnl) || 0;
-    });
-    return map;
-  };
-
-  const renderGroupTable = (map, titleKey) => {
-    const keys = Object.keys(map);
-    if(keys.length === 0) return `<div style="color:var(--muted); font-size:12px; padding:10px;">No data available</div>`;
-    return `
-      <table class="table">
-        <thead><tr><th>${titleKey}</th><th>Trades</th><th>Total R</th><th>PnL</th></tr></thead>
-        <tbody>
-          ${keys.map(k => `
-            <tr>
-              <td><strong>${k}</strong></td>
-              <td>${map[k].count}</td>
-              <td class="${map[k].r >= 0 ? 'up' : 'down'}">${(map[k].r >= 0 ? '+' : '') + map[k].r.toFixed(2)}R</td>
-              <td class="${map[k].pnl >= 0 ? 'up' : 'down'}">${(map[k].pnl >= 0 ? '+' : '-') + '$' + Math.abs(map[k].pnl).toFixed(2)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-  };
-
-  $('sessionStats').innerHTML = renderGroupTable(groupBy('session'), 'Session');
-  $('biasStats').innerHTML = renderGroupTable(groupBy('bias'), 'Bias');
-  $('symbolStats').innerHTML = renderGroupTable(groupBy('symbol'), 'Symbol');
-}
-
-function renderNotes(){
-  const container = $('notesList');
-  if(!container) return;
-  container.innerHTML = (data.notes || []).length === 0 ? `<div style="color:var(--muted); font-size:12px; padding:10px;">No notes saved yet.</div>` : (data.notes || []).map((n, i) => `
-    <div class="listItem" style="flex-direction:column; align-items:flex-start; gap:6px;">
-      <div style="display:flex; justify-content:space-between; width:100%;">
-        <span style="font-size:11px; color:var(--muted);">${n.date}</span>
-        <button class="danger" onclick="deleteNote(${i})">Delete</button>
-      </div>
-      <div style="white-space:pre-wrap; font-size:13px;">${n.text}</div>
-    </div>
-  `).join('');
-}
-
-function saveNote(){
-  const text = $('noteText').value.trim();
-  if(!text) return;
-  if(!data.notes) data.notes = [];
-  data.notes.unshift({date: new Date().toISOString().slice(0,10), text});
-  $('noteText').value = '';
-  persist();
-  toast('Note saved successfully');
-}
-
-function deleteNote(index){
-  data.notes.splice(index, 1);
-  persist();
-  toast('Note deleted');
-}
-
-// دالة رسم الشارت المطورة لحل مشكلة نقطة البداية وتحديث المحور اليمين ديناميكياً
-function renderPerformanceChart(containerId = 'performanceChart') {
-  const container = $(containerId);
-  if(!container) return;
-
-  const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
-  const rrFilter = $('rrFilterSelect') ? $('rrFilterSelect').value : 'all';
-
-  let sortedTrades = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-
-  if(rrFilter === 'weekly') {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneWeekAgo);
-  } else if(rrFilter === 'monthly') {
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneMonthAgo);
-  }
-
-  let cumulative = 0;
-  const points = [{ xLabel: 'Start', value: 0, date: '' }];
-
-  sortedTrades.forEach(t => {
-    let val = chartType === 'pnl' ? (Number(t.pnl) || 0) : (Number(t.r) || 0);
-    cumulative += val;
-    points.push({
-      xLabel: t.date ? t.date.slice(5) : '',
-      value: cumulative,
-      date: t.date || ''
-    });
-  });
-
-  if(points.length === 1) {
-    container.innerHTML = `<div class="empty" style="padding-top:80px; text-align:center; color:var(--muted);">No performance data available for chart yet.</div>`;
-    return;
-  }
-
-  const values = points.map(p => p.value);
-  let maxVal = Math.max(...values, 0);
-  let minVal = Math.min(...values, 0);
-
-  if(maxVal === minVal) {
-    maxVal += 1;
-    minVal -= 1;
-  }
-
-  const paddingRange = (maxVal - minVal) * 0.15;
-  maxVal += paddingRange;
-  minVal -= paddingRange;
-
-  const width = container.clientWidth || 500;
-  const height = container.clientHeight || 280;
-  const margin = { top: 20, right: 65, bottom: 30, left: 20 };
-  const graphWidth = width - margin.left - margin.right;
-  const graphHeight = height - margin.top - margin.bottom;
-
-  const getX = (i) => margin.left + (i / (points.length - 1)) * graphWidth;
-  const getY = (val) => margin.top + graphHeight - ((val - minVal) / (maxVal - minVal || 1)) * graphHeight;
-
-  const pathCoords = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.value)}`).join(' ');
-  const firstX = getX(0);
-  const lastX = getX(points.length - 1);
-  const bottomY = margin.top + graphHeight;
-  const areaCoords = `${pathCoords} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
-
-  const steps = 5;
-  let yAxisGridHTML = '';
-  let yAxisLabelsHTML = '';
-
-  for(let i = 0; i <= steps; i++) {
-    const val = minVal + (maxVal - minVal) * (i / steps);
-    const yPos = getY(val);
-    yAxisGridHTML += `<line x1="${margin.left}" y1="${yPos}" x2="${width - margin.right}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/>`;
-    
-    let formattedVal = chartType === 'pnl' ? (val >= 0 ? `+$${val.toFixed(0)}` : `-$${Math.abs(val).toFixed(0)}`) : (val >= 0 ? `+${val.toFixed(1)}R` : `${val.toFixed(1)}R`);
-    yAxisLabelsHTML += `<text x="${width - margin.right + 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10">${formattedVal}</text>`;
-  }
-
-  const lastPoint = points[points.length - 1];
-  const lastXPos = getX(points.length - 1);
-  const lastYPos = getY(lastPoint.value);
-  const startPoint = points[0];
-  const startXPos = getX(0);
-  const startYPos = getY(startPoint.value);
-
-  container.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}">
-      <defs>
-        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
-          <stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/>
-        </linearGradient>
-      </defs>
-      ${yAxisGridHTML}
-      <path d="${areaCoords}" fill="url(#chartGrad)"/>
-      <path d="${pathCoords}" fill="none" stroke="var(--green)" stroke-width="2.5"/>
-      ${yAxisLabelsHTML}
-      <circle cx="${startXPos}" cy="${startYPos}" r="4" fill="var(--green)"/>
-      <text x="${startXPos}" y="${bottomY + 16}" fill="var(--muted)" font-size="10">${startPoint.xLabel || 'Start'}</text>
-      <circle cx="${lastXPos}" cy="${lastYPos}" r="4" fill="var(--green)"/>
-      <text x="${lastXPos}" y="${bottomY + 16}" fill="var(--muted)" font-size="10" text-anchor="end">${lastPoint.xLabel}</text>
-    </svg>
-  `;
-}
-
-function renderAll(){
-  renderMetrics();
-  renderStats();
-  renderPerformanceChart();
-  renderCalendar();
-  renderTrades();
-  renderAnalytics();
-  renderNotes();
-  renderStrategiesManager();
-  renderDropdowns();
-}
-
-// Initial Run
-changeTheme(data.theme || 'dark');
-$('themeSelect').value = data.theme || 'dark';
-renderAll();
-</script>
-</body>
-</html>
+ const file=input.files[0];
+ if(!file) return;
+ const reader=new FileReader();
+ reader.onload=function(e){
+  try{
+   const imported=JSON.parse(e.target.result);
+   if(imported && imported.trades && imported.lists){
+    if(confirm(
+      'This will replace your current trades and settings with the backup file. Are you sure?'
+    )){
+     data=imported;
+     persist();
+     toast('Data imported successfully!');
+    }
+   }else{
+    alert('Invalid backup file format.');
+   }
