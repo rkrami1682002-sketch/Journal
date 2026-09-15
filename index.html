@@ -129,7 +129,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 <section id="dashboard" class="page active">
  <div class="head"><div><h1>Dashboard</h1><p>Your trading performance at a glance</p></div></div>
  
- <!-- تم إرجاع الـ 6 مربعات الأصلية تماماً كما كانت في النسخة الأولى -->
  <div class="grid6" id="metrics"></div>
 
  <div class="row2">
@@ -319,15 +318,9 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 const KEY='rjournal_pro_v11_clean';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  theme:'dark',trades:[],notes:[],
- lists:{
-  KL:[],
-  Entry:[],
-  Bias:[],
-  Narrative:[]
- }
+ lists:{KL:[],Entry:[],Bias:[],Narrative:[]}
 };
 const $=id=>document.getElementById(id);
-
 let currentCalDate = new Date();
 
 function changeTheme(theme){
@@ -347,10 +340,7 @@ function go(page){
  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  if(page==='add' && !$('editTradeId').value) {
   const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  $('fDate').value = `${year}-${month}-${day}`;
+  $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
  }
  renderAll();scrollTo(0,0);
 }
@@ -360,9 +350,7 @@ function val(id){return $(id).value}
 function encodeImage(input, targetId) {
  if (input.files && input.files[0]) {
   const reader = new FileReader();
-  reader.onload = function(e) {
-   $(targetId).value = e.target.result;
-  };
+  reader.onload = function(e) { $(targetId).value = e.target.result; };
   reader.readAsDataURL(input.files[0]);
  }
 }
@@ -391,12 +379,8 @@ function importData(input){
           persist();
           toast('Data imported successfully!');
         }
-      } else {
-        alert('Invalid backup file format.');
-      }
-    } catch(err) {
-      alert('Error reading JSON file.');
-    }
+      } else { alert('Invalid backup file format.'); }
+    } catch(err) { alert('Error reading JSON file.'); }
     input.value = '';
   };
   reader.readAsText(file);
@@ -404,9 +388,7 @@ function importData(input){
 
 function toggleDropdown(dropId) {
   const content = $(dropId).querySelector('.dropdown-content');
-  document.querySelectorAll('.dropdown-content').forEach(d => {
-    if(d !== content) d.classList.remove('show');
-  });
+  document.querySelectorAll('.dropdown-content').forEach(d => { if(d !== content) d.classList.remove('show'); });
   content.classList.toggle('show');
 }
 
@@ -417,29 +399,19 @@ window.addEventListener('click', function(e) {
 });
 
 function updateDropdownText(boxId, textId) {
-  const container = $(boxId);
-  const textEl = $(textId);
+  const container = $(boxId), textEl = $(textId);
   if(!container || !textEl) return;
   const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
-    checked.push(opt.getAttribute('data-value'));
-  });
-  if(checked.length === 0){
-    textEl.textContent = "Select options...";
-    textEl.style.color = "var(--muted)";
-  } else {
-    textEl.textContent = checked.join(', ');
-    textEl.style.color = "var(--text)";
-  }
+  container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
+  textEl.textContent = checked.length === 0 ? "Select options..." : checked.join(', ');
+  textEl.style.color = checked.length === 0 ? "var(--muted)" : "var(--text)";
 }
 
 function getCheckedValues(containerId) {
   const container = $(containerId);
   if(!container) return '';
   const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
-    checked.push(opt.getAttribute('data-value'));
-  });
+  container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
   return checked.join(', ');
 }
 
@@ -449,11 +421,8 @@ function setCheckedValues(containerId, valuesStr, textId) {
   const arr = (valuesStr || '').split(',').map(s => s.trim());
   container.querySelectorAll('.dropdown-option').forEach(opt => {
     const val = opt.getAttribute('data-value');
-    if(arr.includes(val)){
-      opt.classList.add('selected');
-    } else {
-      opt.classList.remove('selected');
-    }
+    if(arr.includes(val)) opt.classList.add('selected');
+    else opt.classList.remove('selected');
   });
   updateDropdownText(containerId, textId);
 }
@@ -461,14 +430,7 @@ function setCheckedValues(containerId, valuesStr, textId) {
 function renderStrategiesManager() {
   const container = $('strategyManager');
   if(!container) return;
-  
-  const keys = [
-    {key: 'KL', title: 'KL'},
-    {key: 'Entry', title: 'Entry'},
-    {key: 'Bias', title: 'Bias'},
-    {key: 'Narrative', title: 'Narrative'}
-  ];
-
+  const keys = [{key: 'KL', title: 'KL'}, {key: 'Entry', title: 'Entry'}, {key: 'Bias', title: 'Bias'}, {key: 'Narrative', title: 'Narrative'}];
   container.innerHTML = keys.map(k => `
     <div class="card">
       <h3>${k.title}</h3>
@@ -515,24 +477,17 @@ function renderDropdowns() {
     'fBiasBox': {list: data.lists.Bias, box: 'dropBias', text: 'dropBiasText'},
     'fNarrativeBox': {list: data.lists.Narrative, box: 'dropNarrative', text: 'dropNarrativeText'}
   };
-
   Object.keys(map).forEach(boxId => {
     const box = $(boxId);
     if(!box) return;
     const info = map[boxId];
     const currentChecked = getCheckedValues(boxId);
-    
-    if((info.list || []).length === 0) {
-      box.innerHTML = `<div style="padding:10px; color:var(--muted); font-size:12px; text-align:center;">No options found.<br>Add them in Strategies page.</div>`;
-    } else {
-      box.innerHTML = (info.list || []).map(item => `
-        <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
-          <span>${item}</span>
-          <span class="check-mark">✓</span>
-        </div>
-      `).join('');
-    }
-    
+    box.innerHTML = (info.list || []).length === 0 ? `<div style="padding:10px; color:var(--muted); font-size:12px; text-align:center;">No options found.<br>Add them in Strategies page.</div>` : (info.list || []).map(item => `
+      <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
+        <span>${item}</span>
+        <span class="check-mark">✓</span>
+      </div>
+    `).join('');
     setCheckedValues(boxId, currentChecked, info.text);
   });
 }
@@ -545,33 +500,18 @@ function toggleOption(containerId, textId, itemVal, optElement) {
 function renderCalendar(targetId='calendarGridWrapper') {
   const el = $(targetId);
   if(!el) return;
-  const year = currentCalDate.getFullYear();
-  const month = currentCalDate.getMonth();
-  
-  const firstDay = new Date(year, month, 1).getDay();
-  const totalDays = new Date(year, month + 1, 0).getDate();
-  
+  const year = currentCalDate.getFullYear(), month = currentCalDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay(), totalDays = new Date(year, month + 1, 0).getDate();
   let daysHTML = '';
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  
-  for(let i = 0; i < firstDay; i++) {
-    daysHTML += `<div class="day emptyDay"></div>`;
-  }
-  
+  for(let i = 0; i < firstDay; i++) daysHTML += `<div class="day emptyDay"></div>`;
   for(let d = 1; d <= totalDays; d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const dayTrades = data.trades.filter(t => t.date === dateStr);
     const dayR = dayTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-    
-    let statusClass = '';
-    if(dayTrades.length > 0) {
-      statusClass = dayR >= 0 ? 'pos' : 'neg';
-    }
-    
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const statusClass = dayTrades.length > 0 ? (dayR >= 0 ? 'pos' : 'neg') : '';
+    const now = new Date(), todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const isToday = dateStr === todayStr ? 'today' : '';
-    
     daysHTML += `
       <div class="day ${statusClass} ${isToday}" onclick="filterTradesByDate('${dateStr}')">
         <strong>${d}</strong>
@@ -579,7 +519,6 @@ function renderCalendar(targetId='calendarGridWrapper') {
       </div>
     `;
   }
-  
   el.innerHTML = `
     <div class="calHeader">
       <button class="calNavBtn" onclick="changeCalMonth(-1, '${targetId}')">◀</button>
@@ -609,45 +548,18 @@ function saveTrade(){
   const id = $('editTradeId').value ? Number($('editTradeId').value) : Date.now();
   const trade = {
     id,
-    date: val('fDate'),
-    time: val('fTime'),
-    symbol: val('fSymbol'),
-    bias: getCheckedValues('dropBias'),
-    session: val('fSession'),
-    grade: val('fGrade'),
-    entry: getCheckedValues('dropEntry'),
-    kl: getCheckedValues('dropKL'),
-    narrative: getCheckedValues('dropNarrative'),
-    tradeStatus: val('fTradeStatus'),
-    entryPrice: val('fEntryPrice'),
-    exitPrice: val('fExitPrice'),
-    size: val('fSize'),
-    pnl: val('fPnl'),
-    risk: val('fRisk'),
-    sl: val('fSL'),
-    tp: val('fTP'),
-    rr: val('fRR'),
-    r: Number(val('fR')) || 0,
-    exec: val('fExec'),
-    confidence: val('fConfidence'),
-    emotion: val('fEmotion'),
-    plan: val('fPlan'),
-    chartBefore: val('fChartBeforeData'),
-    chartAfter: val('fChartAfterData'),
-    notes: val('fNotes')
+    date: val('fDate'), time: val('fTime'), symbol: val('fSymbol'),
+    bias: getCheckedValues('dropBias'), session: val('fSession'), grade: val('fGrade'),
+    entry: getCheckedValues('dropEntry'), kl: getCheckedValues('dropKL'), narrative: getCheckedValues('dropNarrative'),
+    tradeStatus: val('fTradeStatus'), entryPrice: val('fEntryPrice'), exitPrice: val('fExitPrice'),
+    size: val('fSize'), pnl: val('fPnl'), risk: val('fRisk'), sl: val('fSL'), tp: val('fTP'),
+    rr: val('fRR'), r: Number(val('fR')) || 0, exec: val('fExec'), confidence: val('fConfidence'),
+    emotion: val('fEmotion'), plan: val('fPlan'), chartBefore: val('fChartBeforeData'),
+    chartAfter: val('fChartAfterData'), notes: val('fNotes')
   };
-
   const idx = data.trades.findIndex(t => t.id === id);
-  if(idx >= 0) {
-    data.trades[idx] = trade;
-  } else {
-    data.trades.unshift(trade);
-  }
-  
-  persist();
-  clearForm();
-  toast('Trade saved successfully!');
-  go('trades');
+  if(idx >= 0) data.trades[idx] = trade; else data.trades.unshift(trade);
+  persist(); clearForm(); toast('Trade saved successfully!'); go('trades');
 }
 
 function clearForm(){
@@ -655,16 +567,10 @@ function clearForm(){
   $('formTitle').textContent = 'Add Trade';
   const d = new Date();
   $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => {
-    if($(id)) $(id).value = '';
-  });
-  ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => {
-    $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
-  });
-  updateDropdownText('dropBias', 'dropBiasText');
-  updateDropdownText('dropEntry', 'dropEntryText');
-  updateDropdownText('dropKL', 'dropKLText');
-  updateDropdownText('dropNarrative', 'dropNarrativeText');
+  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => { if($(id)) $(id).value = ''; });
+  ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => { $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected')); });
+  updateDropdownText('dropBias', 'dropBiasText'); updateDropdownText('dropEntry', 'dropEntryText');
+  updateDropdownText('dropKL', 'dropKLText'); updateDropdownText('dropNarrative', 'dropNarrativeText');
 }
 
 function editTrade(id){
@@ -673,29 +579,17 @@ function editTrade(id){
   go('add');
   $('editTradeId').value = t.id;
   $('formTitle').textContent = 'Edit Trade';
-  $('fDate').value = t.date || '';
-  $('fTime').value = t.time || '';
-  $('fSymbol').value = t.symbol || 'MNQ';
-  $('fSession').value = t.session || 'NY AM';
-  $('fGrade').value = t.grade || 'A+';
-  $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
-  $('fEntryPrice').value = t.entryPrice || '';
-  $('fExitPrice').value = t.exitPrice || '';
-  $('fSize').value = t.size || '';
-  $('fPnl').value = t.pnl || '';
-  $('fRisk').value = t.risk || '';
-  $('fSL').value = t.sl || '';
-  $('fTP').value = t.tp || '';
-  $('fRR').value = t.rr || '';
-  $('fR').value = t.r || '';
-  $('fExec').value = t.exec || 'Excellent';
-  $('fConfidence').value = t.confidence || '';
-  $('fEmotion').value = t.emotion || 'Calm';
-  $('fPlan').value = t.plan || 'Yes';
-  $('fChartBeforeData').value = t.chartBefore || '';
-  $('fChartAfterData').value = t.chartAfter || '';
-  $('fNotes').value = t.notes || '';
-
+  $('fDate').value = t.date || ''; $('fTime').value = t.time || '';
+  $('fSymbol').value = t.symbol || 'MNQ'; $('fSession').value = t.session || 'NY AM';
+  $('fGrade').value = t.grade || 'A+'; $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
+  $('fEntryPrice').value = t.entryPrice || ''; $('fExitPrice').value = t.exitPrice || '';
+  $('fSize').value = t.size || ''; $('fPnl').value = t.pnl || '';
+  $('fRisk').value = t.risk || ''; $('fSL').value = t.sl || '';
+  $('fTP').value = t.tp || ''; $('fRR').value = t.rr || '';
+  $('fR').value = t.r || ''; $('fExec').value = t.exec || 'Excellent';
+  $('fConfidence').value = t.confidence || ''; $('fEmotion').value = t.emotion || 'Calm';
+  $('fPlan').value = t.plan || 'Yes'; $('fChartBeforeData').value = t.chartBefore || '';
+  $('fChartAfterData').value = t.chartAfter || ''; $('fNotes').value = t.notes || '';
   setCheckedValues('dropBias', t.bias, 'dropBiasText');
   setCheckedValues('dropEntry', t.entry, 'dropEntryText');
   setCheckedValues('dropKL', t.kl, 'dropKLText');
@@ -705,55 +599,40 @@ function editTrade(id){
 function deleteTrade(id){
   if(confirm('Are you sure you want to delete this trade?')){
     data.trades = data.trades.filter(x => x.id !== id);
-    persist();
-    toast('Trade deleted');
+    persist(); toast('Trade deleted');
   }
 }
 
 function renderTrades(){
-  const search = val('tradeSearch').toLowerCase();
-  const resultFilter = val('tradeResult');
-  const dateFrom = val('dateFrom');
-  const dateTo = val('dateTo');
-  
-  const tbody = $('tradesBody');
+  const search = val('tradeSearch').toLowerCase(), resultFilter = val('tradeResult');
+  const dateFrom = val('dateFrom'), dateTo = val('dateTo'), tbody = $('tradesBody');
   if(!tbody) return;
 
   let filteredTrades = data.trades.filter(t => {
     const matchSearch = t.symbol.toLowerCase().includes(search);
-    
-    let matchResult = true;
-    const rValue = Number(t.r);
+    let matchResult = true, rValue = Number(t.r);
     if(resultFilter === 'Win') matchResult = rValue > 0;
     else if(resultFilter === 'Loss') matchResult = rValue < 0;
     else if(resultFilter === 'Breakeven') matchResult = rValue === 0;
-    
     let matchDate = true;
     if (dateFrom && t.date < dateFrom) matchDate = false;
     if (dateTo && t.date > dateTo) matchDate = false;
-
     return matchSearch && matchResult && matchDate;
   });
 
   const summaryCount = filteredTrades.length;
   const summaryTotalR = filteredTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
   const summaryTotalPnl = filteredTrades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  
   const summaryBar = $('tradesSummary');
+  
   if(summaryCount > 0) {
     summaryBar.style.display = 'flex';
     $('summaryCount').textContent = summaryCount;
-    
-    const totalRElement = $('summaryTotalR');
-    totalRElement.textContent = (summaryTotalR >= 0 ? '+' : '') + summaryTotalR.toFixed(2) + 'R';
-    totalRElement.className = (summaryTotalR >= 0 ? 'up' : 'down');
-    
-    const totalPnlElement = $('summaryTotalPnl');
-    totalPnlElement.textContent = (summaryTotalPnl >= 0 ? '+' : '') + '$' + summaryTotalPnl.toFixed(2);
-    totalPnlElement.className = (summaryTotalPnl >= 0 ? 'up' : 'down');
-  } else {
-    summaryBar.style.display = 'none';
-  }
+    $('summaryTotalR').textContent = (summaryTotalR >= 0 ? '+' : '') + summaryTotalR.toFixed(2) + 'R';
+    $('summaryTotalR').className = (summaryTotalR >= 0 ? 'up' : 'down');
+    $('summaryTotalPnl').textContent = (summaryTotalPnl >= 0 ? '+' : '') + '$' + summaryTotalPnl.toFixed(2);
+    $('summaryTotalPnl').className = (summaryTotalPnl >= 0 ? 'up' : 'down');
+  } else { summaryBar.style.display = 'none'; }
 
   if(filteredTrades.length === 0){
     tbody.innerHTML = `<tr><td colspan="10" class="empty">No trades found matching your filters.</td></tr>`;
@@ -761,11 +640,7 @@ function renderTrades(){
   }
 
   tbody.innerHTML = filteredTrades.map(t => {
-    const r = Number(t.r) || 0;
-    const pnl = Number(t.pnl) || 0;
-    const rClass = r > 0 ? 'up' : (r < 0 ? 'down' : '');
-    const pnlClass = pnl > 0 ? 'up' : (pnl < 0 ? 'down' : '');
-
+    const r = Number(t.r) || 0, pnl = Number(t.pnl) || 0;
     return `<tr>
       <td>${t.date}</td>
       <td style="font-weight:700">${t.symbol}</td>
@@ -773,8 +648,8 @@ function renderTrades(){
       <td style="color:var(--muted);">${t.bias || '-'}</td>
       <td style="color:var(--muted);">${t.entry || '-'}</td>
       <td style="color:var(--muted);">${t.kl || '-'}</td>
-      <td class="${rClass}">${(r > 0 ? '+' : '') + r.toFixed(1)}R</td>
-      <td class="${pnlClass}">${(pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2)}</td>
+      <td class="${r > 0 ? 'up' : (r < 0 ? 'down' : '')}">${(r > 0 ? '+' : '') + r.toFixed(1)}R</td>
+      <td class="${pnl >= 0 ? 'up' : 'down'}">${(pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2)}</td>
       <td>
         ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="openModal('image', '${t.chartBefore}')" title="Before Chart">` : ''}
         ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="openModal('image', '${t.chartAfter}')" title="After Chart">` : ''}
@@ -787,7 +662,6 @@ function renderTrades(){
   }).join('');
 }
 
-// دالة عرض الـ 6 مربعات الأصلية تماماً
 function renderMetrics() {
   const container = $('metrics');
   if(!container) return;
@@ -797,7 +671,6 @@ function renderMetrics() {
   const wins = data.trades.filter(t => (Number(t.r) || 0) > 0).length;
   const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
   
-  // حساب الـ Max Drawdown والـ Avg R بدقة حسب البيانات الأصلية
   let peak = 0, currentCum = 0, maxDd = 0;
   [...data.trades].reverse().forEach(t => {
     currentCum += Number(t.r) || 0;
@@ -826,8 +699,7 @@ function renderRecent() {
     return;
   }
   tbody.innerHTML = recentTrades.map(t => {
-    const r = Number(t.r) || 0;
-    const pnl = Number(t.pnl) || 0;
+    const r = Number(t.r) || 0, pnl = Number(t.pnl) || 0;
     return `<tr>
       <td>${t.date}</td>
       <td><b>${t.symbol}</b></td>
@@ -839,47 +711,129 @@ function renderRecent() {
   }).join('');
 }
 
+// دالة الرسم البياني الأصلية المحسنة مع المنحنيات ومحاور الأرقام والتدرج اللوني وفلاتر PnL و RR
 function renderPerformanceChart(targetId='performanceChart') {
   const container = $(targetId);
   if(!container) return;
+  
   if(data.trades.length === 0) {
     container.innerHTML = `<div class="empty" style="height:100%; display:flex; align-items:center; justify-content:center;">No data to display</div>`;
     return;
   }
+
+  const chartType = val('chartTypeSelect') || 'r';
+  const rrFilter = val('rrFilterSelect') || 'all';
+
+  let sortedTrades = [...data.trades].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  if(rrFilter === 'weekly') {
+    // تصفية أسبوعية بسيطة بناءً على الأسبوع الحالي
+    const now = new Date();
+    sortedTrades = sortedTrades.filter(t => {
+      const d = new Date(t.date);
+      return (now - d) / (1000 * 60 * 60 * 24) <= 7;
+    });
+  } else if(rrFilter === 'monthly') {
+    const now = new Date();
+    sortedTrades = sortedTrades.filter(t => {
+      const d = new Date(t.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+  }
+
+  if(sortedTrades.length === 0) {
+    container.innerHTML = `<div class="empty" style="height:100%; display:flex; align-items:center; justify-content:center;">No data matching filter</div>`;
+    return;
+  }
+
   let cumulative = 0;
-  const points = [...data.trades].reverse().map((t, i) => {
-    cumulative += Number(t.r) || 0;
-    return `<text x="${i * 50}" y="${100 - cumulative * 10}" fill="var(--text)">•</text>`;
-  }).join('');
-  
-  container.innerHTML = `<svg viewBox="0 0 500 200" style="width:100%; height:100%;"><polyline fill="none" stroke="var(--green)" stroke-width="2" points="${data.trades.map((t, i) => `${i * 50},${100 - i * 5}`).join(' ')}"/></svg>`;
+  const values = sortedTrades.map(t => {
+    cumulative += chartType === 'pnl' ? (Number(t.pnl) || 0) : (Number(t.r) || 0);
+    return {val: cumulative, date: t.date};
+  });
+
+  const maxVal = Math.max(...values.map(v => v.val), 3);
+  const minVal = Math.min(...values.map(v => v.val), 0);
+  const range = maxVal - minVal || 1;
+
+  const width = 500, height = 230;
+  const paddingX = 40, paddingY = 25;
+  const graphWidth = width - paddingX - 20;
+  const graphHeight = height - (paddingY * 2);
+
+  const points = values.map((item, index) => {
+    const x = paddingX + (index * (graphWidth / Math.max(values.length - 1, 1)));
+    const y = (height - paddingY) - ((item.val - minVal) / range) * graphHeight;
+    return {x, y, ...item};
+  });
+
+  // تكوين مسار المنحنى الأنيق (Smooth Curve)
+  let pathD = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const xc = (points[i].x + points[i + 1].x) / 2;
+    const yc = (points[i].y + points[i + 1].y) / 2;
+    pathD += ` Q ${points[i].x} ${points[i].y}, ${xc} ${yc}`;
+  }
+  if(points.length > 1) {
+    pathD += ` T ${points[points.length - 1].x} ${points[points.length - 1].y}`;
+  }
+
+  const firstX = points[0].x;
+  const lastX = points[points.length - 1].x;
+  const areaD = `${pathD} L ${lastX} ${height - paddingY} L ${firstX} ${height - paddingY} Z`;
+
+  // محاور الأرقام الجانبية
+  const steps = 4;
+  let axisHTML = '';
+  for(let i = 0; i <= steps; i++) {
+    const valAtStep = minVal + (range / steps) * i;
+    const yPos = (height - paddingY) - (i / steps) * graphHeight;
+    axisHTML += `<text x="${paddingX - 8}" y="${yPos + 4}" fill="var(--muted)" font-size="9" text-anchor="end">${chartType === 'pnl' ? '$' + valAtStep.toFixed(0) : valAtStep.toFixed(1)}</text>`;
+    axisHTML += `<line x1="${paddingX}" y1="${yPos}" x2="${width - 10}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="2,2" opacity="0.4"/>`;
+  }
+
+  // التواريخ أسفل الرسم البياني
+  let datesHTML = `<text x="${paddingX}" y="${height - 5}" fill="var(--muted)" font-size="9">Start</text>`;
+  if(points.length > 1) {
+    const midIdx = Math.floor(points.length / 2);
+    datesHTML += `<text x="${points[midIdx].x}" y="${height - 5}" fill="var(--muted)" font-size="9" text-anchor="middle">${points[midIdx].date}</text>`;
+    datesHTML += `<text x="${lastX}" y="${height - 5}" fill="var(--muted)" font-size="9" text-anchor="end">${points[points.length - 1].date}</text>`;
+  }
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%;">
+      <defs>
+        <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/>
+        </linearGradient>
+      </defs>
+      ${axisHTML}
+      <path d="${areaD}" fill="url(#chartGrad)"/>
+      <path d="${pathD}" fill="none" stroke="var(--green)" stroke-width="2.5"/>
+      ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--green)" stroke="var(--panel)" stroke-width="1.5"><title>${p.date}: ${chartType === 'pnl' ? '$' + p.val : p.val + 'R'}</title></circle>`).join('')}
+      ${datesHTML}
+    </svg>
+  `;
 }
 
 function renderAnalytics() {
-  const sessionEl = $('sessionStats');
-  const biasEl = $('biasStats');
-  const symbolEl = $('symbolStats');
-  if(sessionEl) sessionEl.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
-  if(biasEl) biasEl.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
-  if(symbolEl) symbolEl.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
+  $('sessionStats').innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
+  $('biasStats').innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
+  $('symbolStats').innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
 }
 
 function saveNote() {
   const text = val('noteText');
   if(!text.trim()) return;
   data.notes.unshift({id: Date.now(), date: new Date().toISOString().slice(0,10), text});
-  $('noteText').value = '';
-  persist();
-  toast('Note saved!');
+  $('noteText').value = ''; persist(); toast('Note saved!');
 }
 
 function renderNotes() {
   const list = $('notesList');
   if(!list) return;
-  if(data.notes.length === 0) {
-    list.innerHTML = `<div class="empty">No notes found.</div>`;
-    return;
-  }
+  if(data.notes.length === 0) { list.innerHTML = `<div class="empty">No notes found.</div>`; return; }
   list.innerHTML = data.notes.map(n => `
     <div class="listItem" style="flex-direction:column; align-items:flex-start; gap:6px;">
       <div style="font-size:11px; color:var(--muted);">${n.date}</div>
@@ -891,14 +845,13 @@ function renderNotes() {
 
 function deleteNote(id) {
   data.notes = data.notes.filter(n => n.id !== id);
-  persist();
-  toast('Note deleted');
+  persist(); toast('Note deleted');
 }
 
 function openModal(type, extra='') {
   $('modalOverlay').classList.add('active');
   if(type === 'chart') {
-    $('modalTitle').setTitle = 'Performance Overview (Fullscreen)';
+    $('modalTitle').textContent = 'Performance Overview (Fullscreen)';
     $('modalBody').innerHTML = `<div class="chart" id="modalChart" style="height:100%;"></div>`;
     renderPerformanceChart('modalChart');
   } else if(type === 'calendar') {
@@ -911,13 +864,8 @@ function openModal(type, extra='') {
   }
 }
 
-function closeModal() {
-  $('modalOverlay').classList.remove('active');
-}
-
-function closeModalOnBg(e) {
-  if(e.target === $('modalOverlay')) closeModal();
-}
+function closeModal() { $('modalOverlay').classList.remove('active'); }
+function closeModalOnBg(e) { if(e.target === $('modalOverlay')) closeModal(); }
 
 function renderAll() {
   renderMetrics();
