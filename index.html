@@ -1,1018 +1,1481 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0d1a10">
-<title>R Journal</title>
-<style>
-:root{
- --bg:#081109;--panel:#0e1b11;--panel2:#122116;--line:#263a29;--text:#eef5ee;--muted:#91a294;
- --green:#73d58a;--green2:#b6e9a5;--red:#ff6d6d;--yellow:#e8c66a;--purple:#a79cff;--blue:#75a9ff;
- --shadow:0 10px 30px rgba(0,0,0,.22);--radius:14px;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chat</title>
 
-body.theme-light {
- --bg:#f4f6f5;--panel:#ffffff;--panel2:#e9ece9;--line:#d1d8d2;--text:#1a231b;--muted:#5f6e61;
- --green:#10b981;--red:#ef4444;--shadow:0 4px 20px rgba(0,0,0,0.06);
-}
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-body.theme-blue {
- --bg:#090d16;--panel:#101726;--panel2:#162035;--line:#202e4a;--text:#edf2f7;--muted:#8fa0be;
- --green:#38ef7d;--red:#ff5252;--shadow:0 10px 30px rgba(0,0,0,.35);
-}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="highlight-theme">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
-body.theme-gray {
- --bg:#121212;--panel:#1e1e1e;--panel2:#2a2a2a;--line:#3a3a3a;--text:#f5f5f5;--muted:#aaaaaa;
- --green:#9e9e9e;--red:#cf6679;--shadow:0 10px 30px rgba(0,0,0,.4);
-}
+    <style>
+        /* Basic Reset & Root Variables */
+        :root {
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            --transition-speed: 0.3s ease;
+            /* Dark Theme (Default) */
+            --bg-color: #212121;
+            --text-color: #e0e0e0;
+            --primary-color: #4dabf7;
+            --primary-color-rgb: 77, 171, 247;
+            --secondary-color: #a0a0a0;
+            --card-bg: #2c2c2c;
+            --input-bg: #2c2c2c;
+            --input-border: #444;
+            --button-bg: #4dabf7;
+            --button-text: #111;
+            --button-hover-bg: #2196f3;
+            --error-color: #f44336;
+            --warning-color: #ffca28;
+            --code-bg: #1a1a1a;
+            --border-color: #333;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --highlight-bg: var(--code-bg);
+            --user-bubble-bg: #4dabf7;
+            --user-bubble-text: #111;
+            --model-bubble-bg: #2c2c2c;
+            --copy-button-bg: rgba(160, 160, 160, 0.15);
+            --copy-button-hover-bg: rgba(160, 160, 160, 0.3);
+            --copy-button-text: var(--secondary-color);
+            --copy-button-copied-bg: #34c759;
+            --copy-button-copied-text: #111;
+            --download-button-bg: rgba(160, 160, 160, 0.15);
+            --download-button-hover-bg: rgba(160, 160, 160, 0.3);
+            --download-button-text: var(--secondary-color);
+            --chat-bg: #212121;
+            --timestamp-color: #666;
+            --input-container-bg: #2c2c2c;
+            --pill-bg: #333;
+            --pill-hover-bg: #444;
+            --header-bg: #1a1a1a;
+        }
 
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;transition:background 0.3s, color 0.3s}
-button,input,select,textarea{font:inherit}button{cursor:pointer}
-.app{display:flex;min-height:100vh}
-.sidebar{width:240px;border-right:1px solid var(--line);background:var(--panel);padding:18px 14px;position:fixed;inset:0 auto 0 0;z-index:5}
-.brand{display:flex;align-items:center;padding:10px 8px 25px}.brand b{font-size:17px;letter-spacing:.6px}
-nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);text-align:left;padding:11px 12px;border-radius:10px;display:flex;gap:12px;align-items:center;opacity:0.8}.nav:hover,.nav.active{background:var(--panel2);color:var(--green);opacity:1}.nav span{width:18px;text-align:center;color:var(--muted)}
-.main{margin-left:240px;width:calc(100% - 240px);padding:18px 22px 30px}
-.top{height:48px;display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px}
-.topRight{display:flex;gap:10px;align-items:center}
-.head{display:flex;justify-content:space-between;align-items:end;margin:10px 0 16px}.head h1{font-size:24px;margin:0}.head p{margin:5px 0 0;color:var(--muted)}
+        html[data-theme='light'] {
+            --bg-color: #ffffff;
+            --text-color: #212529;
+            --primary-color: #007bff;
+            --primary-color-rgb: 0, 123, 255;
+            --secondary-color: #6c757d;
+            --card-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #e0e0e0;
+            --button-bg: #007bff;
+            --button-text: #ffffff;
+            --button-hover-bg: #0056b3;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --code-bg: #f5f5f5;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --highlight-bg: var(--code-bg);
+            --user-bubble-bg: #007bff;
+            --user-bubble-text: #ffffff;
+            --model-bubble-bg: #f8f9fa;
+            --copy-button-bg: rgba(108, 117, 125, 0.1);
+            --copy-button-hover-bg: rgba(108, 117, 125, 0.2);
+            --copy-button-text: var(--secondary-color);
+            --copy-button-copied-bg: #28a745;
+            --copy-button-copied-text: #ffffff;
+            --download-button-bg: rgba(108, 117, 125, 0.1);
+            --download-button-hover-bg: rgba(108, 117, 125, 0.2);
+            --download-button-text: var(--secondary-color);
+            --chat-bg: #ffffff;
+            --timestamp-color: #999;
+            --input-container-bg: #f8f9fa;
+            --pill-bg: #e9ecef;
+            --pill-hover-bg: #dee2e6;
+            --header-bg: #f8f9fa;
+        }
 
-.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
-.metric,.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.metric{padding:15px;min-height:108px;cursor:pointer;transition:transform 0.15s, border-color 0.15s;}
-.metric:hover{transform:translateY(-2px);border-color:var(--green);}
-.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:23px;font-weight:750;margin:8px 0}.up{color:var(--green)}.down{color:var(--red)}.sub{font-size:11px;color:var(--muted)}
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: var(--font-family); 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            line-height: 1.6; 
+            transition: background-color var(--transition-speed), color var(--transition-speed); 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+            overflow: hidden;
+        }
 
-.row2{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:12px}
-.card{padding:15px}.card h3{font-size:14px;margin:0 0 10px}.cardHead{display:flex;justify-content:space-between;align-items:center}
-.cardActions{display:flex;gap:8px;align-items:center}
-.iconBtn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.2s}
-.iconBtn:hover{border-color:var(--green);color:var(--green)}
-.select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;outline:none}
-.chart{height:280px;position:relative}.chart svg{width:100%;height:100%}
+        /* Header */
+        .header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .header h1 {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .theme-switcher {
+            cursor: pointer;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-color);
+            font-size: 0.9em;
+            transition: all var(--transition-speed);
+        }
+        .theme-switcher:hover {
+            background-color: var(--pill-bg);
+        }
+        .settings-btn {
+            cursor: pointer;
+            padding: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            transition: background-color var(--transition-speed);
+        }
+        .settings-btn:hover {
+            background-color: var(--pill-bg);
+        }
 
-/* Monthly Calendar Styles */
-.calHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.calHeader span{font-weight:bold;font-size:13px;color:var(--green)}
-.calNavBtn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:2px 8px;cursor:pointer}
-.calNavBtn:hover{border-color:var(--green)}
-.calWeekDays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:bold}
-.calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.day{min-height:48px;border:1px solid var(--line);border-radius:7px;padding:4px 3px;text-align:center;background:var(--panel2);cursor:pointer;transition:transform 0.1s, border-color 0.1s;display:flex;flex-direction:column;justify-content:space-between;}.day:hover{transform:scale(1.04);border-color:var(--green);}.day.today{border:2px solid var(--green);box-shadow: 0 0 8px rgba(115,213,138,0.4);}.day.pos{background:rgba(115,213,138,0.15);border-color:rgba(115,213,138,0.4)}.day.neg{background:rgba(255,109,109,0.15);border-color:rgba(255,109,109,0.4)}.day.emptyDay{background:transparent;border:0;cursor:default}.day strong{display:block;font-size:10px;color:var(--muted)}.day small{font-size:10px;font-weight:bold}
+        /* Main Chat Area */
+        .main-container {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
 
-/* Modal Styles */
-.modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:99;padding:20px}
-.modalOverlay.active{display:flex}
-.modalCard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);width:100%;max-width:1000px;max-height:90vh;display:flex;flex-direction:column;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.5);position:relative;overflow:hidden}
-.modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid var(--line);padding-bottom:10px}
-.modalHead h3{margin:0;font-size:18px}
-.modalBody{flex:1;overflow:auto}
-.modalBody .chart{height:500px}
-.modalBody .calGrid{gap:8px}
-.modalBody .day{min-height:75px;padding:8px}
-.modalBody .day strong{font-size:12px}
-.modalBody .day small{font-size:12px}
+        /* Settings Panel */
+        .settings-panel {
+            position: absolute;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100%;
+            background-color: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            transition: right var(--transition-speed);
+            z-index: 100;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .settings-panel.open {
+            right: 0;
+        }
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .settings-header h2 {
+            font-size: 1.2em;
+            margin: 0;
+        }
+        .close-settings {
+            cursor: pointer;
+            padding: 4px 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2em;
+        }
 
-/* Clean Dropdown Style with Checkmark */
-.custom-dropdown { position: relative; width: 100%; }
-.dropdown-select-btn { width: 100%; background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 10px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-.dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; margin-top: 4px; max-height: 160px; overflow-y: auto; z-index: 10; padding: 4px; box-shadow: var(--shadow); }
-.dropdown-content.show { display: block; }
-.dropdown-option { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; cursor: pointer; border-radius: 6px; font-size: 13px; color: var(--text); transition: background 0.15s; }
-.dropdown-option:hover { background: var(--panel2); }
-.dropdown-option .check-mark { opacity: 0; font-weight: bold; color: var(--green); font-size: 14px; }
-.dropdown-option.selected .check-mark { opacity: 1; }
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .chat-content {
+            width: 100%;
+            max-width: 768px;
+            padding: 0 20px;
+        }
+        .chat-placeholder {
+            text-align: center;
+            color: var(--secondary-color);
+            font-size: 1.5em;
+            margin-top: 100px;
+        }
 
-.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px}.stat{padding:13px;min-height:94px}.stat .v{font-size:20px;font-weight:750;margin:8px 0 4px}
-.row3{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-weight:500}.pill{padding:4px 7px;border-radius:12px;background:rgba(115,213,138,0.2);color:var(--green);font-size:10px}.pill.red{background:rgba(255,109,109,0.2);color:var(--red)}
-.journal{max-height:220px;overflow:auto}
-.page{display:none}.page.active{display:block}.sectionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.formCard{max-width:1000px}.formGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;outline:none}.field textarea{min-height:90px;resize:vertical}.span2{grid-column:span 2}.span3{grid-column:span 3}.actions{display:flex;gap:8px;margin-top:15px}.primary{background:var(--green);border:0;color:#0a160c;font-weight:750;border-radius:9px;padding:11px 16px}.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:11px 16px}
-.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.toolbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.list{display:grid;gap:9px}.listItem{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px}.danger{color:var(--red);background:transparent;border:0;font-weight:bold;cursor:pointer}.editBtn{color:var(--green);background:transparent;border:0;font-weight:bold;cursor:pointer;margin-right:8px}
-.toast{position:fixed;right:20px;bottom:20px;background:var(--green);color:#000;padding:11px 15px;border-radius:10px;display:none;z-index:20;font-weight:bold}
-.thumbImg{width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--line);cursor:pointer;margin-right:4px}
-</style>
+        /* Messages */
+        .message-group {
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        .message-group.user {
+            align-items: flex-end;
+        }
+        .message-group.model {
+            align-items: flex-start;
+        }
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 4px;
+            padding: 0 12px;
+            font-size: 0.85em;
+        }
+        .message-group.user .message-header {
+            flex-direction: row-reverse;
+        }
+        .message-author {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        .message-timestamp {
+            color: var(--timestamp-color);
+        }
+        .chat-bubble {
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 85%;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        .user-bubble {
+            background-color: var(--user-bubble-bg);
+            color: var(--user-bubble-text);
+            border-bottom-right-radius: 4px;
+        }
+        .model-bubble {
+            background-color: var(--model-bubble-bg);
+            color: var(--text-color);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .file-info {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Input Area */
+        .input-container {
+            background-color: var(--bg-color);
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .input-wrapper {
+            width: 100%;
+            max-width: 768px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .input-box {
+            background-color: var(--input-container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 1rem;
+            font-family: var(--font-family);
+            resize: none;
+            outline: none;
+            max-height: 200px;
+            line-height: 1.5;
+        }
+        .input-field::placeholder {
+            color: var(--secondary-color);
+        }
+        .send-button {
+            background-color: var(--primary-color);
+            color: var(--button-text);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color var(--transition-speed);
+            white-space: nowrap;
+        }
+        .send-button:hover:not(:disabled) {
+            background-color: var(--button-hover-bg);
+        }
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Action Pills */
+        .action-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .pill {
+            background-color: var(--pill-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.85em;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pill:hover {
+            background-color: var(--pill-hover-bg);
+            transform: translateY(-1px);
+        }
+        .pill svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Settings Form Styles */
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 0.9em;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="password"],
+        .input-group input[type="number"],
+        .input-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.9em;
+        }
+        .input-group select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236c757d%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            padding-right: 30px;
+        }
+        .api-key-options {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            font-size: 0.85em;
+        }
+        .api-key-warning {
+            font-size: 0.75em;
+            color: var(--warning-color);
+            margin-top: 6px;
+        }
+        details {
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+        details summary {
+            cursor: pointer;
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .config-options {
+            display: grid;
+            gap: 12px;
+        }
+
+        /* Status */
+        #status {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            z-index: 1000;
+        }
+        #status.show {
+            display: flex;
+        }
+        #status.error {
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+        #status.warning {
+            border-color: var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        /* Token Counter */
+        .token-counter {
+            font-size: 0.8em;
+            color: var(--secondary-color);
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        /* Hidden File Input */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Loader */
+        .loader {
+            border: 2px solid var(--input-border);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Streaming indicator */
+        .streaming-indicator {
+            display: inline-block;
+            animation: blink 1s step-start 0s infinite;
+            opacity: 0.7;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Code blocks in messages */
+        .model-bubble h1, .model-bubble h2, .model-bubble h3 { 
+            margin-top: 0.8em; 
+            margin-bottom: 0.4em; 
+            font-weight: 600; 
+        }
+        .model-bubble h1 { font-size: 1.4em; } 
+        .model-bubble h2 { font-size: 1.2em; } 
+        .model-bubble h3 { font-size: 1.1em; }
+        .model-bubble p { margin-bottom: 0.8em; }
+        .model-bubble ul, .model-bubble ol { 
+            margin-left: 20px; 
+            margin-bottom: 0.8em; 
+        }
+        .model-bubble li { margin-bottom: 0.3em; }
+        .model-bubble blockquote { 
+            border-left: 3px solid var(--primary-color); 
+            padding-left: 12px; 
+            margin: 0.8em 0; 
+            color: var(--secondary-color); 
+            font-style: italic; 
+        }
+        .model-bubble pre {
+            background-color: var(--code-bg);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 8px 0;
+            position: relative;
+            padding-top: 35px;
+        }
+        .model-bubble pre code {
+            background-color: transparent;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85em;
+            color: inherit;
+            white-space: pre;
+        }
+        .model-bubble code:not(pre code) {
+            background-color: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        /* Code action buttons */
+        .code-action-button {
+            position: absolute;
+            top: 5px;
+            padding: 4px 8px;
+            font-size: 0.75em;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--copy-button-bg);
+            color: var(--copy-button-text);
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .model-bubble pre:hover .code-action-button {
+            opacity: 1;
+        }
+        .copy-code-button {
+            right: 75px;
+        }
+        .copy-code-button.copied {
+            background-color: var(--copy-button-copied-bg);
+            color: var(--copy-button-copied-text);
+        }
+        .download-code-button {
+            right: 5px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+    </style>
 </head>
 <body>
-<div class="app">
-<aside class="sidebar">
- <div class="brand"><div><b>R JOURNAL</b></div></div>
- <nav>
-  <button class="nav active" data-page="dashboard"><span>⌂</span>Dashboard</button>
-  <button class="nav" data-page="add"><span>＋</span>Add Trade</button>
-  <button class="nav" data-page="trades"><span>☷</span>Trades</button>
-  <button class="nav" data-page="analytics"><span>⌁</span>Analytics</button>
-  <button class="nav" data-page="strategies"><span>◈</span>Strategies</button>
-  <button class="nav" data-page="notes"><span>▣</span>Journal & Notes</button>
- </nav>
-</aside>
-<main class="main">
-<header class="top">
-  <div class="topRight">
-    <label style="font-size:12px; color:var(--muted);">Theme:</label>
-    <select class="select" id="themeSelect" onchange="changeTheme(this.value)">
-      <option value="dark">Dark Emerald</option>
-      <option value="light">Light Gray</option>
-      <option value="blue">Midnight Blue</option>
-      <option value="gray">Neutral Dark Gray</option>
-    </select>
-  </div>
-</header>
-
-<section id="dashboard" class="page active">
- <div class="head"><div><h1>Dashboard</h1><p>Your trading performance at a glance</p></div></div>
- 
- <div class="grid6" id="metrics"></div>
-
- <div class="row2">
-  <div class="card">
-    <div class="cardHead">
-      <h3>Performance Overview</h3>
-      <div class="cardActions">
-        <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
-          <option value="r">Total R</option>
-          <option value="pnl">Total PnL ($)</option>
-        </select>
-        <select class="select" id="rrFilterSelect" onchange="renderPerformanceChart()">
-          <option value="all">RR Filter: All</option>
-          <option value="weekly">RR Filter: Weekly</option>
-          <option value="monthly">RR Filter: Monthly</option>
-          <option value="pnl_filter">PnL Filter</option>
-        </select>
-        <button class="iconBtn" onclick="openModal('chart')" title="Maximize Chart">⛶</button>
-      </div>
-    </div>
-    <div class="chart" id="performanceChart" style="margin-top:10px"></div>
-  </div>
-  <div class="card">
-    <div class="cardHead">
-      <h3>Trading Calendar</h3>
-      <button class="iconBtn" onclick="openModal('calendar')" title="Maximize Calendar">⛶</button>
-    </div>
-    <div id="calendarGridWrapper" style="margin-top:10px"></div>
-  </div>
- </div>
-
- <div class="stats" id="stats"></div>
- <div class="row3">
-  <div class="card"><div class="cardHead"><h3>☷ Recent Trades</h3></div><div class="journal"><table class="table"><thead><tr><th>Date</th><th>Symbol</th><th>Setup</th><th>R</th><th>PnL</th><th>Result</th></tr></thead><tbody id="recent"></tbody></table></div></div>
- </div>
-</section>
-
-<!-- Fullscreen Modal Container -->
-<div class="modalOverlay" id="modalOverlay" onclick="closeModalOnBg(event)">
-  <div class="modalCard">
-    <div class="modalHead">
-      <h3 id="modalTitle">Full Screen View</h3>
-      <button class="iconBtn" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modalBody" id="modalBody"></div>
-  </div>
-</div>
-
-<section id="add" class="page">
- <div class="head"><div><h1 id="formTitle">Add Trade</h1><p>Capture the trade exactly as you executed it.</p></div></div>
- <div class="card formCard"><div class="formGrid">
-  <input type="hidden" id="editTradeId">
-  <div class="field"><label>Date</label><input id="fDate" type="date"></div>
-  <div class="field"><label>Time</label><input id="fTime" type="time"></div>
-  <div class="field"><label>Symbol</label><select id="fSymbol"><option>MNQ</option><option>MES</option><option>NQ</option><option>ES</option><option>Other</option></select></div>
-  
-  <div class="field">
-    <label>Bias (Multi-select)</label>
-    <div class="custom-dropdown" id="dropBias">
-      <div class="dropdown-select-btn" onclick="toggleDropdown('dropBias')">
-        <span id="dropBiasText">Select options...</span> <span>▼</span>
-      </div>
-      <div class="dropdown-content" id="fBiasBox"></div>
-    </div>
-  </div>
-
-  <div class="field"><label>Session</label><select id="fSession"><option>NY AM</option><option>NY PM</option><option>London</option><option>Asia</option></select></div>
-  <div class="field"><label>Setup Grade</label><select id="fGrade"><option>A+</option><option>A</option><option>B</option><option>C</option><option>F</option></select></div>
-  
-  <div class="field">
-    <label>Entry (Multi-select)</label>
-    <div class="custom-dropdown" id="dropEntry">
-      <div class="dropdown-select-btn" onclick="toggleDropdown('dropEntry')">
-        <span id="dropEntryText">Select options...</span> <span>▼</span>
-      </div>
-      <div class="dropdown-content" id="fEntryBox"></div>
-    </div>
-  </div>
-
-  <div class="field">
-    <label>KL / Key Level (Multi-select)</label>
-    <div class="custom-dropdown" id="dropKL">
-      <div class="dropdown-select-btn" onclick="toggleDropdown('dropKL')">
-        <span id="dropKLText">Select options...</span> <span>▼</span>
-      </div>
-      <div class="dropdown-content" id="fKLBox"></div>
-    </div>
-  </div>
-
-  <div class="field">
-    <label>Narrative (Multi-select)</label>
-    <div class="custom-dropdown" id="dropNarrative">
-      <div class="dropdown-select-btn" onclick="toggleDropdown('dropNarrative')">
-        <span id="dropNarrativeText">Select options...</span> <span>▼</span>
-      </div>
-      <div class="dropdown-content" id="fNarrativeBox"></div>
-    </div>
-  </div>
-
-  <div class="field">
-    <label>Trade Status</label>
-    <select id="fTradeStatus">
-      <option>In-Plan</option>
-      <option>Out-of-Plan</option>
-      <option>Missed Trade</option>
-    </select>
-  </div>
-
-  <div class="field"><label>Entry Price</label><input id="fEntryPrice" type="number" step="any"></div>
-  <div class="field"><label>Exit Price</label><input id="fExitPrice" type="number" step="any"></div>
-  <div class="field"><label>Position Size</label><input id="fSize" type="number" step="1"></div>
-  <div class="field"><label>P&L ($)</label><input id="fPnl" type="number" step="any"></div>
-  <div class="field"><label>Planned Risk ($)</label><input id="fRisk" type="number" step="any"></div>
-  <div class="field"><label>Stop Loss</label><input id="fSL" type="number" step="any"></div>
-  <div class="field"><label>Take Profit</label><input id="fTP" type="number" step="any"></div>
-  <div class="field"><label>Planned R:R</label><input id="fRR" type="number" step="any" placeholder="2.0"></div>
-  <div class="field"><label>Result (R)</label><input id="fR" type="number" step="any" placeholder="e.g. 1.5"></div>
-  <div class="field"><label>Execution Quality</label><select id="fExec"><option>Excellent</option><option>Good</option><option>Average</option><option>Poor</option></select></div>
-  <div class="field"><label>Confidence</label><input id="fConfidence" type="number" min="1" max="10" placeholder="1–10"></div>
-  <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div>
-  <div class="field span2"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
-  
-  <div class="field span3"><label>Before Chart Image (صورة قبل الدخول)</label><input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')"><input type="hidden" id="fChartBeforeData"></div>
-  <div class="field span3"><label>After Chart Image (صورة بعد الدخول)</label><input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')"><input type="hidden" id="fChartAfterData"></div>
-
-  <div class="field span3"><label>Notes</label><textarea id="fNotes" placeholder="What happened? What did you learn?"></textarea></div>
- </div><div class="actions"><button class="primary" onclick="saveTrade()">Save Trade</button><button class="secondary" onclick="clearForm()">Clear / Cancel</button></div></div>
-</section>
-
-<section id="trades" class="page">
-  <div class="head">
-    <div><h1>Trades Log</h1><p>Your complete trade history.</p></div>
-    <button class="primary" onclick="go('add')">＋ Add Trade</button>
-  </div>
-  <div class="card">
-    <div class="toolbar">
-      <input class="select" id="tradeSearch" placeholder="Search symbol..." oninput="renderTrades()">
-      <select class="select" id="tradeResult" onchange="renderTrades()">
-        <option value="All">All Results</option>
-        <option value="Win">Win</option>
-        <option value="Loss">Loss</option>
-        <option value="Breakeven">Breakeven</option>
-      </select>
-    </div>
-    <table class="table">
-      <thead>
-        <tr><th>Date</th><th>Symbol</th><th>Status</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Images</th><th>Actions</th></tr>
-      </thead>
-      <tbody id="tradesBody"></tbody>
-    </table>
-  </div>
-</section>
-
-<section id="analytics" class="page"><div class="head"><div><h1>Analytics</h1></div></div><div class="sectionGrid"><div class="card"><h3>Performance by Session</h3><div id="sessionStats"></div></div><div class="card"><h3>Performance by Bias</h3><div id="biasStats"></div></div><div class="card"><h3>Performance by Symbol</h3><div id="symbolStats"></div></div></div></section>
-
-<section id="strategies" class="page">
-  <div class="head">
-    <div><h1>Strategies & Options</h1><p>Customize KL, Entry, Bias, Narrative options and manage backups.</p></div>
-    <div style="display:flex; gap:8px;">
-      <button class="primary" onclick="exportData()">💾 Export Backup</button>
-      <button class="secondary" onclick="$('importFile').click()">📂 Import Backup</button>
-      <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
-    </div>
-  </div>
-  <div class="sectionGrid" id="strategyManager"></div>
-</section>
-
-<section id="notes" class="page"><div class="head"><div><h1>Journal & Notes</h1></div></div><div class="card"><div class="formGrid"><div class="field span3"><label>Quick Notes</label><textarea id="noteText"></textarea></div></div><div class="actions"><button class="primary" onclick="saveNote()">Save Note</button></div></div><div style="height:12px"></div><div class="card"><div class="list" id="notesList"></div></div></section>
-</main></div><div class="toast" id="toast"></div>
-
-<script>
-const KEY='rjournal_pro_v11_clean';
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
- theme:'dark',trades:[],notes:[],
- lists:{
-  KL:[],
-  Entry:[],
-  Bias:[],
-  Narrative:[]
- }
-};
-const $=id=>document.getElementById(id);
-
-let currentCalDate = new Date();
-
-function changeTheme(theme){
- data.theme=theme;
- document.body.className='';
- if(theme==='light') document.body.classList.add('theme-light');
- if(theme==='blue') document.body.classList.add('theme-blue');
- if(theme==='gray') document.body.classList.add('theme-gray');
- persist();
-}
-
-function persist(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
-function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
-function go(page){
- document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
- $(page).classList.add('active');
- document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
- if(page==='add' && !$('editTradeId').value) {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  $('fDate').value = `${year}-${month}-${day}`;
- }
- renderAll();scrollTo(0,0);
-}
-document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
-function val(id){return $(id).value}
-
-function encodeImage(input, targetId) {
- if (input.files && input.files[0]) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
-   $(targetId).value = e.target.result;
-  };
-  reader.readAsDataURL(input.files[0]);
- }
-}
-
-function exportData(){
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `r_journal_backup_${new Date().toISOString().slice(0,10)}.json`);
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-  toast('Backup exported successfully!');
-}
-
-function importData(input){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const imported = JSON.parse(e.target.result);
-      if(imported && imported.trades && imported.lists){
-        if(confirm('This will replace your current trades and settings with the backup file. Are you sure?')){
-          data = imported;
-          persist();
-          toast('Data imported successfully!');
-        }
-      } else {
-        alert('Invalid backup file format.');
-      }
-    } catch(err) {
-      alert('Error reading JSON file.');
-    }
-    input.value = '';
-  };
-  reader.readAsText(file);
-}
-
-function toggleDropdown(dropId) {
-  const content = $(dropId).querySelector('.dropdown-content');
-  document.querySelectorAll('.dropdown-content').forEach(d => {
-    if(d !== content) d.classList.remove('show');
-  });
-  content.classList.toggle('show');
-}
-
-window.addEventListener('click', function(e) {
-  if (!e.target.closest('.custom-dropdown')) {
-    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
-  }
-});
-
-function updateDropdownText(boxId, textId) {
-  const container = $(boxId);
-  const textEl = $(textId);
-  if(!container || !textEl) return;
-  const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
-    checked.push(opt.getAttribute('data-value'));
-  });
-  if(checked.length === 0){
-    textEl.textContent = "Select options...";
-    textEl.style.color = "var(--muted)";
-  } else {
-    textEl.textContent = checked.join(', ');
-    textEl.style.color = "var(--text)";
-  }
-}
-
-function getCheckedValues(containerId) {
-  const container = $(containerId);
-  if(!container) return '';
-  const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
-    checked.push(opt.getAttribute('data-value'));
-  });
-  return checked.join(', ');
-}
-
-function setCheckedValues(containerId, valuesStr, textId) {
-  const container = $(containerId);
-  if(!container) return;
-  const arr = (valuesStr || '').split(',').map(s => s.trim());
-  container.querySelectorAll('.dropdown-option').forEach(opt => {
-    const val = opt.getAttribute('data-value');
-    if(arr.includes(val)){
-      opt.classList.add('selected');
-    } else {
-      opt.classList.remove('selected');
-    }
-  });
-  updateDropdownText(containerId, textId);
-}
-
-function renderStrategiesManager() {
-  const container = $('strategyManager');
-  if(!container) return;
-  
-  const keys = [
-    {key: 'KL', title: 'KL'},
-    {key: 'Entry', title: 'Entry'},
-    {key: 'Bias', title: 'Bias'},
-    {key: 'Narrative', title: 'Narrative'}
-  ];
-
-  container.innerHTML = keys.map(k => `
-    <div class="card">
-      <h3>${k.title}</h3>
-      <div style="display:flex; gap:8px; margin-bottom:10px;">
-        <input class="select" style="flex:1" id="newOpt_${k.key}" placeholder="Add ${k.title}..." onkeydown="if(event.key==='Enter')addStrategyItem('${k.key}')">
-        <button class="primary" onclick="addStrategyItem('${k.key}')">+ Add</button>
-      </div>
-      <div class="list" style="max-height:200px; overflow-y:auto;">
-         ${(data.lists[k.key] || []).length === 0 ? '<div style="color:var(--muted); font-size:12px; padding:8px;">No options added yet.</div>' : ''}
-         ${(data.lists[k.key] || []).map(item => `
-          <div class="listItem">
-            <span>${item}</span>
-            <button class="danger" onclick="deleteStrategyItem('${k.key}', '${item}')">Delete</button>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-}
-
-function addStrategyItem(category) {
-  const input = $(`newOpt_${category}`);
-  if(!input || !input.value.trim()) return;
-  const val = input.value.trim();
-  if(!data.lists[category]) data.lists[category] = [];
-  if(!data.lists[category].includes(val)){
-    data.lists[category].push(val);
-    persist();
-    toast('Added successfully');
-  }
-  input.value = '';
-}
-
-function deleteStrategyItem(category, item) {
-  data.lists[category] = data.lists[category].filter(x => x !== item);
-  persist();
-  toast('Deleted successfully');
-}
-
-function renderDropdowns() {
-  const map = {
-    'fKLBox': {list: data.lists.KL, box: 'dropKL', text: 'dropKLText'},
-    'fEntryBox': {list: data.lists.Entry, box: 'dropEntry', text: 'dropEntryText'},
-    'fBiasBox': {list: data.lists.Bias, box: 'dropBias', text: 'dropBiasText'},
-    'fNarrativeBox': {list: data.lists.Narrative, box: 'dropNarrative', text: 'dropNarrativeText'}
-  };
-
-  Object.keys(map).forEach(boxId => {
-    const box = $(boxId);
-    if(!box) return;
-    const info = map[boxId];
-    const currentChecked = getCheckedValues(boxId);
-    
-    if((info.list || []).length === 0) {
-      box.innerHTML = `<div style="padding:10px; color:var(--muted); font-size:12px; text-align:center;">No options found.<br>Add them in Strategies page.</div>`;
-    } else {
-      box.innerHTML = (info.list || []).map(item => `
-        <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
-          <span>${item}</span>
-          <span class="check-mark">✓</span>
+    <!-- Header -->
+    <div class="header">
+        <h1>✨ Gemini Chat</h1>
+        <div class="header-actions">
+            <button class="theme-switcher" id="themeSwitcher">Light</button>
+            <button class="settings-btn" id="settingsBtn" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v6m11-11h-6m-6 0H1"></path>
+                </svg>
+            </button>
         </div>
-      `).join('');
-    }
-    
-    setCheckedValues(boxId, currentChecked, info.text);
-  });
-}
-
-function toggleOption(containerId, textId, itemVal, optElement) {
-  optElement.classList.toggle('selected');
-  updateDropdownText(containerId, textId);
-}
-
-function renderCalendar(targetId='calendarGridWrapper') {
-  const el = $(targetId);
-  if(!el) return;
-  const year = currentCalDate.getFullYear();
-  const month = currentCalDate.getMonth();
-  
-  const firstDay = new Date(year, month, 1).getDay();
-  const totalDays = new Date(year, month + 1, 0).getDate();
-  
-  let daysHTML = '';
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  
-  for(let i = 0; i < firstDay; i++) {
-    daysHTML += `<div class="day emptyDay"></div>`;
-  }
-  
-  for(let d = 1; d <= totalDays; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const dayTrades = data.trades.filter(t => t.date === dateStr);
-    const dayR = dayTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-    
-    let statusClass = '';
-    if(dayTrades.length > 0) {
-      statusClass = dayR >= 0 ? 'pos' : 'neg';
-    }
-    
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const isToday = dateStr === todayStr ? 'today' : '';
-    
-    daysHTML += `
-      <div class="day ${statusClass} ${isToday}" onclick="filterTradesByDate('${dateStr}')">
-        <strong>${d}</strong>
-        <small>${dayTrades.length > 0 ? (dayR >= 0 ? '+' : '') + dayR.toFixed(1) + 'R' : ''}</small>
-      </div>
-    `;
-  }
-  
-  el.innerHTML = `
-    <div class="calHeader">
-      <button class="calNavBtn" onclick="changeCalMonth(-1, '${targetId}')">◀</button>
-      <span>${monthNames[month]} ${year}</span>
-      <button class="calNavBtn" onclick="changeCalMonth(1, '${targetId}')">▶</button>
     </div>
-    <div class="calWeekDays"><div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div></div>
-    <div class="calGrid">${daysHTML}</div>
-  `;
-}
 
-function changeCalMonth(delta, targetId) {
-  currentCalDate.setMonth(currentCalDate.getMonth() + delta);
-  renderCalendar(targetId);
-}
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button class="close-settings" id="closeSettings">✕</button>
+            </div>
+            
+            <div class="input-group">
+                <label for="apiKey">API Key:</label>
+                <input type="password" id="apiKey" placeholder="Enter your Google AI Studio API Key">
+                <div class="api-key-options">
+                    <input type="checkbox" id="rememberApiKey">
+                    <label for="rememberApiKey">Remember Key</label>
+                </div>
+                <div class="api-key-warning">
+                    ⚠️ Storing API keys in browser storage is insecure for shared environments.
+                </div>
+            </div>
 
-function saveTrade(){
-  const id = $('editTradeId').value ? Number($('editTradeId').value) : Date.now();
-  const trade = {
-    id,
-    date: val('fDate'),
-    time: val('fTime'),
-    symbol: val('fSymbol'),
-    bias: getCheckedValues('dropBias'),
-    session: val('fSession'),
-    grade: val('fGrade'),
-    entry: getCheckedValues('dropEntry'),
-    kl: getCheckedValues('dropKL'),
-    narrative: getCheckedValues('dropNarrative'),
-    tradeStatus: val('fTradeStatus'),
-    entryPrice: val('fEntryPrice'),
-    exitPrice: val('fExitPrice'),
-    size: val('fSize'),
-    pnl: val('fPnl'),
-    risk: val('fRisk'),
-    sl: val('fSL'),
-    tp: val('fTP'),
-    rr: val('fRR'),
-    r: Number(val('fR')) || 0,
-    exec: val('fExec'),
-    confidence: val('fConfidence'),
-    emotion: val('fEmotion'),
-    plan: val('fPlan'),
-    chartBefore: val('fChartBeforeData'),
-    chartAfter: val('fChartAfterData'),
-    notes: val('fNotes')
-  };
+            <div class="input-group">
+                <label for="modelSelect">Model:</label>
+                <select id="modelSelect" disabled>
+                    <option value="" selected>-- Enter API Key First --</option>
+                </select>
+            </div>
 
-  const idx = data.trades.findIndex(t => t.id === id);
-  if(idx >= 0) {
-    data.trades[idx] = trade;
-  } else {
-    data.trades.unshift(trade);
-  }
-  
-  persist();
-  clearForm();
-  toast('Trade saved successfully!');
-  go('trades');
-}
-
-function clearForm(){
-  $('editTradeId').value = '';
-  $('formTitle').textContent = 'Add Trade';
-  const d = new Date();
-  $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => {
-    if($(id)) $(id).value = '';
-  });
-  ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => {
-    $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
-  });
-  updateDropdownText('dropBias', 'dropBiasText');
-  updateDropdownText('dropEntry', 'dropEntryText');
-  updateDropdownText('dropKL', 'dropKLText');
-  updateDropdownText('dropNarrative', 'dropNarrativeText');
-}
-
-function calculateMaxDrawdown() {
-    let peak = 0;
-    let maxDD = 0;
-    let runningEquity = 0;
-    const sortedTrades = [...data.trades].sort((a, b) => {
-        let dateA = new Date((a.date || '') + ' ' + (a.time || '00:00'));
-        let dateB = new Date((b.date || '') + ' ' + (b.time || '00:00'));
-        return dateA - dateB;
-    });
-
-    sortedTrades.forEach(trade => {
-        runningEquity += (Number(trade.r) || 0);
-        if (runningEquity > peak) {
-            peak = runningEquity;
-        }
-        let drawdown = peak - runningEquity;
-        if (drawdown > maxDD) {
-            maxDD = drawdown;
-        }
-    });
-    return maxDD;
-}
-
-// دمج دوال العرض والتحديث الشاملة مع الفلاتر الجديدة للـ Dashboard
-function renderMetrics(filteredTrades = data.trades) {
-  const total = filteredTrades.length;
-  const wins = filteredTrades.filter(t => Number(t.r) > 0).length;
-  const losses = filteredTrades.filter(t => Number(t.r) < 0).length;
-  const breakevens = filteredTrades.filter(t => Number(t.r) === 0).length;
-  
-  const totalR = filteredTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-  const totalPnl = filteredTrades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-
-  $('metrics').innerHTML = `
-    <div class="metric" onclick="openDashboardFilter('trades')">
-      <div class="label">Total Trades 🔍</div>
-      <div class="value">${total}</div>
-      <div class="sub">${wins}W / ${losses}L / ${breakevens}BE</div>
-    </div>
-    <div class="metric" onclick="openDashboardFilter('r')">
-      <div class="label">Total R 🔍</div>
-      <div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(2)}R</div>
-      <div class="sub">Filter by Date Range</div>
-    </div>
-    <div class="metric" onclick="openDashboardFilter('pnl')">
-      <div class="label">Total PnL ($) 🔍</div>
-      <div class="value ${totalPnl >= 0 ? 'up' : 'down'}">$${totalPnl.toFixed(2)}</div>
-      <div class="sub">Filter by Date Range</div>
-    </div>
-    <div class="metric">
-      <div class="label">Win Rate</div>
-      <div class="value">${winRate}%</div>
-      <div class="sub">${wins} of ${total} wins</div>
-    </div>
-    <div class="metric">
-      <div class="label">Max Drawdown</div>
-      <div class="value down">-${calculateMaxDrawdown().toFixed(2)}R</div>
-      <div class="sub">Peak to trough</div>
-    </div>
-    <div class="metric">
-      <div class="label">Profit Factor</div>
-      <div class="value">${calculateProfitFactor(filteredTrades)}</div>
-      <div class="sub">Gross Win / Loss</div>
-    </div>
-  `;
-}
-
-function calculateProfitFactor(trades) {
-  let grossWins = trades.filter(t => Number(t.r) > 0).reduce((s, t) => s + Number(t.r), 0);
-  let grossLosses = Math.abs(trades.filter(t => Number(t.r) < 0).reduce((s, t) => s + Number(t.r), 0));
-  if(grossLosses === 0) return grossWins > 0 ? '∞' : '0.00';
-  return (grossWins / grossLosses).toFixed(2);
-}
-
-// نوافذ التصفية والفلترة التفاعلية عند الضغط على خانات الـ Dashboard
-function openDashboardFilter(type) {
-  openModal('custom_filter');
-  const modalTitle = $('modalTitle');
-  const modalBody = $('modalBody');
-  
-  if(type === 'trades') {
-    modalTitle.textContent = 'Filter Trades by Result (Total Trades)';
-    modalBody.innerHTML = `
-      <div style="padding:15px;">
-        <p style="color:var(--muted); margin-bottom:15px;">اختر الحالة لعرض الصفقات المطابقة:</p>
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-          <button class="primary" onclick="applyTradesFilter('All')">All Trades (${data.trades.length})</button>
-          <button class="primary" style="background:var(--green); color:#000;" onclick="applyTradesFilter('Win')">Wins (${data.trades.filter(t=>Number(t.r)>0).length})</button>
-          <button class="primary" style="background:var(--red); color:#fff;" onclick="applyTradesFilter('Loss')">Losses (${data.trades.filter(t=>Number(t.r)<0).length})</button>
-          <button class="secondary" onclick="applyTradesFilter('Breakeven')">Breakeven (${data.trades.filter(t=>Number(t.r)===0).length})</button>
+            <details>
+                <summary>Advanced Options</summary>
+                <div class="config-options">
+                    <div class="input-group">
+                        <label for="temperature">Temperature (0-1):</label>
+                        <input type="number" id="temperature" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+                    <div class="input-group">
+                        <label for="maxTokens">Max Output Tokens:</label>
+                        <input type="number" id="maxTokens" min="1" step="1" value="8192">
+                    </div>
+                    <div class="input-group">
+                        <label for="topP">Top P (0-1):</label>
+                        <input type="number" id="topP" min="0" max="1" step="0.01" value="0.95">
+                    </div>
+                    <div class="input-group">
+                        <label for="topK">Top K:</label>
+                        <input type="number" id="topK" min="1" step="1" value="40">
+                    </div>
+                </div>
+            </details>
         </div>
-        <div id="filteredTradesResultContainer"></div>
-      </div>
-    `;
-    applyTradesFilter('All');
-  } else if(type === 'r') {
-    modalTitle.textContent = 'Filter Total R by Date Range';
-    modalBody.innerHTML = `
-      <div style="padding:15px;">
-        <div style="display:flex; gap:15px; align-items:center; margin-bottom:20px; flex-wrap:wrap;">
-          <div class="field"><label>From Date</label><input type="date" id="filterStartDateR" class="select"></div>
-          <div class="field"><label>To Date</label><input type="date" id="filterEndDateR" class="select"></div>
-          <button class="primary" style="margin-top:18px;" onclick="calculateDateRangeMetric('r')">Apply Filter</button>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-content" id="chatContent">
+                <div class="chat-placeholder">What can I help you with?</div>
+            </div>
         </div>
-        <div id="rangeResultR" style="font-size:20px; font-weight:bold; margin-top:20px;"></div>
-      </div>
-    `;
-  } else if(type === 'pnl') {
-    modalTitle.textContent = 'Filter Total PnL by Date Range';
-    modalBody.innerHTML = `
-      <div style="padding:15px;">
-        <div style="display:flex; gap:15px; align-items:center; margin-bottom:20px; flex-wrap:wrap;">
-          <div class="field"><label>From Date</label><input type="date" id="filterStartDatePnl" class="select"></div>
-          <div class="field"><label>To Date</label><input type="date" id="filterEndDatePnl" class="select"></div>
-          <button class="primary" style="margin-top:18px;" onclick="calculateDateRangeMetric('pnl')">Apply Filter</button>
+
+        <!-- Input Area -->
+        <div class="input-container">
+            <div class="input-wrapper">
+                <div class="input-box">
+                    <textarea 
+                        class="input-field" 
+                        id="prompt" 
+                        placeholder="Message Gemini..." 
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button" id="sendButton" disabled>Send</button>
+                </div>
+                <div class="action-pills">
+                    <button class="pill" id="uploadButton">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        Upload File
+                    </button>
+                    <button class="pill" id="clearButton">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/>
+                        </svg>
+                        Clear
+                    </button>
+                    <button class="pill" id="saveChatButton">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Save
+                    </button>
+                    <button class="pill" id="loadChatButton">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        Load
+                    </button>
+                </div>
+                <div class="token-counter" id="tokenCounter">
+                    <span id="tokenCountValue">0</span> tokens
+                    <span id="tokenCountModelInfo"></span>
+                </div>
+            </div>
         </div>
-        <div id="rangeResultPnl" style="font-size:20px; font-weight:bold; margin-top:20px;"></div>
-      </div>
-    `;
-  }
-}
+    </div>
 
-function applyTradesFilter(status) {
-  let matched = data.trades;
-  if(status === 'Win') matched = data.trades.filter(t => Number(t.r) > 0);
-  if(status === 'Loss') matched = data.trades.filter(t => Number(t.r) < 0);
-  if(status === 'Breakeven') matched = data.trades.filter(t => Number(t.r) === 0);
+    <!-- Status Message -->
+    <div id="status"></div>
 
-  const container = $('filteredTradesResultContainer');
-  if(!container) return;
-  container.innerHTML = `
-    <table class="table">
-      <thead><tr><th>Date</th><th>Symbol</th><th>R</th><th>PnL</th></tr></thead>
-      <tbody>
-        ${matched.length === 0 ? '<tr><td colspan="4" style="text-align:center; color:var(--muted);">No trades found</td></tr>' : 
-          matched.map(t => `<tr><td>${t.date}</td><td>${t.symbol}</td><td class="${Number(t.r)>=0?'up':'down'}">${t.r}R</td><td class="${Number(t.pnl)>=0?'up':'down'}">$${t.pnl||0}</td></tr>`).join('')}
-      </tbody>
-    </table>
-  `;
-}
+    <!-- Hidden File Inputs -->
+    <input type="file" id="fileInput" accept="image/*,application/pdf,audio/*,video/*,text/*">
+    <input type="file" id="loadChatInput" accept=".json">
 
-function calculateDateRangeMetric(metricType) {
-  const start = $(metricType === 'r' ? 'filterStartDateR' : 'filterStartDatePnl').value;
-  const end = $(metricType === 'r' ? 'filterEndDateR' : 'filterEndDatePnl').value;
-  
-  if(!start || !end) {
-    alert('الرجاء تحديد تاريخ البداية والنهاية');
-    return;
-  }
+    <script>
+        'use strict';
 
-  const filtered = data.trades.filter(t => t.date >= start && t.date <= end);
-  if(metricType === 'r') {
-    const sumR = filtered.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
-    $('rangeResultR').innerHTML = `مجموع الـ R للفترة (${start} إلى ${end}): <span class="${sumR>=0?'up':'down'}">${sumR.toFixed(2)}R</span> (عدد الصفقات: ${filtered.length})`;
-  } else {
-    const sumPnl = filtered.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
-    $('rangeResultPnl').innerHTML = `مجموع الـ PnL للفترة (${start} إلى ${end}): <span class="${sumPnl>=0?'up':'down'}">$${sumPnl.toFixed(2)}</span> (عدد الصفقات: ${filtered.length})`;
-  }
-}
+        (function() {
+            const API_ENDPOINT_BASE = "https://generativelanguage.googleapis.com/v1beta/";
+            const PREFERRED_MODEL = "gemini-1.5-pro-latest";
 
-function openModal(type) {
-  $('modalOverlay').classList.add('active');
-  const title = $('modalTitle');
-  const body = $('modalBody');
-  if(type === 'chart') {
-    title.textContent = 'Performance Overview (Expanded)';
-    body.innerHTML = `<div class="chart" id="modalChart" style="height:450px;"></div>`;
-    renderPerformanceChart('modalChart');
-  } else if(type === 'calendar') {
-    title.textContent = 'Trading Calendar (Expanded)';
-    body.innerHTML = `<div id="modalCalendarWrapper"></div>`;
-    renderCalendar('modalCalendarWrapper');
-  }
-}
+            const ui = {
+                apiKeyInput: document.getElementById('apiKey'),
+                rememberApiKeyCheckbox: document.getElementById('rememberApiKey'),
+                modelSelect: document.getElementById('modelSelect'),
+                promptInput: document.getElementById('prompt'),
+                sendButton: document.getElementById('sendButton'),
+                clearButton: document.getElementById('clearButton'),
+                statusDiv: document.getElementById('status'),
+                chatContainer: document.getElementById('chatContainer'),
+                chatContent: document.getElementById('chatContent'),
+                themeSwitcher: document.getElementById('themeSwitcher'),
+                temperatureInput: document.getElementById('temperature'),
+                maxTokensInput: document.getElementById('maxTokens'),
+                topPInput: document.getElementById('topP'),
+                topKInput: document.getElementById('topK'),
+                uploadButton: document.getElementById('uploadButton'),
+                fileInput: document.getElementById('fileInput'),
+                saveChatButton: document.getElementById('saveChatButton'),
+                loadChatButton: document.getElementById('loadChatButton'),
+                loadChatInput: document.getElementById('loadChatInput'),
+                tokenCountValue: document.getElementById('tokenCountValue'),
+                tokenCountModelInfo: document.getElementById('tokenCountModelInfo'),
+                settingsBtn: document.getElementById('settingsBtn'),
+                settingsPanel: document.getElementById('settingsPanel'),
+                closeSettings: document.getElementById('closeSettings')
+            };
 
-function closeModal() {
-  $('modalOverlay').classList.remove('active');
-}
+            let modelsLoaded = false;
+            let chatHistory = [];
+            let selectedFile = null;
+            let apiKeyDebounceTimer;
+            let tokenCountDebounceTimer;
+            let statusTimer;
 
-function closeModalOnBg(e) {
-  if(e.target === $('modalOverlay')) closeModal();
-}
+            function escapeHtml(unsafe) {
+                if (typeof unsafe !== 'string') return '';
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
 
-function renderPerformanceChart(targetId='performanceChart') {
-  const el = $(targetId);
-  if(!el) return;
-  if(data.trades.length === 0) {
-    el.innerHTML = `<div class="empty">No trade data available for chart yet.</div>`;
-    return;
-  }
-  
-  let running = 0;
-  const sorted = [...data.trades].sort((a,b) => new Date(a.date) - new Date(b.date));
-  const points = sorted.map(t => {
-    running += Number(t.r) || 0;
-    return running;
-  });
+            function formatTimestamp(date) {
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const displayHours = hours % 12 || 12;
+                const displayMinutes = minutes.toString().padStart(2, '0');
+                return `${displayHours}:${displayMinutes} ${ampm}`;
+            }
 
-  const max = Math.max(...points, 1);
-  const min = Math.min(...points, 0);
-  const range = max - min || 1;
-  
-  const width = 600;
-  const height = targetId === 'modalChart' ? 450 : 250;
-  
-  const coords = points.map((val, idx) => {
-    const x = (idx / (points.length - 1 || 1)) * (width - 40) + 20;
-    const y = height - ((val - min) / range) * (height - 40) - 20;
-    return `${x},${y}`;
-  }).join(' ');
+            function configureMarked() {
+                marked.setOptions({
+                    highlight: function(code, lang) {
+                        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                        try {
+                            return hljs.highlight(code, { language, ignoreIllegals: true }).value;
+                        } catch (e) {
+                            console.warn("Highlight.js error:", e);
+                            return escapeHtml(code);
+                        }
+                    },
+                    gfm: true,
+                    breaks: true
+                });
+            }
 
-  el.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:100%;">
-      <polyline fill="none" stroke="var(--green)" stroke-width="2.5" points="${coords}" />
-    </svg>
-  `;
-}
+            function setupEventListeners() {
+                ui.sendButton.addEventListener('click', handleSendPrompt);
+                ui.clearButton.addEventListener('click', clearAll);
+                ui.themeSwitcher.addEventListener('click', toggleTheme);
+                ui.rememberApiKeyCheckbox.addEventListener('change', handleRememberKeyChange);
+                ui.apiKeyInput.addEventListener('input', handleApiKeyInput);
+                ui.modelSelect.addEventListener('change', handleModelSelectionChange);
+                ui.promptInput.addEventListener('input', () => {
+                    autoResizeTextarea();
+                    updateSendButtonState();
+                });
+                ui.promptInput.addEventListener('keydown', (event) => {
+                    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                        event.preventDefault();
+                        if (!ui.sendButton.disabled) {
+                            handleSendPrompt();
+                        }
+                    }
+                });
+                ui.uploadButton.addEventListener('click', () => ui.fileInput.click());
+                ui.fileInput.addEventListener('change', handleFileSelection);
+                ui.chatContent.addEventListener('click', function(event) {
+                    const copyButton = event.target.closest('.copy-code-button');
+                    const downloadButton = event.target.closest('.download-code-button');
+                    if (copyButton) handleCopyCodeClick(copyButton);
+                    else if (downloadButton) handleDownloadCodeClick(downloadButton);
+                });
+                ui.saveChatButton.addEventListener('click', handleSaveChat);
+                ui.loadChatButton.addEventListener('click', () => ui.loadChatInput.click());
+                ui.loadChatInput.addEventListener('change', handleLoadChatFileSelected);
+                ui.settingsBtn.addEventListener('click', () => ui.settingsPanel.classList.add('open'));
+                ui.closeSettings.addEventListener('click', () => ui.settingsPanel.classList.remove('open'));
+            }
 
-function renderRecentTrades() {
-  const tbody = $('recent');
-  if(!tbody) return;
-  const recent = data.trades.slice(0, 5);
-  tbody.innerHTML = recent.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades recorded yet.</td></tr>` :
-    recent.map(t => `
-      <tr>
-        <td>${t.date}</td>
-        <td><b>${t.symbol}</b></td>
-        <td><span class="pill">${t.tradeStatus || 'In-Plan'}</span></td>
-        <td class="${Number(t.r)>=0?'up':'down'}">${t.r}R</td>
-        <td class="${Number(t.pnl)>=0?'up':'down'}">$${t.pnl || 0}</td>
-        <td><span class="pill ${Number(t.r)>=0?'':'red'}">${Number(t.r)>0?'Win':Number(t.r)<0?'Loss':'BE'}</span></td>
-      </tr>
-    `).join('');
-}
+            function autoResizeTextarea() {
+                ui.promptInput.style.height = 'auto';
+                ui.promptInput.style.height = Math.min(ui.promptInput.scrollHeight, 200) + 'px';
+            }
 
-function renderTrades() {
-  const tbody = $('tradesBody');
-  if(!tbody) return;
-  const search = ($('tradeSearch').value || '').toLowerCase();
-  const resFilter = $('tradeResult').value;
+            function handleSaveChat() {
+                if (chatHistory.length === 0) {
+                    showStatus("Nothing to save.", false, true);
+                    return;
+                }
+                showStatus("Saving chat...", false);
+                try {
+                    const stateToSave = {
+                        apiKey: ui.rememberApiKeyCheckbox.checked ? ui.apiKeyInput.value : null,
+                        model: ui.modelSelect.value,
+                        history: chatHistory,
+                        config: {
+                            temperature: parseFloat(ui.temperatureInput.value),
+                            maxTokens: parseInt(ui.maxTokensInput.value, 10),
+                            topP: parseFloat(ui.topPInput.value),
+                            topK: parseInt(ui.topKInput.value, 10)
+                        },
+                        theme: document.documentElement.getAttribute('data-theme') || 'dark'
+                    };
+                    const jsonString = JSON.stringify(stateToSave, null, 2);
+                    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+                    const now = new Date();
+                    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                    const filename = `gemini-chat-${timestamp}.json`;
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                    showStatus("Chat saved successfully.", false);
+                } catch (error) {
+                    console.error("Error saving chat:", error);
+                    showStatus(`Error saving chat: ${error.message}`, true);
+                }
+            }
 
-  const filtered = data.trades.filter(t => {
-    const matchSymbol = (t.symbol || '').toLowerCase().includes(search);
-    const rVal = Number(t.r) || 0;
-    let matchRes = true;
-    if(resFilter === 'Win') matchRes = rVal > 0;
-    if(resFilter === 'Loss') matchRes = rVal < 0;
-    if(resFilter === 'Breakeven') matchRes = rVal === 0;
-    return matchSymbol && matchRes;
-  });
+            function handleLoadChatFileSelected(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const loadedState = JSON.parse(e.target.result);
+                        chatHistory = loadedState.history || [];
+                        if (loadedState.apiKey) {
+                            ui.apiKeyInput.value = loadedState.apiKey;
+                            handleRememberKeyChange();
+                        }
+                        if (loadedState.model) {
+                            await fetchModels();
+                            ui.modelSelect.value = loadedState.model;
+                        }
+                        if (loadedState.config) {
+                            ui.temperatureInput.value = loadedState.config.temperature || 0.7;
+                            ui.maxTokensInput.value = loadedState.config.maxTokens || 8192;
+                            ui.topPInput.value = loadedState.config.topP || 0.95;
+                            ui.topKInput.value = loadedState.config.topK || 40;
+                        }
+                        if (loadedState.theme) setTheme(loadedState.theme);
+                        renderChatHistory();
+                        updateTokenCount();
+                        showStatus("Chat loaded successfully.", false);
+                    } catch (error) {
+                        showStatus(`Error loading chat: ${error.message}`, true);
+                    }
+                };
+                reader.readAsText(file);
+                ui.loadChatInput.value = '';
+            }
 
-  tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:var(--muted);">No trades match filter criteria.</td></tr>` :
-    filtered.map(t => `
-      <tr>
-        <td>${t.date}</td>
-        <td><b>${t.symbol}</b></td>
-        <td><span class="pill">${t.tradeStatus || ''}</span></td>
-        <td>${t.bias || '-'}</td>
-        <td>${t.entry || '-'}</td>
-        <td>${t.kl || '-'}</td>
-        <td class="${Number(t.r)>=0?'up':'down'}">${t.r}R</td>
-        <td class="${Number(t.pnl)>=0?'up':'down'}">$${t.pnl || 0}</td>
-        <td>
-          ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="showImgModal('${t.chartBefore}')" title="Before">` : ''}
-          ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="showImgModal('${t.chartAfter}')" title="After">` : ''}
-        </td>
-        <td>
-          <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
-          <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
-        </td>
-      </tr>
-    `).join('');
-}
+            async function fetchModels() {
+                const apiKey = ui.apiKeyInput.value.trim();
+                if (!apiKey) {
+                    updateModelDropdown([], "-- Enter API Key First --");
+                    return;
+                }
+                modelsLoaded = false;
+                updateModelDropdown([], "Loading...");
+                ui.modelSelect.disabled = true;
+                
+                try {
+                    const response = await fetch(`${API_ENDPOINT_BASE}models?key=${apiKey}`);
+                    if (!response.ok) throw new Error(`Failed to list models: ${response.status}`);
+                    
+                    const data = await response.json();
+                    const compatibleModels = (data.models || [])
+                        .filter(model => model.name.startsWith('models/') && 
+                                model.supportedGenerationMethods?.includes('generateContent'))
+                        .sort((a, b) => (a.displayName || a.name).localeCompare(b.displayName || b.name));
+                    
+                    if (compatibleModels.length > 0) {
+                        updateModelDropdown(compatibleModels);
+                        modelsLoaded = true;
+                    } else {
+                        updateModelDropdown([], "No compatible models found.");
+                    }
+                } catch (error) {
+                    console.error("Fetch Models Error:", error);
+                    showStatus(`Error: ${error.message}`, true);
+                    updateModelDropdown([], "Error loading models");
+                }
+            }
 
-function showImgModal(src) {
-  openModal('custom_filter');
-  $('modalTitle').textContent = 'Chart Image View';
-  $('modalBody').innerHTML = `<div style="text-align:center;"><img src="${src}" style="max-width:100%; max-height:75vh; border-radius:8px;"></div>`;
-}
+            function updateModelDropdown(models, placeholderText = "-- Select a Model --") {
+                const previousValue = ui.modelSelect.value;
+                ui.modelSelect.innerHTML = '';
+                
+                const placeholder = document.createElement('option');
+                placeholder.value = "";
+                placeholder.textContent = placeholderText;
+                placeholder.disabled = true;
+                placeholder.selected = true;
+                ui.modelSelect.appendChild(placeholder);
+                
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.name;
+                    let displayName = model.displayName || model.name.split('/').pop();
+                    if (model.name.includes('gemini-1.5-pro')) displayName += ' (Multimodal)';
+                    option.textContent = displayName;
+                    ui.modelSelect.appendChild(option);
+                    
+                    if (model.name === previousValue || 
+                        (!previousValue && model.name.includes(PREFERRED_MODEL))) {
+                        option.selected = true;
+                        placeholder.selected = false;
+                    }
+                });
+                
+                ui.modelSelect.disabled = models.length === 0;
+                handleModelSelectionChange();
+            }
 
-function editTrade(id) {
-  const t = data.trades.find(x => x.id === id);
-  if(!t) return;
-  go('add');
-  $('formTitle').textContent = 'Edit Trade';
-  $('editTradeId').value = t.id;
-  $('fDate').value = t.date || '';
-  $('fTime').value = t.time || '';
-  $('fSymbol').value = t.symbol || 'MNQ';
-  $('fSession').value = t.session || 'NY AM';
-  $('fGrade').value = t.grade || 'A+';
-  $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
-  $('fEntryPrice').value = t.entryPrice || '';
-  $('fExitPrice').value = t.exitPrice || '';
-  $('fSize').value = t.size || '';
-  $('fPnl').value = t.pnl || '';
-  $('fRisk').value = t.risk || '';
-  $('fSL').value = t.sl || '';
-  $('fTP').value = t.tp || '';
-  $('fRR').value = t.rr || '';
-  $('fR').value = t.r || '';
-  $('fExec').value = t.exec || 'Excellent';
-  $('fConfidence').value = t.confidence || '';
-  $('fEmotion').value = t.emotion || 'Calm';
-  $('fPlan').value = t.plan || 'Yes';
-  $('fNotes').value = t.notes || '';
+            function handleModelSelectionChange() {
+                updateTokenCount();
+                updateSendButtonState();
+                if (selectedFile) {
+                    const selectedOption = ui.modelSelect.options[ui.modelSelect.selectedIndex];
+                    if (selectedOption && !selectedOption.text.includes('Multimodal')) {
+                        showStatus("Warning: Selected model may not support file uploads.", false, true);
+                    }
+                }
+            }
 
-  setCheckedValues('dropBias', t.bias, 'dropBiasText');
-  setCheckedValues('dropEntry', t.entry, 'dropEntryText');
-  setCheckedValues('dropKL', t.kl, 'dropKLText');
-  setCheckedValues('dropNarrative', t.narrative, 'dropNarrativeText');
-}
+            function updateSendButtonState() {
+                const hasApiKey = ui.apiKeyInput.value.trim().length > 0;
+                const hasModel = ui.modelSelect.value.length > 0;
+                const hasInput = ui.promptInput.value.trim().length > 0 || selectedFile !== null;
+                ui.sendButton.disabled = !(hasApiKey && hasModel && hasInput);
+            }
 
-function deleteTrade(id) {
-  if(confirm('Are you sure you want to delete this trade?')) {
-    data.trades = data.trades.filter(x => x.id !== id);
-    persist();
-    toast('Trade deleted successfully');
-  }
-}
+            function loadApiKey() {
+                const rememberedKey = localStorage.getItem('geminiApiKey');
+                const shouldRemember = localStorage.getItem('rememberGeminiApiKey') === 'true';
+                ui.rememberApiKeyCheckbox.checked = shouldRemember;
+                if (shouldRemember && rememberedKey) {
+                    ui.apiKeyInput.value = rememberedKey;
+                }
+            }
 
-function filterTradesByDate(dateStr) {
-  go('trades');
-  $('tradeSearch').value = '';
-  // يمكنك تخصيص فلتر جدول الصفقات حسب التاريخ المختار إذا رغبت
-}
+            function handleRememberKeyChange() {
+                if (ui.rememberApiKeyCheckbox.checked) {
+                    const key = ui.apiKeyInput.value.trim();
+                    if (key) {
+                        localStorage.setItem('geminiApiKey', key);
+                        localStorage.setItem('rememberGeminiApiKey', 'true');
+                    }
+                } else {
+                    localStorage.removeItem('geminiApiKey');
+                    localStorage.removeItem('rememberGeminiApiKey');
+                }
+            }
 
-function saveNote() {
-  const text = $('noteText').value.trim();
-  if(!text) return;
-  if(!data.notes) data.notes = [];
-  data.notes.unshift({id: Date.now(), date: new Date().toLocaleDateString(), text});
-  $('noteText').value = '';
-  persist();
-  toast('Note saved!');
-}
+            function handleApiKeyInput() {
+                handleRememberKeyChange();
+                clearTimeout(apiKeyDebounceTimer);
+                apiKeyDebounceTimer = setTimeout(() => {
+                    if (ui.apiKeyInput.value.trim()) {
+                        fetchModels();
+                    } else {
+                        updateModelDropdown([], "-- Enter API Key First --");
+                        modelsLoaded = false;
+                    }
+                }, 500);
+            }
 
-function renderNotes() {
-  const el = $('notesList');
-  if(!el) return;
-  const notes = data.notes || [];
-  el.innerHTML = notes.length === 0 ? '<div style="color:var(--muted); text-align:center;">No journal notes recorded yet.</div>' :
-    notes.map(n => `
-      <div class="listItem" style="align-items:flex-start; flex-direction:column; gap:5px;">
-        <div style="font-size:11px; color:var(--muted);">${n.date}</div>
-        <div style="white-space:pre-wrap;">${n.text}</div>
-      </div>
-    `).join('');
-}
+            function initializeTheme() {
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                setTheme(savedTheme);
+            }
 
-function renderAnalytics() {
-  // إحصائيات الجلسات والتحليلات البسيطة
-  const sContainer = $('sessionStats');
-  if(sContainer) {
-    sContainer.innerHTML = `<div style="font-size:12px; color:var(--muted);">Total Registered Sessions: ${data.trades.length}</div>`;
-  }
-}
+            function setTheme(theme) {
+                const html = document.documentElement;
+                html.setAttribute('data-theme', theme);
+                ui.themeSwitcher.textContent = theme === 'dark' ? 'Light' : 'Dark';
+                localStorage.setItem('theme', theme);
+                
+                const lightThemeUrl = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+                const darkThemeUrl = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
+                document.getElementById('highlight-theme').href = theme === 'dark' ? darkThemeUrl : lightThemeUrl;
+            }
 
-function renderAll() {
-  renderMetrics();
-  renderPerformanceChart();
-  renderCalendar();
-  renderRecentTrades();
-  renderTrades();
-  renderDropdowns();
-  renderStrategiesManager();
-  renderNotes();
-  renderAnalytics();
-}
+            function toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                setTheme(newTheme);
+            }
 
-// تهيئة أولية عند التحميل
-document.addEventListener('DOMContentLoaded', () => {
-  changeTheme(data.theme || 'dark');
-  $('themeSelect').value = data.theme || 'dark';
-  renderAll();
-});
-</script>
+            function handleFileSelection(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const maxSizeMb = 50;
+                    const maxSize = maxSizeMb * 1024 * 1024;
+                    if (file.size > maxSize) {
+                        showStatus(`Error: File size exceeds ${maxSizeMb}MB limit.`, true);
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onloadend = function() {
+                        if (reader.readyState === FileReader.DONE) {
+                            const dataUrl = reader.result;
+                            const base64Data = dataUrl.split(',')[1];
+                            const mimeType = file.type || 'application/octet-stream';
+                            selectedFile = {
+                                name: file.name,
+                                mimeType: mimeType,
+                                data: base64Data
+                            };
+                            showStatus(`File "${file.name}" ready to send.`, false);
+                            updateSendButtonState();
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function resetFileInput() {
+                selectedFile = null;
+                ui.fileInput.value = '';
+            }
+
+            async function handleSendPrompt() {
+                const apiKey = ui.apiKeyInput.value.trim();
+                const model = ui.modelSelect.value;
+                const promptText = ui.promptInput.value.trim();
+                
+                if (!apiKey || !model) return;
+                
+                const userParts = [];
+                if (promptText) userParts.push({ text: promptText });
+                
+                let fileInfo = null;
+                if (selectedFile) {
+                    userParts.push({
+                        inlineData: {
+                            mimeType: selectedFile.mimeType,
+                            data: selectedFile.data
+                        }
+                    });
+                    fileInfo = {
+                        name: selectedFile.name,
+                        type: selectedFile.mimeType
+                    };
+                    resetFileInput();
+                }
+                
+                const userMessage = {
+                    role: 'user',
+                    parts: userParts,
+                    fileInfo: fileInfo,
+                    timestamp: new Date()
+                };
+                
+                chatHistory.push(userMessage);
+                ui.promptInput.value = '';
+                autoResizeTextarea();
+                updateSendButtonState();
+                
+                renderChatHistory();
+                updateTokenCount();
+                
+                // Add streaming placeholder
+                const messageGroup = createMessageGroup('model', new Date());
+                const bubble = messageGroup.querySelector('.chat-bubble');
+                bubble.classList.add('streaming');
+                bubble.innerHTML = '<span class="streaming-indicator">▌</span>';
+                ui.chatContent.appendChild(messageGroup);
+                scrollToBottom();
+                
+                showStatus("Generating response...", false);
+                
+                const contentsForApi = chatHistory.map(msg => {
+                    const { fileInfo, timestamp, ...apiMsg } = msg;
+                    return apiMsg;
+                });
+                
+                const apiUrl = `${API_ENDPOINT_BASE}${model}:streamGenerateContent?key=${apiKey}&alt=sse`;
+                const requestBody = {
+                    contents: contentsForApi,
+                    generationConfig: {
+                        temperature: parseFloat(ui.temperatureInput.value),
+                        maxOutputTokens: parseInt(ui.maxTokensInput.value, 10),
+                        topP: parseFloat(ui.topPInput.value),
+                        topK: parseInt(ui.topKInput.value, 10)
+                    }
+                };
+                
+                let fullResponseText = "";
+                let fetchError = null;
+                
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody),
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API Error: ${response.status}`);
+                    }
+                    
+                    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+                    let buffer = '';
+                    
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        
+                        buffer += value;
+                        let lines = buffer.split('\n');
+                        buffer = lines.pop();
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data:')) {
+                                const jsonStr = line.substring(5).trim();
+                                if (jsonStr) {
+                                    try {
+                                        const chunkData = JSON.parse(jsonStr);
+                                        if (chunkData.candidates && chunkData.candidates.length > 0) {
+                                            const textPart = chunkData.candidates[0].content?.parts?.[0]?.text;
+                                            if (textPart) {
+                                                fullResponseText += textPart;
+                                                appendStreamChunk(bubble, textPart);
+                                                scrollToBottom();
+                                            }
+                                        }
+                                    } catch (e) {
+                                        console.error("Error parsing stream chunk:", e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error("API Stream Call Failed:", error);
+                    fetchError = error;
+                    if (messageGroup.parentNode) messageGroup.remove();
+                }
+                
+                hideStatus();
+                
+                if (fetchError) {
+                    showStatus(`Error: ${fetchError.message}`, true);
+                } else {
+                    const modelMessage = {
+                        role: 'model',
+                        parts: [{ text: fullResponseText }],
+                        timestamp: new Date()
+                    };
+                    chatHistory.push(modelMessage);
+                    finalizeStreamedBubble(bubble, fullResponseText);
+                    updateTokenCount();
+                }
+                
+                ui.promptInput.focus();
+            }
+
+            function createMessageGroup(role, timestamp) {
+                const group = document.createElement('div');
+                group.classList.add('message-group', role);
+                
+                const header = document.createElement('div');
+                header.classList.add('message-header');
+                
+                const author = document.createElement('span');
+                author.classList.add('message-author');
+                author.textContent = role === 'user' ? 'You' : 'Gemini';
+                
+                const time = document.createElement('span');
+                time.classList.add('message-timestamp');
+                time.textContent = formatTimestamp(timestamp);
+                
+                header.appendChild(author);
+                header.appendChild(time);
+                
+                const bubble = document.createElement('div');
+                bubble.classList.add('chat-bubble', `${role}-bubble`);
+                
+                group.appendChild(header);
+                group.appendChild(bubble);
+                
+                return group;
+            }
+
+            function appendStreamChunk(bubble, textChunk) {
+                const indicator = bubble.querySelector('.streaming-indicator');
+                if (indicator) indicator.remove();
+                bubble.appendChild(document.createTextNode(textChunk));
+            }
+
+            function finalizeStreamedBubble(bubble, fullText) {
+                bubble.classList.remove('streaming');
+                try {
+                    const html = marked.parse(fullText || "[Empty Response]");
+                    bubble.innerHTML = html;
+                    requestAnimationFrame(() => addCodeActionButtons(bubble));
+                } catch (e) {
+                    console.error("Markdown parsing error:", e);
+                    bubble.textContent = fullText || "[Error rendering response]";
+                }
+            }
+
+            function showStatus(message, isError = false, isWarning = false) {
+                clearTimeout(statusTimer);
+                ui.statusDiv.textContent = message;
+                ui.statusDiv.classList.remove('error', 'warning');
+                if (isError) ui.statusDiv.classList.add('error');
+                else if (isWarning) ui.statusDiv.classList.add('warning');
+                ui.statusDiv.classList.add('show');
+                
+                statusTimer = setTimeout(hideStatus, 5000);
+            }
+
+            function hideStatus() {
+                ui.statusDiv.classList.remove('show');
+            }
+
+            async function updateTokenCount() {
+                clearTimeout(tokenCountDebounceTimer);
+                tokenCountDebounceTimer = setTimeout(async () => {
+                    const apiKey = ui.apiKeyInput.value.trim();
+                    const model = ui.modelSelect.value;
+                    
+                    if (!apiKey || !model || chatHistory.length === 0) {
+                        ui.tokenCountValue.textContent = '0';
+                        ui.tokenCountModelInfo.textContent = '';
+                        return;
+                    }
+                    
+                    ui.tokenCountValue.textContent = '...';
+                    
+                    const contentsForApi = chatHistory.map(msg => {
+                        const { fileInfo, timestamp, ...apiMsg } = msg;
+                        return apiMsg;
+                    });
+                    
+                    try {
+                        const response = await fetch(
+                            `${API_ENDPOINT_BASE}${model}:countTokens?key=${apiKey}`,
+                            {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ contents: contentsForApi }),
+                            }
+                        );
+                        
+                        if (!response.ok) throw new Error('Count tokens failed');
+                        
+                        const data = await response.json();
+                        ui.tokenCountValue.textContent = data.totalTokens || '0';
+                    } catch (error) {
+                        ui.tokenCountValue.textContent = 'Error';
+                    }
+                }, 300);
+            }
+
+            function renderChatHistory() {
+                ui.chatContent.innerHTML = '';
+                
+                if (chatHistory.length === 0) {
+                    ui.chatContent.innerHTML = '<div class="chat-placeholder">What can I help you with?</div>';
+                    return;
+                }
+                
+                chatHistory.forEach(message => {
+                    const group = createMessageGroup(message.role, message.timestamp || new Date());
+                    const bubble = group.querySelector('.chat-bubble');
+                    
+                    if (message.role === 'user') {
+                        let content = '';
+                        const textPart = message.parts.find(p => p.text);
+                        if (textPart) content += escapeHtml(textPart.text).replace(/\n/g, '<br>');
+                        if (message.fileInfo) {
+                            const fileInfo = `<div class="file-info">📎 ${escapeHtml(message.fileInfo.name)}</div>`;
+                            content = content ? content + fileInfo : fileInfo;
+                        }
+                        bubble.innerHTML = content || '[Empty Message]';
+                    } else {
+                        const text = message.parts.map(p => p.text || '').join('');
+                        try {
+                            bubble.innerHTML = marked.parse(text || '[Empty Response]');
+                            requestAnimationFrame(() => addCodeActionButtons(bubble));
+                        } catch (e) {
+                            bubble.textContent = text || '[Error rendering]';
+                        }
+                    }
+                    
+                    ui.chatContent.appendChild(group);
+                });
+                
+                scrollToBottom();
+            }
+
+            function addCodeActionButtons(parentElement) {
+                parentElement.querySelectorAll('pre').forEach(pre => {
+                    if (pre.querySelector('.copy-code-button')) return;
+                    
+                    const code = pre.querySelector('code');
+                    if (!code) return;
+                    
+                    const copyBtn = document.createElement('button');
+                    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg> Copy`;
+                    copyBtn.className = 'code-action-button copy-code-button';
+                    copyBtn.title = 'Copy code';
+                    
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg> Save`;
+                    downloadBtn.className = 'code-action-button download-code-button';
+                    downloadBtn.title = 'Download code';
+                    
+                    pre.appendChild(copyBtn);
+                    pre.appendChild(downloadBtn);
+                    
+                    if (!code.classList.contains('hljs')) {
+                        hljs.highlightElement(code);
+                    }
+                });
+            }
+
+            function handleCopyCodeClick(button) {
+                const code = button.closest('pre')?.querySelector('code');
+                if (!code) return;
+                
+                navigator.clipboard.writeText(code.textContent || '').then(() => {
+                    button.innerHTML = 'Copied!';
+                    button.classList.add('copied');
+                    button.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg> Copy`;
+                        button.classList.remove('copied');
+                        button.style.pointerEvents = 'auto';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    button.textContent = 'Error';
+                    button.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg> Copy`;
+                        button.style.pointerEvents = 'auto';
+                    }, 2000);
+                });
+            }
+
+            function handleDownloadCodeClick(button) {
+                const pre = button.closest('pre');
+                const code = pre?.querySelector('code');
+                if (!code) return;
+                
+                const codeContent = code.textContent || '';
+                let language = 'txt';
+                const langClass = Array.from(code.classList).find(cls => cls.startsWith('language-'));
+                
+                if (langClass) {
+                    language = langClass.split('-')[1] || 'txt';
+                    const extMap = {
+                        'javascript': 'js',
+                        'python': 'py',
+                        'html': 'html',
+                        'css': 'css',
+                        'java': 'java',
+                        'csharp': 'cs',
+                        'cpp': 'cpp',
+                        'ruby': 'rb',
+                        'php': 'php',
+                        'swift': 'swift',
+                        'go': 'go',
+                        'rust': 'rs',
+                        'kotlin': 'kt',
+                        'bash': 'sh',
+                        'shell': 'sh',
+                        'sql': 'sql',
+                        'json': 'json',
+                        'yaml': 'yaml',
+                        'markdown': 'md',
+                        'xml': 'xml',
+                        'plaintext': 'txt'
+                    };
+                    language = extMap[language.toLowerCase()] || language;
+                }
+                
+                const filename = `code_block.${language}`;
+                
+                try {
+                    const blob = new Blob([codeContent], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                } catch (error) {
+                    console.error('Failed download:', error);
+                    alert('Error preparing file.');
+                }
+            }
+
+            function scrollToBottom() {
+                requestAnimationFrame(() => {
+                    ui.chatContainer.scrollTop = ui.chatContainer.scrollHeight;
+                });
+            }
+
+            function clearAll() {
+                chatHistory = [];
+                selectedFile = null;
+                ui.promptInput.value = '';
+                autoResizeTextarea();
+                renderChatHistory();
+                updateTokenCount();
+                updateSendButtonState();
+                ui.promptInput.focus();
+            }
+
+            function initialize() {
+                loadApiKey();
+                setupEventListeners();
+                initializeTheme();
+                configureMarked();
+                updateSendButtonState();
+                
+                if (ui.apiKeyInput.value.trim()) {
+                    fetchModels().then(() => {
+                        updateSendButtonState();
+                    });
+                } else {
+                    updateSendButtonState();
+                }
+            }
+
+            initialize();
+        })();
+    </script>
 </body>
 </html>
