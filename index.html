@@ -129,6 +129,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 <section id="dashboard" class="page active">
  <div class="head"><div><h1>Dashboard</h1><p>Your trading performance at a glance</p></div></div>
  
+ <!-- تم إرجاع الـ 6 مربعات الأصلية تماماً كما كانت في النسخة الأولى -->
  <div class="grid6" id="metrics"></div>
 
  <div class="row2">
@@ -258,7 +259,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
  </div><div class="actions"><button class="primary" onclick="saveTrade()">Save Trade</button><button class="secondary" onclick="clearForm()">Clear / Cancel</button></div></div>
 </section>
 
-<!-- القسم المحدث بالكامل: Trades Log مع الفلاتر وشريط التلخيص -->
 <section id="trades" class="page">
   <div class="head">
     <div><h1>Trades Log</h1><p>Your complete trade history.</p></div>
@@ -281,7 +281,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
       </select>
     </div>
 
-    <!-- شريط الإحصائيات والمجاميع الديناميكي الجديد -->
     <div id="tradesSummary" class="tradesSummary" style="display:none;">
       <span>Filtered: <strong id="summaryCount">0</strong></span>
       <span>Total R: <strong id="summaryTotalR">0.00R</strong></span>
@@ -711,7 +710,6 @@ function deleteTrade(id){
   }
 }
 
-// دالة عرض الصفقات المفلترة وتحديث المجاميع
 function renderTrades(){
   const search = val('tradeSearch').toLowerCase();
   const resultFilter = val('tradeResult');
@@ -789,6 +787,7 @@ function renderTrades(){
   }).join('');
 }
 
+// دالة عرض الـ 6 مربعات الأصلية تماماً
 function renderMetrics() {
   const container = $('metrics');
   if(!container) return;
@@ -797,14 +796,24 @@ function renderMetrics() {
   const totalPnl = data.trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
   const wins = data.trades.filter(t => (Number(t.r) || 0) > 0).length;
   const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
+  
+  // حساب الـ Max Drawdown والـ Avg R بدقة حسب البيانات الأصلية
+  let peak = 0, currentCum = 0, maxDd = 0;
+  [...data.trades].reverse().forEach(t => {
+    currentCum += Number(t.r) || 0;
+    if(currentCum > peak) peak = currentCum;
+    const dd = peak - currentCum;
+    if(dd > maxDd) maxDd = dd;
+  });
+  const avgR = totalTrades > 0 ? (totalR / totalTrades).toFixed(2) : '0.00';
 
   container.innerHTML = `
-    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div></div>
-    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate}%</div></div>
-    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${(totalR >= 0 ? '+' : '') + totalR.toFixed(2)}R</div></div>
-    <div class="metric"><div class="label">Total PnL</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(2)}</div></div>
-    <div class="metric"><div class="label">Winning Trades</div><div class="value up">${wins}</div></div>
-    <div class="metric"><div class="label">Losing Trades</div><div class="value down">${totalTrades - wins}</div></div>
+    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged setups</div></div>
+    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${(totalR >= 0 ? '+' : '') + totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
+    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate}%</div><div class="sub">${wins} Wins</div></div>
+    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDd.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
+    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(2)}</div><div class="sub">Net dollar return</div></div>
+    <div class="metric"><div class="label">Avg R / Trade</div><div class="value ${Number(avgR) >= 0 ? 'up' : 'down'}">${(Number(avgR) >= 0 ? '+' : '') + avgR}R</div><div class="sub">Expectancy</div></div>
   `;
 }
 
