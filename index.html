@@ -550,7 +550,7 @@ function saveTrade(){
     id,
     date: val('fDate'), time: val('fTime'), symbol: val('fSymbol'),
     bias: getCheckedValues('dropBias'), session: val('fSession'), grade: val('fGrade'),
-    entry: getCheckedValues('dropEntry'), kl: getCheckedValues('dropKL'), narrative: getCheckedValues('dropNarrative'),
+    entry: getCheckedValues('dropEntry'), kl: getCheckedValues('dropKL'), narrative: val('fNarrative') || getCheckedValues('dropNarrative'),
     tradeStatus: val('fTradeStatus'), entryPrice: val('fEntryPrice'), exitPrice: val('fExitPrice'),
     size: val('fSize'), pnl: val('fPnl'), risk: val('fRisk'), sl: val('fSL'), tp: val('fTP'),
     rr: val('fRR'), r: Number(val('fR')) || 0, exec: val('fExec'), confidence: val('fConfidence'),
@@ -571,6 +571,8 @@ function clearForm(){
   ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => { $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected')); });
   updateDropdownText('dropBias', 'dropBiasText'); updateDropdownText('dropEntry', 'dropEntryText');
   updateDropdownText('dropKL', 'dropKLText'); updateDropdownText('dropNarrative', 'dropNarrativeText');
+  $('fSymbol').selectedIndex = 0; $('fSession').selectedIndex = 0; $('fGrade').selectedIndex = 0;
+  $('fTradeStatus').selectedIndex = 0; $('fExec').selectedIndex = 0; $('fEmotion').selectedIndex = 0; $('fPlan').selectedIndex = 0;
 }
 
 function editTrade(id){
@@ -579,17 +581,29 @@ function editTrade(id){
   go('add');
   $('editTradeId').value = t.id;
   $('formTitle').textContent = 'Edit Trade';
-  $('fDate').value = t.date || ''; $('fTime').value = t.time || '';
-  $('fSymbol').value = t.symbol || 'MNQ'; $('fSession').value = t.session || 'NY AM';
-  $('fGrade').value = t.grade || 'A+'; $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
-  $('fEntryPrice').value = t.entryPrice || ''; $('fExitPrice').value = t.exitPrice || '';
-  $('fSize').value = t.size || ''; $('fPnl').value = t.pnl || '';
-  $('fRisk').value = t.risk || ''; $('fSL').value = t.sl || '';
-  $('fTP').value = t.tp || ''; $('fRR').value = t.rr || '';
-  $('fR').value = t.r || ''; $('fExec').value = t.exec || 'Excellent';
-  $('fConfidence').value = t.confidence || ''; $('fEmotion').value = t.emotion || 'Calm';
-  $('fPlan').value = t.plan || 'Yes'; $('fChartBeforeData').value = t.chartBefore || '';
-  $('fChartAfterData').value = t.chartAfter || ''; $('fNotes').value = t.notes || '';
+  $('fDate').value = t.date || '';
+  $('fTime').value = t.time || '';
+  $('fSymbol').value = t.symbol || 'MNQ';
+  $('fSession').value = t.session || 'NY AM';
+  $('fGrade').value = t.grade || 'A+';
+  $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
+  $('fEntryPrice').value = t.entryPrice || '';
+  $('fExitPrice').value = t.exitPrice || '';
+  $('fSize').value = t.size || '';
+  $('fPnl').value = t.pnl || '';
+  $('fRisk').value = t.risk || '';
+  $('fSL').value = t.sl || '';
+  $('fTP').value = t.tp || '';
+  $('fRR').value = t.rr || '';
+  $('fR').value = t.r || '';
+  $('fExec').value = t.exec || 'Excellent';
+  $('fConfidence').value = t.confidence || '';
+  $('fEmotion').value = t.emotion || 'Calm';
+  $('fPlan').value = t.plan || 'Yes';
+  $('fChartBeforeData').value = t.chartBefore || '';
+  $('fChartAfterData').value = t.chartAfter || '';
+  $('fNotes').value = t.notes || '';
+
   setCheckedValues('dropBias', t.bias, 'dropBiasText');
   setCheckedValues('dropEntry', t.entry, 'dropEntryText');
   setCheckedValues('dropKL', t.kl, 'dropKLText');
@@ -599,289 +613,340 @@ function editTrade(id){
 function deleteTrade(id){
   if(confirm('Are you sure you want to delete this trade?')){
     data.trades = data.trades.filter(x => x.id !== id);
-    persist(); toast('Trade deleted');
+    persist();
+    toast('Trade deleted successfully');
   }
 }
 
 function renderTrades(){
-  const search = val('tradeSearch').toLowerCase(), resultFilter = val('tradeResult');
-  const dateFrom = val('dateFrom'), dateTo = val('dateTo'), tbody = $('tradesBody');
-  if(!tbody) return;
+  const search = ($('tradeSearch').value || '').toLowerCase();
+  const dateFrom = $('dateFrom').value;
+  const dateTo = $('dateTo').value;
+  const resFilter = $('tradeResult').value;
 
-  let filteredTrades = data.trades.filter(t => {
-    const matchSearch = t.symbol.toLowerCase().includes(search);
-    let matchResult = true, rValue = Number(t.r);
-    if(resultFilter === 'Win') matchResult = rValue > 0;
-    else if(resultFilter === 'Loss') matchResult = rValue < 0;
-    else if(resultFilter === 'Breakeven') matchResult = rValue === 0;
-    let matchDate = true;
-    if (dateFrom && t.date < dateFrom) matchDate = false;
-    if (dateTo && t.date > dateTo) matchDate = false;
-    return matchSearch && matchResult && matchDate;
+  const filtered = data.trades.filter(t => {
+    const symbolMatch = (t.symbol || '').toLowerCase().includes(search);
+    const dateMatch = (!dateFrom || t.date >= dateFrom) && (!dateTo || t.date <= dateTo);
+    const rVal = Number(t.r) || 0;
+    const resType = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'Breakeven');
+    const resultMatch = resFilter === 'All' || resType === resFilter;
+    return symbolMatch && dateMatch && resultMatch;
   });
 
-  const summaryCount = filteredTrades.length;
-  const summaryTotalR = filteredTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-  const summaryTotalPnl = filteredTrades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  const summaryBar = $('tradesSummary');
-  
-  if(summaryCount > 0) {
-    summaryBar.style.display = 'flex';
-    $('summaryCount').textContent = summaryCount;
-    $('summaryTotalR').textContent = (summaryTotalR >= 0 ? '+' : '') + summaryTotalR.toFixed(2) + 'R';
-    $('summaryTotalR').className = (summaryTotalR >= 0 ? 'up' : 'down');
-    $('summaryTotalPnl').textContent = (summaryTotalPnl >= 0 ? '+' : '') + '$' + summaryTotalPnl.toFixed(2);
-    $('summaryTotalPnl').className = (summaryTotalPnl >= 0 ? 'up' : 'down');
-  } else { summaryBar.style.display = 'none'; }
-
-  if(filteredTrades.length === 0){
-    tbody.innerHTML = `<tr><td colspan="10" class="empty">No trades found matching your filters.</td></tr>`;
-    return;
+  const sumBox = $('tradesSummary');
+  if(dateFrom || dateTo || search || resFilter !== 'All'){
+    sumBox.style.display = 'flex';
+    $('summaryCount').textContent = filtered.length;
+    const totalR = filtered.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
+    const totalPnl = filtered.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
+    $('summaryTotalR').textContent = (totalR >= 0 ? '+' : '') + totalR.toFixed(2) + 'R';
+    $('summaryTotalPnl').textContent = (totalPnl >= 0 ? '+' : '-') + '$' + Math.abs(totalPnl).toFixed(2);
+  } else {
+    sumBox.style.display = 'none';
   }
 
-  tbody.innerHTML = filteredTrades.map(t => {
-    const r = Number(t.r) || 0, pnl = Number(t.pnl) || 0;
-    return `<tr>
-      <td>${t.date}</td>
-      <td style="font-weight:700">${t.symbol}</td>
-      <td><span class="pill ${t.tradeStatus === 'In-Plan' ? '' : 'red'}">${t.tradeStatus}</span></td>
-      <td style="color:var(--muted);">${t.bias || '-'}</td>
-      <td style="color:var(--muted);">${t.entry || '-'}</td>
-      <td style="color:var(--muted);">${t.kl || '-'}</td>
-      <td class="${r > 0 ? 'up' : (r < 0 ? 'down' : '')}">${(r > 0 ? '+' : '') + r.toFixed(1)}R</td>
-      <td class="${pnl >= 0 ? 'up' : 'down'}">${(pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2)}</td>
-      <td>
-        ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="openModal('image', '${t.chartBefore}')" title="Before Chart">` : ''}
-        ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="openModal('image', '${t.chartAfter}')" title="After Chart">` : ''}
-      </td>
-      <td>
-        <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
-        <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
-      </td>
-    </tr>`;
+  const tbody = $('tradesBody');
+  if(!tbody) return;
+  tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:var(--muted); padding:30px;">No trades found.</td></tr>` : filtered.map(t => {
+    const rVal = Number(t.r) || 0;
+    const pnlVal = Number(t.pnl) || 0;
+    const isWin = rVal >= 0;
+    return `
+      <tr>
+        <td>${t.date || ''}</td>
+        <td><strong>${t.symbol || ''}</strong></td>
+        <td><span style="font-size:11px; color:var(--muted);">${t.tradeStatus || 'In-Plan'}</span></td>
+        <td><span style="font-size:11px;">${t.bias || '-'}</span></td>
+        <td><span style="font-size:11px;">${t.entry || '-'}</span></td>
+        <td><span style="font-size:11px;">${t.kl || '-'}</span></td>
+        <td class="${isWin ? 'up' : 'down'}"><strong>${(rVal >= 0 ? '+' : '') + rVal.toFixed(2)}R</strong></td>
+        <td class="${pnlVal >= 0 ? 'up' : 'down'}"><strong>${(pnlVal >= 0 ? '+' : '-') + '$' + Math.abs(pnlVal).toFixed(2)}</strong></td>
+        <td>
+          ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="showImageModal('${t.chartBefore}')">` : ''}
+          ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="showImageModal('${t.chartAfter}')">` : ''}
+        </td>
+        <td>
+          <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
+          <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
+        </td>
+      </tr>
+    `;
   }).join('');
 }
 
-function renderMetrics() {
-  const container = $('metrics');
-  if(!container) return;
-  const totalTrades = data.trades.length;
-  const totalR = data.trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-  const totalPnl = data.trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  const wins = data.trades.filter(t => (Number(t.r) || 0) > 0).length;
-  const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
-  
-  let peak = 0, currentCum = 0, maxDd = 0;
-  [...data.trades].reverse().forEach(t => {
-    currentCum += Number(t.r) || 0;
-    if(currentCum > peak) peak = currentCum;
-    const dd = peak - currentCum;
-    if(dd > maxDd) maxDd = dd;
-  });
-  const avgR = totalTrades > 0 ? (totalR / totalTrades).toFixed(2) : '0.00';
+function showImageModal(src){
+  $('modalTitle').textContent = 'Chart Image Preview';
+  $('modalBody').innerHTML = `<div style="text-align:center;"><img src="${src}" style="max-width:100%; border-radius:10px; border:1px solid var(--line);"></div>`;
+  $('modalOverlay').classList.add('active');
+}
 
-  container.innerHTML = `
+function closeModal(){
+  $('modalOverlay').classList.remove('active');
+}
+
+function closeModalOnBg(e){
+  if(e.target === $('modalOverlay')) closeModal();
+}
+
+function openModal(type){
+  $('modalOverlay').classList.add('active');
+  if(type === 'chart'){
+    $('modalTitle').textContent = 'Performance Overview (Expanded)';
+    $('modalBody').innerHTML = `<div class="chart" id="modalChartContainer" style="height:500px;"></div>`;
+    renderPerformanceChart('modalChartContainer');
+  } else if(type === 'calendar'){
+    $('modalTitle').textContent = 'Trading Calendar (Expanded)';
+    $('modalBody').innerHTML = `<div id="modalCalendarContainer"></div>`;
+    renderCalendar('modalCalendarContainer');
+  }
+}
+
+function renderMetrics(){
+  const trades = data.trades;
+  const totalTrades = trades.length;
+  const totalR = trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
+  const wins = trades.filter(t => (Number(t.r) || 0) > 0).length;
+  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
+  
+  let cum = 0, peak = 0, maxDD = 0;
+  [...trades].reverse().forEach(t => {
+    cum += Number(t.r) || 0;
+    if(cum > peak) peak = cum;
+    const dd = peak - cum;
+    if(dd > maxDD) maxDD = dd;
+  });
+
+  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
+  const expectancy = totalTrades > 0 ? totalR / totalTrades : 0;
+
+  $('metrics').innerHTML = `
     <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged setups</div></div>
     <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${(totalR >= 0 ? '+' : '') + totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
-    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate}%</div><div class="sub">${wins} Wins</div></div>
-    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDd.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
-    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(2)}</div><div class="sub">Net dollar return</div></div>
-    <div class="metric"><div class="label">Avg R / Trade</div><div class="value ${Number(avgR) >= 0 ? 'up' : 'down'}">${(Number(avgR) >= 0 ? '+' : '') + avgR}R</div><div class="sub">Expectancy</div></div>
+    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(1)}%</div><div class="sub">${wins} Wins</div></div>
+    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
+    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '-')}$${Math.abs(totalPnl).toFixed(2)}</div><div class="sub">Net dollar return</div></div>
+    <div class="metric"><div class="label">Avg R / Trade</div><div class="value ${expectancy >= 0 ? 'up' : 'down'}">${(expectancy >= 0 ? '+' : '') + expectancy.toFixed(2)}R</div><div class="sub">Expectancy</div></div>
   `;
 }
 
-function renderRecent() {
-  const tbody = $('recent');
-  if(!tbody) return;
-  const recentTrades = data.trades.slice(0, 5);
-  if(recentTrades.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty">No trades recorded yet.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = recentTrades.map(t => {
-    const r = Number(t.r) || 0, pnl = Number(t.pnl) || 0;
-    return `<tr>
-      <td>${t.date}</td>
-      <td><b>${t.symbol}</b></td>
-      <td>${t.grade || '-'}</td>
-      <td class="${r > 0 ? 'up' : (r < 0 ? 'down' : '')}">${(r > 0 ? '+' : '') + r.toFixed(1)}R</td>
-      <td class="${pnl >= 0 ? 'up' : 'down'}">$${pnl.toFixed(2)}</td>
-      <td><span class="pill ${r > 0 ? '' : 'red'}">${r > 0 ? 'Win' : 'Loss'}</span></td>
-    </tr>`;
-  }).join('');
+function renderStats(){
+  const trades = data.trades;
+  const totalTrades = trades.length;
+  const totalR = trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
+  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
+  const wins = trades.filter(t => (Number(t.r) || 0) > 0).length;
+  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
+  const bestTrade = trades.reduce((max, t) => Math.max(max, Number(t.r) || 0), 0);
+  const worstTrade = trades.reduce((min, t) => Math.min(min, Number(t.r) || 0), 0);
+  const profitFactor = Math.abs(trades.filter(t => (Number(t.r) || 0) > 0).reduce((s, t) => s + Number(t.r), 0) / (trades.filter(t => (Number(t.r) || 0) < 0).reduce((s, t) => s + Number(t.r), 0) || 1));
+
+  $('stats').innerHTML = `
+    <div class="metric stat"><div class="label">Total Trades</div><div class="v">${totalTrades}</div></div>
+    <div class="metric stat"><div class="label">Total R</div><div class="v ${totalR >= 0 ? 'up' : 'down'}">${(totalR >= 0 ? '+' : '') + totalR.toFixed(2)}R</div></div>
+    <div class="metric stat"><div class="label">Win Rate</div><div class="v">${winRate.toFixed(1)}%</div></div>
+    <div class="metric stat"><div class="label">Total PnL</div><div class="v ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '-')}$${Math.abs(totalPnl).toFixed(2)}</div></div>
+    <div class="metric stat"><div class="label">Profit Factor</div><div class="v">${profitFactor.toFixed(2)}</div></div>
+    <div class="metric stat"><div class="label">Best Trade</div><div class="v up">+${bestTrade.toFixed(2)}R</div></div>
+    <div class="metric stat"><div class="label">Worst Trade</div><div class="v down">${worstTrade.toFixed(2)}R</div></div>
+  `;
 }
 
-// دالة الرسم البياني مع نقل الأرقام ومحاورها إلى اليمين
-function renderPerformanceChart(targetId='performanceChart') {
-  const container = $(targetId);
+function renderAnalytics(){
+  const trades = data.trades;
+  const groupBy = (key) => {
+    const map = {};
+    trades.forEach(t => {
+      const k = t[key] || 'Unspecified';
+      if(!map[k]) map[k] = {count: 0, r: 0, pnl: 0};
+      map[k].count++;
+      map[k].r += Number(t.r) || 0;
+      map[k].pnl += Number(t.pnl) || 0;
+    });
+    return map;
+  };
+
+  const renderGroupTable = (map, titleKey) => {
+    const keys = Object.keys(map);
+    if(keys.length === 0) return `<div style="color:var(--muted); font-size:12px; padding:10px;">No data available</div>`;
+    return `
+      <table class="table">
+        <thead><tr><th>${titleKey}</th><th>Trades</th><th>Total R</th><th>PnL</th></tr></thead>
+        <tbody>
+          ${keys.map(k => `
+            <tr>
+              <td><strong>${k}</strong></td>
+              <td>${map[k].count}</td>
+              <td class="${map[k].r >= 0 ? 'up' : 'down'}">${(map[k].r >= 0 ? '+' : '') + map[k].r.toFixed(2)}R</td>
+              <td class="${map[k].pnl >= 0 ? 'up' : 'down'}">${(map[k].pnl >= 0 ? '+' : '-') + '$' + Math.abs(map[k].pnl).toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  };
+
+  $('sessionStats').innerHTML = renderGroupTable(groupBy('session'), 'Session');
+  $('biasStats').innerHTML = renderGroupTable(groupBy('bias'), 'Bias');
+  $('symbolStats').innerHTML = renderGroupTable(groupBy('symbol'), 'Symbol');
+}
+
+function renderNotes(){
+  const container = $('notesList');
   if(!container) return;
-  
-  if(data.trades.length === 0) {
-    container.innerHTML = `<div class="empty" style="height:100%; display:flex; align-items:center; justify-content:center;">No data to display</div>`;
-    return;
-  }
-
-  const chartType = val('chartTypeSelect') || 'r';
-  const rrFilter = val('rrFilterSelect') || 'all';
-
-  let sortedTrades = [...data.trades].sort((a,b) => new Date(a.date) - new Date(b.date));
-
-  if(rrFilter === 'weekly') {
-    const now = new Date();
-    sortedTrades = sortedTrades.filter(t => {
-      const d = new Date(t.date);
-      return (now - d) / (1000 * 60 * 60 * 24) <= 7;
-    });
-  } else if(rrFilter === 'monthly') {
-    const now = new Date();
-    sortedTrades = sortedTrades.filter(t => {
-      const d = new Date(t.date);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    });
-  }
-
-  if(sortedTrades.length === 0) {
-    container.innerHTML = `<div class="empty" style="height:100%; display:flex; align-items:center; justify-content:center;">No data matching filter</div>`;
-    return;
-  }
-
-  let cumulative = 0;
-  const values = sortedTrades.map(t => {
-    cumulative += chartType === 'pnl' ? (Number(t.pnl) || 0) : (Number(t.r) || 0);
-    return {val: cumulative, date: t.date};
-  });
-
-  const maxVal = Math.max(...values.map(v => v.val), 3);
-  const minVal = Math.min(...values.map(v => v.val), 0);
-  const range = maxVal - minVal || 1;
-
-  const width = 500, height = 230;
-  const paddingX = 20, paddingY = 25;
-  const graphWidth = width - paddingX - 45; // مساحة لليمين
-  const graphHeight = height - (paddingY * 2);
-
-  const points = values.map((item, index) => {
-    const x = paddingX + (index * (graphWidth / Math.max(values.length - 1, 1)));
-    const y = (height - paddingY) - ((item.val - minVal) / range) * graphHeight;
-    return {x, y, ...item};
-  });
-
-  let pathD = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const xc = (points[i].x + points[i + 1].x) / 2;
-    const yc = (points[i].y + points[i + 1].y) / 2;
-    pathD += ` Q ${points[i].x} ${points[i].y}, ${xc} ${yc}`;
-  }
-  if(points.length > 1) {
-    pathD += ` T ${points[points.length - 1].x} ${points[points.length - 1].y}`;
-  }
-
-  const firstX = points[0].x;
-  const lastX = points[points.length - 1].x;
-  const areaD = `${pathD} L ${lastX} ${height - paddingY} L ${firstX} ${height - paddingY} Z`;
-
-  // محاور الأرقام الجانبية (تم نقلها إلى اليمين)
-  const steps = 4;
-  let axisHTML = '';
-  const textXPos = width - 15;
-  for(let i = 0; i <= steps; i++) {
-    const valAtStep = minVal + (range / steps) * i;
-    const yPos = (height - paddingY) - (i / steps) * graphHeight;
-    axisHTML += `<text x="${textXPos}" y="${yPos + 4}" fill="var(--muted)" font-size="9" text-anchor="start">${chartType === 'pnl' ? '$' + valAtStep.toFixed(0) : valAtStep.toFixed(1)}</text>`;
-    axisHTML += `<line x1="${paddingX}" y1="${yPos}" x2="${width - 45}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="2,2" opacity="0.4"/>`;
-  }
-
-  let datesHTML = `<text x="${paddingX}" y="${height - 5}" fill="var(--muted)" font-size="9">Start</text>`;
-  if(points.length > 1) {
-    const midIdx = Math.floor(points.length / 2);
-    datesHTML += `<text x="${points[midIdx].x}" y="${height - 5}" fill="var(--muted)" font-size="9" text-anchor="middle">${points[midIdx].date}</text>`;
-    datesHTML += `<text x="${lastX}" y="${height - 5}" fill="var(--muted)" font-size="9" text-anchor="end">${points[points.length - 1].date}</text>`;
-  }
-
-  container.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%;">
-      <defs>
-        <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.35"/>
-          <stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/>
-        </linearGradient>
-      </defs>
-      ${axisHTML}
-      <path d="${areaD}" fill="url(#chartGrad)"/>
-      <path d="${pathD}" fill="none" stroke="var(--green)" stroke-width="2.5"/>
-      ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--green)" stroke="var(--panel)" stroke-width="1.5"><title>${p.date}: ${chartType === 'pnl' ? '$' + p.val : p.val + 'R'}</title></circle>`).join('')}
-      ${datesHTML}
-    </svg>
-  `;
-}
-
-function renderAnalytics() {
-  $('sessionStats').innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
-  $('biasStats').innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
-  $('symbolStats').innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics updated.</div>`;
-}
-
-function saveNote() {
-  const text = val('noteText');
-  if(!text.trim()) return;
-  data.notes.unshift({id: Date.now(), date: new Date().toISOString().slice(0,10), text});
-  $('noteText').value = ''; persist(); toast('Note saved!');
-}
-
-function renderNotes() {
-  const list = $('notesList');
-  if(!list) return;
-  if(data.notes.length === 0) { list.innerHTML = `<div class="empty">No notes found.</div>`; return; }
-  list.innerHTML = data.notes.map(n => `
+  container.innerHTML = (data.notes || []).length === 0 ? `<div style="color:var(--muted); font-size:12px; padding:10px;">No notes saved yet.</div>` : (data.notes || []).map((n, i) => `
     <div class="listItem" style="flex-direction:column; align-items:flex-start; gap:6px;">
-      <div style="font-size:11px; color:var(--muted);">${n.date}</div>
-      <div>${n.text}</div>
-      <button class="danger" onclick="deleteNote(${n.id})" style="align-self:flex-end;">Delete</button>
+      <div style="display:flex; justify-content:space-width; width:100%; justify-content:space-between;">
+        <span style="font-size:11px; color:var(--muted);">${n.date}</span>
+        <button class="danger" onclick="deleteNote(${i})">Delete</button>
+      </div>
+      <div style="white-space:pre-wrap; font-size:13px;">${n.text}</div>
     </div>
   `).join('');
 }
 
-function deleteNote(id) {
-  data.notes = data.notes.filter(n => n.id !== id);
-  persist(); toast('Note deleted');
+function saveNote(){
+  const text = $('noteText').value.trim();
+  if(!text) return;
+  if(!data.notes) data.notes = [];
+  data.notes.unshift({date: new Date().toISOString().slice(0,10), text});
+  $('noteText').value = '';
+  persist();
+  toast('Note saved successfully');
 }
 
-function openModal(type, extra='') {
-  $('modalOverlay').classList.add('active');
-  if(type === 'chart') {
-    $('modalTitle').textContent = 'Performance Overview (Fullscreen)';
-    $('modalBody').innerHTML = `<div class="chart" id="modalChart" style="height:100%;"></div>`;
-    renderPerformanceChart('modalChart');
-  } else if(type === 'calendar') {
-    $('modalTitle').textContent = 'Trading Calendar (Fullscreen)';
-    $('modalBody').innerHTML = `<div id="modalCalendar" style="padding:10px;"></div>`;
-    renderCalendar('modalCalendar');
-  } else if(type === 'image') {
-    $('modalTitle').textContent = 'Chart Image Preview';
-    $('modalBody').innerHTML = `<div style="text-align:center;"><img src="${extra}" style="max-width:100%; max-height:80vh; border-radius:8px;"></div>`;
+function deleteNote(index){
+  data.notes.splice(index, 1);
+  persist();
+  toast('Note deleted');
+}
+
+// دالة رسم الشارت المطورة لحل مشكلة نقطة البداية (Start) وتحديث المحور اليمين ديناميكياً
+function renderPerformanceChart(containerId = 'performanceChart') {
+  const container = $(containerId);
+  if(!container) return;
+
+  const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
+  const rrFilter = $('rrFilterSelect') ? $('rrFilterSelect').value : 'all';
+
+  // ترتيب الصفقات تصاعدياً حسب التاريخ لتبدأ نقطة البداية (Start) من اليسار تصاعدياً
+  let sortedTrades = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+  // تطبيق فلتر الـ RR أو الفلاتر الأخرى
+  if(rrFilter === 'weekly') {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneWeekAgo);
+  } else if(rrFilter === 'monthly') {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneMonthAgo);
   }
+
+  // حساب القيم التراكمية (نقطة البداية الصفرية من أسفل اليسار)
+  let cumulative = 0;
+  const points = [{ xLabel: 'Start', value: 0, date: '' }];
+
+  sortedTrades.forEach(t => {
+    let val = chartType === 'pnl' ? (Number(t.pnl) || 0) : (Number(t.r) || 0);
+    cumulative += val;
+    points.push({
+      xLabel: t.date ? t.date.slice(5) : '',
+      value: cumulative,
+      date: t.date || ''
+    });
+  });
+
+  if(points.length === 1) {
+    container.innerHTML = `<div class="empty" style="padding-top:80px; text-align:center; color:var(--muted);">No performance data available for chart yet.</div>`;
+    return;
+  }
+
+  // حساب أقصى وأدنى قيمة لضبط المحور الرودي (Y-Axis) ديناميكياً حسب الربح والخسارة
+  const values = points.map(p => p.value);
+  let maxVal = Math.max(...values, 0);
+  let minVal = Math.min(...values, 0);
+
+  if(maxVal === minVal) {
+    maxVal += 1;
+    minVal -= 1;
+  }
+
+  const paddingRange = (maxVal - minVal) * 0.15;
+  maxVal += paddingRange;
+  minVal -= paddingRange;
+
+  const width = container.clientWidth || 500;
+  const height = container.clientHeight || 280;
+  const margin = { top: 20, right: 65, bottom: 30, left: 20 };
+  const graphWidth = width - margin.left - margin.right;
+  const graphHeight = height - margin.top - margin.bottom;
+
+  const getX = (i) => margin.left + (i / (points.length - 1)) * graphWidth;
+  const getY = (val) => margin.top + graphHeight - ((val - minVal) / (maxVal - minVal || 1)) * graphHeight;
+
+  const pathCoords = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.value)}`).join(' ');
+  const firstX = getX(0);
+  const lastX = getX(points.length - 1);
+  const bottomY = margin.top + graphHeight;
+  const areaCoords = `${pathCoords} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
+
+  // تقسيم مقياس الأرقام على اليمين إلى خطوط شبكية ومحاور دقيقة ديناميكية
+  const steps = 5;
+  let yAxisGridHTML = '';
+  let yAxisLabelsHTML = '';
+
+  for(let i = 0; i <= steps; i++) {
+    const val = minVal + (maxVal - minVal) * (i / steps);
+    const yPos = getY(val);
+    yAxisGridHTML += `<line x1="${margin.left}" y1="${yPos}" x2="${width - margin.right}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/>`;
+    
+    let formattedVal = chartType === 'pnl' ? (val >= 0 ? `+$${val.toFixed(0)}` : `-$${Math.abs(val).toFixed(0)}`) : (val >= 0 ? `+${val.toFixed(1)}R` : `${val.toFixed(1)}R`);
+    yAxisLabelsHTML += `<text x="${width - margin.right + 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10">${formattedVal}</text>`;
+  }
+
+  const lastPoint = points[points.length - 1];
+  const lastXPos = getX(points.length - 1);
+  const lastYPos = getY(lastPoint.value);
+  const startPoint = points[0];
+  const startXPos = getX(0);
+  const startYPos = getY(startPoint.value);
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${width} ${height}">
+      <defs>
+        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/>
+        </linearGradient>
+      </defs>
+      ${yAxisGridHTML}
+      <path d="${areaCoords}" fill="url(#chartGrad)"/>
+      <path d="${pathCoords}" fill="none" stroke="var(--green)" stroke-width="2.5"/>
+      ${yAxisLabelsHTML}
+      <circle cx="${startXPos}" cy="${startYPos}" r="4" fill="var(--green)"/>
+      <text x="${startXPos}" y="${bottomY + 16}" fill="var(--muted)" font-size="10">${startPoint.xLabel || 'Start'}</text>
+      <circle cx="${lastXPos}" cy="${lastYPos}" r="4" fill="var(--green)"/>
+      <text x="${lastXPos}" y="${bottomY + 16}" fill="var(--muted)" font-size="10" text-anchor="end">${lastPoint.xLabel}</text>
+    </svg>
+  `;
 }
 
-function closeModal() { $('modalOverlay').classList.remove('active'); }
-function closeModalOnBg(e) { if(e.target === $('modalOverlay')) closeModal(); }
-
-function renderAll() {
+function renderAll(){
   renderMetrics();
-  renderCalendar();
-  renderRecent();
-  renderTrades();
+  renderStats();
   renderPerformanceChart();
-  renderDropdowns();
-  renderStrategiesManager();
+  renderCalendar();
+  renderTrades();
   renderAnalytics();
   renderNotes();
+  renderStrategiesManager();
+  renderDropdowns();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  $('themeSelect').value = data.theme || 'dark';
-  changeTheme(data.theme || 'dark');
-  renderAll();
-});
+// Initial Run
+changeTheme(data.theme || 'dark');
+$('themeSelect').value = data.theme || 'dark';
+renderAll();
 </script>
 </body>
 </html>
