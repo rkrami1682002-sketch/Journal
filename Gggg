@@ -85,11 +85,19 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 
 .stats{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px}.stat{padding:13px;min-height:94px}.stat .v{font-size:20px;font-weight:750;margin:8px 0 4px}
 .row3{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-weight:500}.pill{padding:4px 7px;border-radius:12px;background:rgba(115,213,138,0.2);color:var(--green);font-size:10px}.pill.red{background:rgba(255,109,109,0.2);color:var(--red)}
-.journal{max-height:220px;overflow:auto}
+.journal{max-height:280px;overflow:auto}
 .page{display:none}.page.active{display:block}.sectionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.formCard{max-width:1000px}.formGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;outline:none}.field textarea{min-height:90px;resize:vertical}.span2{grid-column:span 2}.span3{grid-column:span 3}.actions{display:flex;gap:8px;margin-top:15px}.primary{background:var(--green);border:0;color:#0a160c;font-weight:750;border-radius:9px;padding:11px 16px}.secondary{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:11px 16px}
-.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.toolbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}.list{display:grid;gap:9px}.listItem{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px}.danger{color:var(--red);background:transparent;border:0;font-weight:bold;cursor:pointer}.editBtn{color:var(--green);background:transparent;border:0;font-weight:bold;cursor:pointer;margin-right:8px}
+.empty{padding:40px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+.toolbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.list{display:grid;gap:9px}
+.listItem{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.danger{color:var(--red);background:transparent;border:0;font-weight:bold;cursor:pointer}
+.editBtn{color:var(--green);background:transparent;border:0;font-weight:bold;cursor:pointer;margin-right:8px}
 .toast{position:fixed;right:20px;bottom:20px;background:var(--green);color:#000;padding:11px 15px;border-radius:10px;display:none;z-index:20;font-weight:bold}
 .thumbImg{width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--line);cursor:pointer;margin-right:4px}
+.dateFilter{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
+.dateFilter input{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px;outline:none;font-size:12px}
+.tradesSummary{display:flex;gap:15px;align-items:center;color:var(--muted);font-size:13px;background:var(--panel2);padding:8px 15px;border-radius:8px;border:1px solid var(--line);margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -128,12 +136,10 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
     <div class="cardHead">
       <h3>Performance Overview</h3>
       <div class="cardActions">
-        <!-- القائمة الأولى: الرسم البياني -->
         <select class="select" id="chartTypeSelect" onchange="renderPerformanceChart()">
           <option value="r">Total R</option>
           <option value="pnl">Total PnL ($)</option>
         </select>
-        <!-- القائمة الثانية المستقلة: فلتر الـ RR و PnL -->
         <select class="select" id="rrFilterSelect" onchange="renderPerformanceChart()">
           <option value="all">RR Filter: All</option>
           <option value="weekly">RR Filter: Weekly</option>
@@ -179,7 +185,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Time</label><input id="fTime" type="time"></div>
   <div class="field"><label>Symbol</label><select id="fSymbol"><option>MNQ</option><option>MES</option><option>NQ</option><option>ES</option><option>Other</option></select></div>
   
-  <!-- Bias -->
   <div class="field">
     <label>Bias (Multi-select)</label>
     <div class="custom-dropdown" id="dropBias">
@@ -193,7 +198,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Session</label><select id="fSession"><option>NY AM</option><option>NY PM</option><option>London</option><option>Asia</option></select></div>
   <div class="field"><label>Setup Grade</label><select id="fGrade"><option>A+</option><option>A</option><option>B</option><option>C</option><option>F</option></select></div>
   
-  <!-- Entry (Linked to Strategies) -->
   <div class="field">
     <label>Entry (Multi-select)</label>
     <div class="custom-dropdown" id="dropEntry">
@@ -204,7 +208,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
     </div>
   </div>
 
-  <!-- KL / Key Level (Linked to Strategies) -->
   <div class="field">
     <label>KL / Key Level (Multi-select)</label>
     <div class="custom-dropdown" id="dropKL">
@@ -215,7 +218,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
     </div>
   </div>
 
-  <!-- Narrative -->
   <div class="field">
     <label>Narrative (Multi-select)</label>
     <div class="custom-dropdown" id="dropNarrative">
@@ -226,7 +228,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
     </div>
   </div>
 
-  <!-- Trade Status -->
   <div class="field">
     <label>Trade Status</label>
     <select id="fTradeStatus">
@@ -264,20 +265,35 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   </div>
   <div class="card">
     <div class="toolbar">
-      <input class="select" id="tradeSearch" placeholder="Search symbol...">
-      <select class="select" id="tradeResult" onchange="renderTrades()">
+      <div style="display:flex; gap:10px; flex:1; flex-wrap:wrap;">
+        <input class="select" id="tradeSearch" placeholder="Search symbol..." oninput="renderTrades()" style="flex:1; min-width:150px;">
+        <div class="dateFilter">
+          From: <input type="date" id="dateFrom" onchange="renderTrades()">
+          To: <input type="date" id="dateTo" onchange="renderTrades()">
+        </div>
+      </div>
+      <select class="select" id="tradeResult" onchange="renderTrades()" style="min-width:130px;">
         <option value="All">All Results</option>
         <option value="Win">Win</option>
         <option value="Loss">Loss</option>
         <option value="Breakeven">Breakeven</option>
       </select>
     </div>
-    <table class="table">
-      <thead>
-        <tr><th>Date</th><th>Symbol</th><th>Status</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Images</th><th>Actions</th></tr>
-      </thead>
-      <tbody id="tradesBody"></tbody>
-    </table>
+
+    <div id="tradesSummary" class="tradesSummary" style="display:none;">
+      <span>Filtered: <strong id="summaryCount">0</strong></span>
+      <span>Total R: <strong id="summaryTotalR">0.00R</strong></span>
+      <span>Total P&L: <strong id="summaryTotalPnl">$0.00</strong></span>
+    </div>
+
+    <div class="journal">
+      <table class="table">
+        <thead>
+          <tr><th>Date</th><th>Symbol</th><th>Status</th><th>Bias</th><th>Entry</th><th>KL</th><th>R</th><th>P&L</th><th>Images</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="tradesBody"></tbody>
+      </table>
+    </div>
   </div>
 </section>
 
@@ -299,18 +315,12 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-const KEY='rjournal_pro_v10_clean';
+const KEY='rjournal_pro_v11_clean';
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  theme:'dark',trades:[],notes:[],
- lists:{
-  KL:[],
-  Entry:[],
-  Bias:[],
-  Narrative:[]
- }
+ lists:{KL:[],Entry:[],Bias:[],Narrative:[]}
 };
 const $=id=>document.getElementById(id);
-
 let currentCalDate = new Date();
 
 function changeTheme(theme){
@@ -330,10 +340,7 @@ function go(page){
  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  if(page==='add' && !$('editTradeId').value) {
   const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  $('fDate').value = `${year}-${month}-${day}`;
+  $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
  }
  renderAll();scrollTo(0,0);
 }
@@ -343,9 +350,7 @@ function val(id){return $(id).value}
 function encodeImage(input, targetId) {
  if (input.files && input.files[0]) {
   const reader = new FileReader();
-  reader.onload = function(e) {
-   $(targetId).value = e.target.result;
-  };
+  reader.onload = function(e) { $(targetId).value = e.target.result; };
   reader.readAsDataURL(input.files[0]);
  }
 }
@@ -374,12 +379,8 @@ function importData(input){
           persist();
           toast('Data imported successfully!');
         }
-      } else {
-        alert('Invalid backup file format.');
-      }
-    } catch(err) {
-      alert('Error reading JSON file.');
-    }
+      } else { alert('Invalid backup file format.'); }
+    } catch(err) { alert('Error reading JSON file.'); }
     input.value = '';
   };
   reader.readAsText(file);
@@ -387,9 +388,7 @@ function importData(input){
 
 function toggleDropdown(dropId) {
   const content = $(dropId).querySelector('.dropdown-content');
-  document.querySelectorAll('.dropdown-content').forEach(d => {
-    if(d !== content) d.classList.remove('show');
-  });
+  document.querySelectorAll('.dropdown-content').forEach(d => { if(d !== content) d.classList.remove('show'); });
   content.classList.toggle('show');
 }
 
@@ -400,29 +399,19 @@ window.addEventListener('click', function(e) {
 });
 
 function updateDropdownText(boxId, textId) {
-  const container = $(boxId);
-  const textEl = $(textId);
+  const container = $(boxId), textEl = $(textId);
   if(!container || !textEl) return;
   const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
-    checked.push(opt.getAttribute('data-value'));
-  });
-  if(checked.length === 0){
-    textEl.textContent = "Select options...";
-    textEl.style.color = "var(--muted)";
-  } else {
-    textEl.textContent = checked.join(', ');
-    textEl.style.color = "var(--text)";
-  }
+  container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
+  textEl.textContent = checked.length === 0 ? "Select options..." : checked.join(', ');
+  textEl.style.color = checked.length === 0 ? "var(--muted)" : "var(--text)";
 }
 
 function getCheckedValues(containerId) {
   const container = $(containerId);
   if(!container) return '';
   const checked = [];
-  container.querySelectorAll('.dropdown-option.selected').forEach(opt => {
-    checked.push(opt.getAttribute('data-value'));
-  });
+  container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
   return checked.join(', ');
 }
 
@@ -432,11 +421,8 @@ function setCheckedValues(containerId, valuesStr, textId) {
   const arr = (valuesStr || '').split(',').map(s => s.trim());
   container.querySelectorAll('.dropdown-option').forEach(opt => {
     const val = opt.getAttribute('data-value');
-    if(arr.includes(val)){
-      opt.classList.add('selected');
-    } else {
-      opt.classList.remove('selected');
-    }
+    if(arr.includes(val)) opt.classList.add('selected');
+    else opt.classList.remove('selected');
   });
   updateDropdownText(containerId, textId);
 }
@@ -444,14 +430,7 @@ function setCheckedValues(containerId, valuesStr, textId) {
 function renderStrategiesManager() {
   const container = $('strategyManager');
   if(!container) return;
-  
-  const keys = [
-    {key: 'KL', title: 'KL'},
-    {key: 'Entry', title: 'Entry'},
-    {key: 'Bias', title: 'Bias'},
-    {key: 'Narrative', title: 'Narrative'}
-  ];
-
+  const keys = [{key: 'KL', title: 'KL'}, {key: 'Entry', title: 'Entry'}, {key: 'Bias', title: 'Bias'}, {key: 'Narrative', title: 'Narrative'}];
   container.innerHTML = keys.map(k => `
     <div class="card">
       <h3>${k.title}</h3>
@@ -498,24 +477,17 @@ function renderDropdowns() {
     'fBiasBox': {list: data.lists.Bias, box: 'dropBias', text: 'dropBiasText'},
     'fNarrativeBox': {list: data.lists.Narrative, box: 'dropNarrative', text: 'dropNarrativeText'}
   };
-
   Object.keys(map).forEach(boxId => {
     const box = $(boxId);
     if(!box) return;
     const info = map[boxId];
     const currentChecked = getCheckedValues(boxId);
-    
-    if((info.list || []).length === 0) {
-      box.innerHTML = `<div style="padding:10px; color:var(--muted); font-size:12px; text-align:center;">No options found.<br>Add them in Strategies page.</div>`;
-    } else {
-      box.innerHTML = (info.list || []).map(item => `
-        <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
-          <span>${item}</span>
-          <span class="check-mark">✓</span>
-        </div>
-      `).join('');
-    }
-    
+    box.innerHTML = (info.list || []).length === 0 ? `<div style="padding:10px; color:var(--muted); font-size:12px; text-align:center;">No options found.<br>Add them in Strategies page.</div>` : (info.list || []).map(item => `
+      <div class="dropdown-option" data-value="${item}" onclick="toggleOption('${boxId}', '${info.text}', '${item}', this)">
+        <span>${item}</span>
+        <span class="check-mark">✓</span>
+      </div>
+    `).join('');
     setCheckedValues(boxId, currentChecked, info.text);
   });
 }
@@ -528,33 +500,18 @@ function toggleOption(containerId, textId, itemVal, optElement) {
 function renderCalendar(targetId='calendarGridWrapper') {
   const el = $(targetId);
   if(!el) return;
-  const year = currentCalDate.getFullYear();
-  const month = currentCalDate.getMonth();
-  
-  const firstDay = new Date(year, month, 1).getDay();
-  const totalDays = new Date(year, month + 1, 0).getDate();
-  
+  const year = currentCalDate.getFullYear(), month = currentCalDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay(), totalDays = new Date(year, month + 1, 0).getDate();
   let daysHTML = '';
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  
-  for(let i = 0; i < firstDay; i++) {
-    daysHTML += `<div class="day emptyDay"></div>`;
-  }
-  
+  for(let i = 0; i < firstDay; i++) daysHTML += `<div class="day emptyDay"></div>`;
   for(let d = 1; d <= totalDays; d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const dayTrades = data.trades.filter(t => t.date === dateStr);
     const dayR = dayTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-    
-    let statusClass = '';
-    if(dayTrades.length > 0) {
-      statusClass = dayR >= 0 ? 'pos' : 'neg';
-    }
-    
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const statusClass = dayTrades.length > 0 ? (dayR >= 0 ? 'pos' : 'neg') : '';
+    const now = new Date(), todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const isToday = dateStr === todayStr ? 'today' : '';
-    
     daysHTML += `
       <div class="day ${statusClass} ${isToday}" onclick="filterTradesByDate('${dateStr}')">
         <strong>${d}</strong>
@@ -562,7 +519,6 @@ function renderCalendar(targetId='calendarGridWrapper') {
       </div>
     `;
   }
-  
   el.innerHTML = `
     <div class="calHeader">
       <button class="calNavBtn" onclick="changeCalMonth(-1, '${targetId}')">◀</button>
@@ -579,49 +535,31 @@ function changeCalMonth(delta, targetId) {
   renderCalendar(targetId);
 }
 
+function filterTradesByDate(dateStr) {
+  go('trades');
+  $('dateFrom').value = dateStr;
+  $('dateTo').value = dateStr;
+  $('tradeSearch').value = '';
+  $('tradeResult').value = 'All';
+  renderTrades();
+}
+
 function saveTrade(){
   const id = $('editTradeId').value ? Number($('editTradeId').value) : Date.now();
   const trade = {
     id,
-    date: val('fDate'),
-    time: val('fTime'),
-    symbol: val('fSymbol'),
-    bias: getCheckedValues('dropBias'),
-    session: val('fSession'),
-    grade: val('fGrade'),
-    entry: getCheckedValues('dropEntry'),
-    kl: getCheckedValues('dropKL'),
-    narrative: getCheckedValues('dropNarrative'),
-    tradeStatus: val('fTradeStatus'),
-    entryPrice: val('fEntryPrice'),
-    exitPrice: val('fExitPrice'),
-    size: val('fSize'),
-    pnl: val('fPnl'),
-    risk: val('fRisk'),
-    sl: val('fSL'),
-    tp: val('fTP'),
-    rr: val('fRR'),
-    r: Number(val('fR')) || 0,
-    exec: val('fExec'),
-    confidence: val('fConfidence'),
-    emotion: val('fEmotion'),
-    plan: val('fPlan'),
-    chartBefore: val('fChartBeforeData'),
-    chartAfter: val('fChartAfterData'),
-    notes: val('fNotes')
+    date: val('fDate'), time: val('fTime'), symbol: val('fSymbol'),
+    bias: getCheckedValues('dropBias'), session: val('fSession'), grade: val('fGrade'),
+    entry: getCheckedValues('dropEntry'), kl: getCheckedValues('dropKL'), narrative: getCheckedValues('dropNarrative'),
+    tradeStatus: val('fTradeStatus'), entryPrice: val('fEntryPrice'), exitPrice: val('fExitPrice'),
+    size: val('fSize'), pnl: val('fPnl'), risk: val('fRisk'), sl: val('fSL'), tp: val('fTP'),
+    rr: val('fRR'), r: Number(val('fR')) || 0, exec: val('fExec'), confidence: val('fConfidence'),
+    emotion: val('fEmotion'), plan: val('fPlan'), chartBefore: val('fChartBeforeData'),
+    chartAfter: val('fChartAfterData'), notes: val('fNotes')
   };
-
   const idx = data.trades.findIndex(t => t.id === id);
-  if(idx >= 0) {
-    data.trades[idx] = trade;
-  } else {
-    data.trades.unshift(trade);
-  }
-  
-  persist();
-  clearForm();
-  toast('Trade saved successfully!');
-  go('trades');
+  if(idx >= 0) data.trades[idx] = trade; else data.trades.unshift(trade);
+  persist(); clearForm(); toast('Trade saved successfully!'); go('trades');
 }
 
 function clearForm(){
@@ -629,95 +567,390 @@ function clearForm(){
   $('formTitle').textContent = 'Add Trade';
   const d = new Date();
   $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => {
-    if($(id)) $(id).value = '';
-  });
-  ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => {
-    $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
-  });
-  updateDropdownText('dropBias', 'dropBiasText');
-  updateDropdownText('dropEntry', 'dropEntryText');
-  updateDropdownText('dropKL', 'dropKLText');
-  updateDropdownText('dropNarrative', 'dropNarrativeText');
+  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => { if($(id)) $(id).value = ''; });
+  ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => { $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected')); });
+  updateDropdownText('dropBias', 'dropBiasText'); updateDropdownText('dropEntry', 'dropEntryText');
+  updateDropdownText('dropKL', 'dropKLText'); updateDropdownText('dropNarrative', 'dropNarrativeText');
+  $('fSymbol').selectedIndex = 0; $('fSession').selectedIndex = 0; $('fGrade').selectedIndex = 0;
+  $('fTradeStatus').selectedIndex = 0; $('fExec').selectedIndex = 0; $('fEmotion').selectedIndex = 0; $('fPlan').selectedIndex = 0;
 }
 
-function calculateMaxDrawdown() {
-    let peak = 0;
-    let maxDD = 0;
-    let runningEquity = 0;
-    const sortedTrades = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+function editTrade(id){
+  const t = data.trades.find(x => x.id === id);
+  if(!t) return;
+  go('add');
+  $('editTradeId').value = t.id;
+  $('formTitle').textContent = 'Edit Trade';
+  $('fDate').value = t.date || '';
+  $('fTime').value = t.time || '';
+  $('fSymbol').value = t.symbol || 'MNQ';
+  $('fSession').value = t.session || 'NY AM';
+  $('fGrade').value = t.grade || 'A+';
+  $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
+  $('fEntryPrice').value = t.entryPrice || '';
+  $('fExitPrice').value = t.exitPrice || '';
+  $('fSize').value = t.size || '';
+  $('fPnl').value = t.pnl || '';
+  $('fRisk').value = t.risk || '';
+  $('fSL').value = t.sl || '';
+  $('fTP').value = t.tp || '';
+  $('fRR').value = t.rr || '';
+  $('fR').value = t.r || '';
+  $('fExec').value = t.exec || 'Excellent';
+  $('fConfidence').value = t.confidence || '';
+  $('fEmotion').value = t.emotion || 'Calm';
+  $('fPlan').value = t.plan || 'Yes';
+  $('fChartBeforeData').value = t.chartBefore || '';
+  $('fChartAfterData').value = t.chartAfter || '';
+  $('fNotes').value = t.notes || '';
 
-    sortedTrades.forEach(trade => {
-        runningEquity += (Number(trade.r) || 0);
-        if (runningEquity > peak) {
-            peak = runningEquity;
-        }
-        let drawdown = peak - runningEquity;
-        if (drawdown > maxDD) {
-            maxDD = drawdown;
-        }
-    });
-
-    return maxDD;
+  setCheckedValues('dropBias', t.bias, 'dropBiasText');
+  setCheckedValues('dropEntry', t.entry, 'dropEntryText');
+  setCheckedValues('dropKL', t.kl, 'dropKLText');
+  setCheckedValues('dropNarrative', t.narrative, 'dropNarrativeText');
 }
 
-function renderDashboardMetrics() {
-  const container = $('metrics');
-  if(!container) return;
-
-  const totalTrades = data.trades.length;
-  const totalR = data.trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-  const totalPnl = data.trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  const wins = data.trades.filter(t => (Number(t.r) || 0) > 0).length;
-  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-  const maxDD = calculateMaxDrawdown();
-
-  container.innerHTML = `
-    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged trades</div></div>
-    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR >= 0 ? '+' : ''}${totalR.toFixed(1)}R</div><div class="sub">Cumulative R</div></div>
-    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(0)}%</div><div class="sub">${wins} Wins / ${totalTrades - wins} Losses</div></div>
-    <div class="metric"><div class="label">Wins / Losses</div><div class="value">${wins} / ${totalTrades - wins}</div><div class="sub">Win/Loss breakdown</div></div>
-    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(1)}R</div><div class="sub">Peak to trough decline</div></div>
-    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">$${totalPnl.toFixed(2)}</div><div class="sub">Net profit/loss</div></div>
-  `;
-}
-
-function renderPerformanceChart() {
-  // دالة رسم بياني مجهزة لتفادي الأخطاء
-}
-
-function openModal(type) {
-  $('modalOverlay').classList.add('active');
-  if(type === 'calendar') {
-    $('modalTitle').textContent = 'Full Calendar View';
-    $('modalBody').innerHTML = `<div id="modalCalendarWrapper" style="width:100%; height:100%;"></div>`;
-    renderCalendar('modalCalendarWrapper');
-  } else if(type === 'chart') {
-    $('modalTitle').textContent = 'Full Chart View';
-    $('modalBody').innerHTML = `<div class="chart" style="height:100%;"></div>`;
+function deleteTrade(id){
+  if(confirm('Are you sure you want to delete this trade?')){
+    data.trades = data.trades.filter(x => x.id !== id);
+    persist();
+    toast('Trade deleted successfully');
   }
 }
 
-function closeModal() {
+function renderTrades(){
+  const search = ($('tradeSearch').value || '').toLowerCase();
+  const dateFrom = $('dateFrom').value;
+  const dateTo = $('dateTo').value;
+  const resFilter = $('tradeResult').value;
+
+  const filtered = data.trades.filter(t => {
+    const symbolMatch = (t.symbol || '').toLowerCase().includes(search);
+    const dateMatch = (!dateFrom || t.date >= dateFrom) && (!dateTo || t.date <= dateTo);
+    const rVal = Number(t.r) || 0;
+    const resType = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'Breakeven');
+    const resultMatch = resFilter === 'All' || resType === resFilter;
+    return symbolMatch && dateMatch && resultMatch;
+  });
+
+  const sumBox = $('tradesSummary');
+  if(dateFrom || dateTo || search || resFilter !== 'All'){
+    sumBox.style.display = 'flex';
+    $('summaryCount').textContent = filtered.length;
+    const totalR = filtered.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
+    const totalPnl = filtered.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
+    $('summaryTotalR').textContent = (totalR >= 0 ? '+' : '') + totalR.toFixed(2) + 'R';
+    $('summaryTotalPnl').textContent = (totalPnl >= 0 ? '+' : '-') + '$' + Math.abs(totalPnl).toFixed(2);
+  } else {
+    sumBox.style.display = 'none';
+  }
+
+  const tbody = $('tradesBody');
+  if(!tbody) return;
+  tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:var(--muted); padding:30px;">No trades found.</td></tr>` : filtered.map(t => {
+    const rVal = Number(t.r) || 0;
+    const pnlVal = Number(t.pnl) || 0;
+    const isWin = rVal >= 0;
+    return `
+      <tr>
+        <td>${t.date || ''}</td>
+        <td><strong>${t.symbol || ''}</strong></td>
+        <td><span style="font-size:11px; color:var(--muted);">${t.tradeStatus || 'In-Plan'}</span></td>
+        <td><span style="font-size:11px;">${t.bias || '-'}</span></td>
+        <td><span style="font-size:11px;">${t.entry || '-'}</span></td>
+        <td><span style="font-size:11px;">${t.kl || '-'}</span></td>
+        <td class="${isWin ? 'up' : 'down'}"><strong>${(rVal >= 0 ? '+' : '') + rVal.toFixed(2)}R</strong></td>
+        <td class="${pnlVal >= 0 ? 'up' : 'down'}"><strong>${(pnlVal >= 0 ? '+' : '-') + '$' + Math.abs(pnlVal).toFixed(2)}</strong></td>
+        <td>
+          ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="showImageModal('${t.chartBefore}')">` : ''}
+          ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="showImageModal('${t.chartAfter}')">` : ''}
+        </td>
+        <td>
+          <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
+          <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function showImageModal(src){
+  $('modalTitle').textContent = 'Chart Image Preview';
+  $('modalBody').innerHTML = `<div style="text-align:center;"><img src="${src}" style="max-width:100%; border-radius:10px; border:1px solid var(--line);"></div>`;
+  $('modalOverlay').classList.add('active');
+}
+
+function closeModal(){
   $('modalOverlay').classList.remove('active');
 }
 
-function closeModalOnBg(e) {
+function closeModalOnBg(e){
   if(e.target === $('modalOverlay')) closeModal();
 }
 
-function renderAll() {
-  renderDashboardMetrics();
+function openModal(type){
+  $('modalOverlay').classList.add('active');
+  if(type === 'chart'){
+    $('modalTitle').textContent = 'Performance Overview (Expanded)';
+    $('modalBody').innerHTML = `<div class="chart" id="modalChartContainer" style="height:500px;"></div>`;
+    renderPerformanceChart('modalChartContainer');
+  } else if(type === 'calendar'){
+    $('modalTitle').textContent = 'Trading Calendar (Expanded)';
+    $('modalBody').innerHTML = `<div id="modalCalendarContainer"></div>`;
+    renderCalendar('modalCalendarContainer');
+  }
+}
+
+function renderMetrics(){
+  const trades = data.trades;
+  const totalTrades = trades.length;
+  const totalR = trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
+  const wins = trades.filter(t => (Number(t.r) || 0) > 0).length;
+  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
+  
+  let cum = 0, peak = 0, maxDD = 0;
+  [...trades].reverse().forEach(t => {
+    cum += Number(t.r) || 0;
+    if(cum > peak) peak = cum;
+    const dd = peak - cum;
+    if(dd > maxDD) maxDD = dd;
+  });
+
+  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
+  const expectancy = totalTrades > 0 ? totalR / totalTrades : 0;
+
+  $('metrics').innerHTML = `
+    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged setups</div></div>
+    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${(totalR >= 0 ? '+' : '') + totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
+    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(1)}%</div><div class="sub">${wins} Wins</div></div>
+    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
+    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '-')}$${Math.abs(totalPnl).toFixed(2)}</div><div class="sub">Net dollar return</div></div>
+    <div class="metric"><div class="label">Avg R / Trade</div><div class="value ${expectancy >= 0 ? 'up' : 'down'}">${(expectancy >= 0 ? '+' : '') + expectancy.toFixed(2)}R</div><div class="sub">Expectancy</div></div>
+  `;
+}
+
+function renderStats(){
+  const trades = data.trades;
+  const totalTrades = trades.length;
+  const totalR = trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
+  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
+  const wins = trades.filter(t => (Number(t.r) || 0) > 0).length;
+  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
+  const bestTrade = trades.reduce((max, t) => Math.max(max, Number(t.r) || 0), 0);
+  const worstTrade = trades.reduce((min, t) => Math.min(min, Number(t.r) || 0), 0);
+  const profitFactor = Math.abs(trades.filter(t => (Number(t.r) || 0) > 0).reduce((s, t) => s + Number(t.r), 0) / (trades.filter(t => (Number(t.r) || 0) < 0).reduce((s, t) => s + Number(t.r), 0) || 1));
+
+  const recentContainer = $('recent');
+  if(recentContainer){
+    recentContainer.innerHTML = trades.slice(0, 5).map(t => {
+      const rVal = Number(t.r) || 0;
+      const pnlVal = Number(t.pnl) || 0;
+      const isWin = rVal >= 0;
+      return `
+        <tr>
+          <td>${t.date || ''}</td>
+          <td>${t.symbol || ''}</td>
+          <td>${t.grade || '-'}</td>
+          <td class="${isWin ? 'up' : 'down'}">${(rVal >= 0 ? '+' : '') + rVal.toFixed(2)}R</td>
+          <td class="${pnlVal >= 0 ? 'up' : 'down'}">${(pnlVal >= 0 ? '+' : '-')}$${Math.abs(pnlVal).toFixed(2)}</td>
+          <td><span class="pill ${isWin ? '' : 'red'}">${isWin ? 'Win' : 'Loss'}</span></td>
+        </tr>
+      `;
+    }).join('') || `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades yet</td></tr>`;
+  }
+}
+
+function renderAnalytics(){
+  const trades = data.trades;
+  const groupBy = (key) => {
+    const map = {};
+    trades.forEach(t => {
+      const k = t[key] || 'Unspecified';
+      if(!map[k]) map[k] = {count: 0, r: 0, pnl: 0};
+      map[k].count++;
+      map[k].r += Number(t.r) || 0;
+      map[k].pnl += Number(t.pnl) || 0;
+    });
+    return map;
+  };
+
+  const renderGroupTable = (map, titleKey) => {
+    const keys = Object.keys(map);
+    if(keys.length === 0) return `<div style="color:var(--muted); font-size:12px; padding:10px;">No data available</div>`;
+    return `
+      <table class="table">
+        <thead><tr><th>${titleKey}</th><th>Trades</th><th>Total R</th><th>PnL</th></tr></thead>
+        <tbody>
+          ${keys.map(k => `
+            <tr>
+              <td><strong>${k}</strong></td>
+              <td>${map[k].count}</td>
+              <td class="${map[k].r >= 0 ? 'up' : 'down'}">${(map[k].r >= 0 ? '+' : '') + map[k].r.toFixed(2)}R</td>
+              <td class="${map[k].pnl >= 0 ? 'up' : 'down'}">${(map[k].pnl >= 0 ? '+' : '-') + '$' + Math.abs(map[k].pnl).toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  };
+
+  $('sessionStats').innerHTML = renderGroupTable(groupBy('session'), 'Session');
+  $('biasStats').innerHTML = renderGroupTable(groupBy('bias'), 'Bias');
+  $('symbolStats').innerHTML = renderGroupTable(groupBy('symbol'), 'Symbol');
+}
+
+function renderNotes(){
+  const container = $('notesList');
+  if(!container) return;
+  container.innerHTML = (data.notes || []).length === 0 ? `<div style="color:var(--muted); font-size:12px; padding:10px;">No notes saved yet.</div>` : (data.notes || []).map((n, i) => `
+    <div class="listItem" style="flex-direction:column; align-items:flex-start; gap:6px;">
+      <div style="display:flex; justify-content:space-between; width:100%;">
+        <span style="font-size:11px; color:var(--muted);">${n.date}</span>
+        <button class="danger" onclick="deleteNote(${i})">Delete</button>
+      </div>
+      <div style="white-space:pre-wrap; font-size:13px;">${n.text}</div>
+    </div>
+  `).join('');
+}
+
+function saveNote(){
+  const text = $('noteText').value.trim();
+  if(!text) return;
+  if(!data.notes) data.notes = [];
+  data.notes.unshift({date: new Date().toISOString().slice(0,10), text});
+  $('noteText').value = '';
+  persist();
+  toast('Note saved successfully');
+}
+
+function deleteNote(index){
+  data.notes.splice(index, 1);
+  persist();
+  toast('Note deleted');
+}
+
+// دالة رسم الشارت المطورة لحل مشكلة نقطة البداية وتحديث المحور اليمين ديناميكياً
+function renderPerformanceChart(containerId = 'performanceChart') {
+  const container = $(containerId);
+  if(!container) return;
+
+  const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
+  const rrFilter = $('rrFilterSelect') ? $('rrFilterSelect').value : 'all';
+
+  let sortedTrades = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+  if(rrFilter === 'weekly') {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneWeekAgo);
+  } else if(rrFilter === 'monthly') {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneMonthAgo);
+  }
+
+  let cumulative = 0;
+  const points = [{ xLabel: 'Start', value: 0, date: '' }];
+
+  sortedTrades.forEach(t => {
+    let val = chartType === 'pnl' ? (Number(t.pnl) || 0) : (Number(t.r) || 0);
+    cumulative += val;
+    points.push({
+      xLabel: t.date ? t.date.slice(5) : '',
+      value: cumulative,
+      date: t.date || ''
+    });
+  });
+
+  if(points.length === 1) {
+    container.innerHTML = `<div class="empty" style="padding-top:80px; text-align:center; color:var(--muted);">No performance data available for chart yet.</div>`;
+    return;
+  }
+
+  const values = points.map(p => p.value);
+  let maxVal = Math.max(...values, 0);
+  let minVal = Math.min(...values, 0);
+
+  if(maxVal === minVal) {
+    maxVal += 1;
+    minVal -= 1;
+  }
+
+  const paddingRange = (maxVal - minVal) * 0.15;
+  maxVal += paddingRange;
+  minVal -= paddingRange;
+
+  const width = container.clientWidth || 500;
+  const height = container.clientHeight || 280;
+  const margin = { top: 20, right: 65, bottom: 30, left: 20 };
+  const graphWidth = width - margin.left - margin.right;
+  const graphHeight = height - margin.top - margin.bottom;
+
+  const getX = (i) => margin.left + (i / (points.length - 1)) * graphWidth;
+  const getY = (val) => margin.top + graphHeight - ((val - minVal) / (maxVal - minVal || 1)) * graphHeight;
+
+  const pathCoords = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.value)}`).join(' ');
+  const firstX = getX(0);
+  const lastX = getX(points.length - 1);
+  const bottomY = margin.top + graphHeight;
+  const areaCoords = `${pathCoords} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
+
+  const steps = 5;
+  let yAxisGridHTML = '';
+  let yAxisLabelsHTML = '';
+
+  for(let i = 0; i <= steps; i++) {
+    const val = minVal + (maxVal - minVal) * (i / steps);
+    const yPos = getY(val);
+    yAxisGridHTML += `<line x1="${margin.left}" y1="${yPos}" x2="${width - margin.right}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/>`;
+    
+    let formattedVal = chartType === 'pnl' ? (val >= 0 ? `+$${val.toFixed(0)}` : `-$${Math.abs(val).toFixed(0)}`) : (val >= 0 ? `+${val.toFixed(1)}R` : `${val.toFixed(1)}R`);
+    yAxisLabelsHTML += `<text x="${width - margin.right + 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10">${formattedVal}</text>`;
+  }
+
+  const lastPoint = points[points.length - 1];
+  const lastXPos = getX(points.length - 1);
+  const lastYPos = getY(lastPoint.value);
+  const startPoint = points[0];
+  const startXPos = getX(0);
+  const startYPos = getY(startPoint.value);
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${width} ${height}">
+      <defs>
+        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/>
+        </linearGradient>
+      </defs>
+      ${yAxisGridHTML}
+      <path d="${areaCoords}" fill="url(#chartGrad)"/>
+      <path d="${pathCoords}" fill="none" stroke="var(--green)" stroke-width="2.5"/>
+      ${yAxisLabelsHTML}
+      <circle cx="${startXPos}" cy="${startYPos}" r="4" fill="var(--green)"/>
+      <text x="${startXPos}" y="${bottomY + 16}" fill="var(--muted)" font-size="10">${startPoint.xLabel || 'Start'}</text>
+      <circle cx="${lastXPos}" cy="${lastYPos}" r="4" fill="var(--green)"/>
+      <text x="${lastXPos}" y="${bottomY + 16}" fill="var(--muted)" font-size="10" text-anchor="end">${lastPoint.xLabel}</text>
+    </svg>
+  `;
+}
+
+function renderAll(){
+  renderMetrics();
+  renderStats();
+  renderPerformanceChart();
   renderCalendar();
+  renderTrades();
+  renderAnalytics();
+  renderNotes();
   renderStrategiesManager();
   renderDropdowns();
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  changeTheme(data.theme || 'dark');
-  $('themeSelect').value = data.theme || 'dark';
-  renderAll();
-});
+// Initial Run
+changeTheme(data.theme || 'dark');
+$('themeSelect').value = data.theme || 'dark';
+renderAll();
 </script>
 </body>
 </html>
