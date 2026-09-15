@@ -711,7 +711,7 @@ function renderRecent() {
   }).join('');
 }
 
-// دالة الرسم البياني الأصلية المحسنة مع المنحنيات ومحاور الأرقام والتدرج اللوني وفلاتر PnL و RR
+// دالة الرسم البياني مع نقل الأرقام ومحاورها إلى اليمين
 function renderPerformanceChart(targetId='performanceChart') {
   const container = $(targetId);
   if(!container) return;
@@ -727,7 +727,6 @@ function renderPerformanceChart(targetId='performanceChart') {
   let sortedTrades = [...data.trades].sort((a,b) => new Date(a.date) - new Date(b.date));
 
   if(rrFilter === 'weekly') {
-    // تصفية أسبوعية بسيطة بناءً على الأسبوع الحالي
     const now = new Date();
     sortedTrades = sortedTrades.filter(t => {
       const d = new Date(t.date);
@@ -757,8 +756,8 @@ function renderPerformanceChart(targetId='performanceChart') {
   const range = maxVal - minVal || 1;
 
   const width = 500, height = 230;
-  const paddingX = 40, paddingY = 25;
-  const graphWidth = width - paddingX - 20;
+  const paddingX = 20, paddingY = 25;
+  const graphWidth = width - paddingX - 45; // مساحة لليمين
   const graphHeight = height - (paddingY * 2);
 
   const points = values.map((item, index) => {
@@ -767,7 +766,6 @@ function renderPerformanceChart(targetId='performanceChart') {
     return {x, y, ...item};
   });
 
-  // تكوين مسار المنحنى الأنيق (Smooth Curve)
   let pathD = `M ${points[0].x} ${points[0].y}`;
   for (let i = 0; i < points.length - 1; i++) {
     const xc = (points[i].x + points[i + 1].x) / 2;
@@ -782,17 +780,17 @@ function renderPerformanceChart(targetId='performanceChart') {
   const lastX = points[points.length - 1].x;
   const areaD = `${pathD} L ${lastX} ${height - paddingY} L ${firstX} ${height - paddingY} Z`;
 
-  // محاور الأرقام الجانبية
+  // محاور الأرقام الجانبية (تم نقلها إلى اليمين)
   const steps = 4;
   let axisHTML = '';
+  const textXPos = width - 15;
   for(let i = 0; i <= steps; i++) {
     const valAtStep = minVal + (range / steps) * i;
     const yPos = (height - paddingY) - (i / steps) * graphHeight;
-    axisHTML += `<text x="${paddingX - 8}" y="${yPos + 4}" fill="var(--muted)" font-size="9" text-anchor="end">${chartType === 'pnl' ? '$' + valAtStep.toFixed(0) : valAtStep.toFixed(1)}</text>`;
-    axisHTML += `<line x1="${paddingX}" y1="${yPos}" x2="${width - 10}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="2,2" opacity="0.4"/>`;
+    axisHTML += `<text x="${textXPos}" y="${yPos + 4}" fill="var(--muted)" font-size="9" text-anchor="start">${chartType === 'pnl' ? '$' + valAtStep.toFixed(0) : valAtStep.toFixed(1)}</text>`;
+    axisHTML += `<line x1="${paddingX}" y1="${yPos}" x2="${width - 45}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="2,2" opacity="0.4"/>`;
   }
 
-  // التواريخ أسفل الرسم البياني
   let datesHTML = `<text x="${paddingX}" y="${height - 5}" fill="var(--muted)" font-size="9">Start</text>`;
   if(points.length > 1) {
     const midIdx = Math.floor(points.length / 2);
