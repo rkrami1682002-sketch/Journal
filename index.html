@@ -550,7 +550,7 @@ function saveTrade(){
     id,
     date: val('fDate'), time: val('fTime'), symbol: val('fSymbol'),
     bias: getCheckedValues('dropBias'), session: val('fSession'), grade: val('fGrade'),
-    entry: getCheckedValues('dropEntry'), kl: getCheckedValues('dropKL'), narrative: val('fNarrative') || getCheckedValues('dropNarrative'),
+    entry: getCheckedValues('dropEntry'), kl: getCheckedValues('dropKL'), narrative: getCheckedValues('dropNarrative'),
     tradeStatus: val('fTradeStatus'), entryPrice: val('fEntryPrice'), exitPrice: val('fExitPrice'),
     size: val('fSize'), pnl: val('fPnl'), risk: val('fRisk'), sl: val('fSL'), tp: val('fTP'),
     rr: val('fRR'), r: Number(val('fR')) || 0, exec: val('fExec'), confidence: val('fConfidence'),
@@ -740,15 +740,24 @@ function renderStats(){
   const worstTrade = trades.reduce((min, t) => Math.min(min, Number(t.r) || 0), 0);
   const profitFactor = Math.abs(trades.filter(t => (Number(t.r) || 0) > 0).reduce((s, t) => s + Number(t.r), 0) / (trades.filter(t => (Number(t.r) || 0) < 0).reduce((s, t) => s + Number(t.r), 0) || 1));
 
-  $('stats').innerHTML = `
-    <div class="metric stat"><div class="label">Total Trades</div><div class="v">${totalTrades}</div></div>
-    <div class="metric stat"><div class="label">Total R</div><div class="v ${totalR >= 0 ? 'up' : 'down'}">${(totalR >= 0 ? '+' : '') + totalR.toFixed(2)}R</div></div>
-    <div class="metric stat"><div class="label">Win Rate</div><div class="v">${winRate.toFixed(1)}%</div></div>
-    <div class="metric stat"><div class="label">Total PnL</div><div class="v ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '-')}$${Math.abs(totalPnl).toFixed(2)}</div></div>
-    <div class="metric stat"><div class="label">Profit Factor</div><div class="v">${profitFactor.toFixed(2)}</div></div>
-    <div class="metric stat"><div class="label">Best Trade</div><div class="v up">+${bestTrade.toFixed(2)}R</div></div>
-    <div class="metric stat"><div class="label">Worst Trade</div><div class="v down">${worstTrade.toFixed(2)}R</div></div>
-  `;
+  const recentContainer = $('recent');
+  if(recentContainer){
+    recentContainer.innerHTML = trades.slice(0, 5).map(t => {
+      const rVal = Number(t.r) || 0;
+      const pnlVal = Number(t.pnl) || 0;
+      const isWin = rVal >= 0;
+      return `
+        <tr>
+          <td>${t.date || ''}</td>
+          <td>${t.symbol || ''}</td>
+          <td>${t.grade || '-'}</td>
+          <td class="${isWin ? 'up' : 'down'}">${(rVal >= 0 ? '+' : '') + rVal.toFixed(2)}R</td>
+          <td class="${pnlVal >= 0 ? 'up' : 'down'}">${(pnlVal >= 0 ? '+' : '-')}$${Math.abs(pnlVal).toFixed(2)}</td>
+          <td><span class="pill ${isWin ? '' : 'red'}">${isWin ? 'Win' : 'Loss'}</span></td>
+        </tr>
+      `;
+    }).join('') || `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades yet</td></tr>`;
+  }
 }
 
 function renderAnalytics(){
@@ -795,7 +804,7 @@ function renderNotes(){
   if(!container) return;
   container.innerHTML = (data.notes || []).length === 0 ? `<div style="color:var(--muted); font-size:12px; padding:10px;">No notes saved yet.</div>` : (data.notes || []).map((n, i) => `
     <div class="listItem" style="flex-direction:column; align-items:flex-start; gap:6px;">
-      <div style="display:flex; justify-content:space-width; width:100%; justify-content:space-between;">
+      <div style="display:flex; justify-content:space-between; width:100%;">
         <span style="font-size:11px; color:var(--muted);">${n.date}</span>
         <button class="danger" onclick="deleteNote(${i})">Delete</button>
       </div>
@@ -820,7 +829,7 @@ function deleteNote(index){
   toast('Note deleted');
 }
 
-// دالة رسم الشارت المطورة لحل مشكلة نقطة البداية (Start) وتحديث المحور اليمين ديناميكياً
+// دالة رسم الشارت المطورة لحل مشكلة نقطة البداية وتحديث المحور اليمين ديناميكياً
 function renderPerformanceChart(containerId = 'performanceChart') {
   const container = $(containerId);
   if(!container) return;
@@ -828,10 +837,8 @@ function renderPerformanceChart(containerId = 'performanceChart') {
   const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
   const rrFilter = $('rrFilterSelect') ? $('rrFilterSelect').value : 'all';
 
-  // ترتيب الصفقات تصاعدياً حسب التاريخ لتبدأ نقطة البداية (Start) من اليسار تصاعدياً
   let sortedTrades = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
-  // تطبيق فلتر الـ RR أو الفلاتر الأخرى
   if(rrFilter === 'weekly') {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -842,7 +849,6 @@ function renderPerformanceChart(containerId = 'performanceChart') {
     sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneMonthAgo);
   }
 
-  // حساب القيم التراكمية (نقطة البداية الصفرية من أسفل اليسار)
   let cumulative = 0;
   const points = [{ xLabel: 'Start', value: 0, date: '' }];
 
@@ -861,7 +867,6 @@ function renderPerformanceChart(containerId = 'performanceChart') {
     return;
   }
 
-  // حساب أقصى وأدنى قيمة لضبط المحور الرودي (Y-Axis) ديناميكياً حسب الربح والخسارة
   const values = points.map(p => p.value);
   let maxVal = Math.max(...values, 0);
   let minVal = Math.min(...values, 0);
@@ -890,7 +895,6 @@ function renderPerformanceChart(containerId = 'performanceChart') {
   const bottomY = margin.top + graphHeight;
   const areaCoords = `${pathCoords} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
 
-  // تقسيم مقياس الأرقام على اليمين إلى خطوط شبكية ومحاور دقيقة ديناميكية
   const steps = 5;
   let yAxisGridHTML = '';
   let yAxisLabelsHTML = '';
