@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d1a10">
 <title>R Journal</title>
+<!-- Firebase SDKs (Compat Version لضمان العمل بسلاسة مع كود الويب والمتصفحات) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+
 <style>
 :root{
  --bg:#081109;--panel:#0e1b11;--panel2:#122116;--line:#263a29;--text:#eef5ee;--muted:#91a294;
@@ -116,6 +121,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 <main class="main">
 <header class="top">
   <div class="topRight">
+    <div id="firebase-indicator" style="font-size:11px; color:var(--muted); margin-right:10px;">Firebase: Connecting...</div>
     <label style="font-size:12px; color:var(--muted);">Theme:</label>
     <select class="select" id="themeSelect" onchange="changeTheme(this.value)">
       <option value="dark">Dark Emerald</option>
@@ -314,151 +320,73 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 <section id="notes" class="page"><div class="head"><div><h1>Journal & Notes</h1></div></div><div class="card"><div class="formGrid"><div class="field span3"><label>Quick Notes</label><textarea id="noteText"></textarea></div></div><div class="actions"><button class="primary" onclick="saveNote()">Save Note</button></div></div><div style="height:12px"></div><div class="card"><div class="list" id="notesList"></div></div></section>
 </main></div><div class="toast" id="toast"></div>
 
-<!-- Firebase SDKs -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCLGp69htCo79Ak4HRcBEwfXRQpHdO6viI",
-    authDomain: "rakan-1406d.firebaseapp.com",
-    projectId: "rakan-1406d",
-    storageBucket: "rakan-1406d.firebasestorage.app",
-    messagingSenderId: "75062813581",
-    appId: "1:75062813581:web:00b95cf6c1d078f7da8e444",
-    measurementId: "G-3EB9VLN0WS"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  window.fbDb = db;
-  window.fbCollection = collection;
-  window.fbGetDocs = getDocs;
-  window.fbSetDoc = setDoc;
-  window.fbDoc = doc;
-  window.fbDeleteDoc = deleteDoc;
-  
-  if(window.initFirebaseData) {
-    window.initFirebaseData();
-  }
-</script>
-
 <script>
-const KEYS = ['rjournal_pro_v11_clean_fixed', 'rjournal_pro_v11_clean', 'rjournal_pro_v10', 'rjournal_pro_v9', 'r_journal_data'];
-let data = null;
+// إعدادات Firebase الخاصة بك
+const firebaseConfig = {
+  apiKey: "AIzaSyCLGp69htCo79Ak4HRCBeWfXRQpHdO6viI",
+  authDomain: "rakan-1406d.firebaseapp.com",
+  projectId: "rakan-1406d",
+  storageBucket: "rakan-1406d.appspot.com",
+  messagingSenderId: "750628813581",
+  appId: "1:750628813581:web:00b95cf6c1d078f7da8e44",
+  measurementId: "G-3EB9VLN0WS"
+};
 
-for(let k of KEYS) {
-  const saved = localStorage.getItem(k);
-  if(saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if(parsed && (parsed.trades || parsed.lists)) {
-        data = parsed;
-        break;
-      }
-    } catch(e) {}
-  }
+// تهيئة Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+  try {
+    firebase.analytics();
+  } catch(e) {}
 }
+const db = firebase.firestore();
 
-if(!data) {
-  data = {
-    theme: 'dark', trades: [], notes: [],
-    lists: { KL: [], Entry: [], Bias: [], Narrative: [] }
-  };
-}
+const KEY='rjournal_pro_v11_clean_fixed';
+let data = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem('rjournal_pro_v11_clean') || 'null') || {
+  theme:'dark', trades:[], notes:[],
+  lists:{KL:[], Entry:[], Bias:[], Narrative:[]}
+};
 
-if(!data.lists) data.lists = { KL: [], Entry: [], Bias: [], Narrative: [] };
-if(!data.trades) data.trades = [];
-if(!data.notes) data.notes = [];
-
-const MAIN_KEY = 'rjournal_pro_v11_clean_fixed';
 const $=id=>document.getElementById(id);
 let currentCalDate = new Date();
 
-async function initFirebaseData() {
-  if(!window.fbDb) return;
-  try {
-    const querySnapshot = await window.fbGetDocs(window.fbCollection(window.fbDb, "trades_data"));
-    let cloudTrades = [];
-    querySnapshot.forEach((doc) => {
-      cloudTrades.push(doc.data());
-    });
-    if(cloudTrades.length > 0) {
-      // Merge cloud trades with local trades uniquely by ID
-      const existingIds = new Set(data.trades.map(t => t.id));
-      cloudTrades.forEach(ct => {
-        if(!existingIds.has(ct.id)) data.trades.push(ct);
-      });
-      data.trades.sort((a, b) => b.id - a.id);
-    }
-    
-    const notesSnapshot = await window.fbGetDocs(window.fbCollection(window.fbDb, "notes_data"));
-    let cloudNotes = [];
-    notesSnapshot.forEach((doc) => {
-      cloudNotes.push(doc.data());
-    });
-    if(cloudNotes.length > 0) {
-      const existingNoteIds = new Set(data.notes.map(n => n.id));
-      cloudNotes.forEach(cn => {
-        if(!existingNoteIds.has(cn.id)) data.notes.push(cn);
-      });
-      data.notes.sort((a, b) => b.id - a.id);
-    }
-
-    const listsSnapshot = await window.fbGetDocs(window.fbCollection(window.fbDb, "lists_data"));
-    listsSnapshot.forEach((doc) => {
-      if(doc.data().lists) {
-        // Merge lists
-        ['KL', 'Entry', 'Bias', 'Narrative'].forEach(cat => {
-          if(doc.data().lists[cat]) {
-            data.lists[cat] = Array.from(new Set([...(data.lists[cat] || []), ...doc.data().lists[cat]]));
-          }
-        });
-      }
-    });
-
-    renderAll();
-  } catch(e) {
-    console.log("Using local storage fallback", e);
-  }
-}
-window.initFirebaseData = initFirebaseData;
-
 function changeTheme(theme){
-  data.theme = theme;
-  document.body.className = '';
-  if(theme === 'light') document.body.classList.add('theme-light');
-  if(theme === 'blue') document.body.classList.add('theme-blue');
-  if(theme === 'gray') document.body.classList.add('theme-gray');
+  data.theme=theme;
+  document.body.className='';
+  if(theme==='light') document.body.classList.add('theme-light');
+  if(theme==='blue') document.body.classList.add('theme-blue');
+  if(theme==='gray') document.body.classList.add('theme-gray');
   persist();
 }
 
 function persist(){
-  localStorage.setItem(MAIN_KEY, JSON.stringify(data));
+  localStorage.setItem(KEY, JSON.stringify(data));
   renderAll();
   
-  if(window.fbDb) {
-    try {
-      window.fbSetDoc(window.fbDoc(window.fbDb, "lists_data", "main_lists"), { lists: data.lists });
-    } catch(err) { console.error(err); }
-  }
+  // مزامنة صامتة مع Firebase كطبقة حفظ إضافية
+  db.collection("rjournal").doc("main_data").set(data)
+    .then(() => {
+      if($('firebase-indicator')) $('firebase-indicator').textContent = 'Firebase: Synced ✓';
+    })
+    .catch((error) => {
+      if($('firebase-indicator')) $('firebase-indicator').textContent = 'Firebase: Offline mode';
+    });
 }
 
 function toast(t){
   const el = $('toast');
   if(!el) return;
-  el.textContent = t;
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 1800);
+  el.textContent=t;
+  el.style.display='block';
+  setTimeout(()=>el.style.display='none',1800);
 }
 
 function go(page){
-  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const target = $(page);
   if(target) target.classList.add('active');
-  document.querySelectorAll('.nav').forEach(x => x.classList.toggle('active', x.dataset.page === page));
-  if(page === 'add' && !$('editTradeId').value) {
+  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+  if(page==='add' && !$('editTradeId').value) {
     const d = new Date();
     $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
@@ -466,7 +394,7 @@ function go(page){
   window.scrollTo(0,0);
 }
 
-document.querySelectorAll('.nav,[data-page]').forEach(x => x.addEventListener('click', () => go(x.dataset.page)));
+document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
 function val(id){ const el = $(id); return el ? el.value : ''; }
 
 function encodeImage(input, targetId) {
@@ -495,12 +423,9 @@ function importData(input){
   reader.onload = function(e) {
     try {
       const imported = JSON.parse(e.target.result);
-      if(imported && (imported.trades || imported.lists)){
-        if(confirm('This will merge or replace your current trades and settings with the backup file. Are you sure?')){
+      if(imported && imported.trades && imported.lists){
+        if(confirm('This will replace your current trades and settings with the backup file. Are you sure?')){
           data = imported;
-          if(!data.lists) data.lists = { KL: [], Entry: [], Bias: [], Narrative: [] };
-          if(!data.trades) data.trades = [];
-          if(!data.notes) data.notes = [];
           persist();
           toast('Data imported successfully!');
         }
@@ -683,18 +608,7 @@ function saveTrade(){
   };
   const idx = data.trades.findIndex(t => t.id === id);
   if(idx >= 0) data.trades[idx] = trade; else data.trades.unshift(trade);
-  
-  persist(); 
-  
-  if(window.fbDb) {
-    try {
-      window.fbSetDoc(window.fbDoc(window.fbDb, "trades_data", String(trade.id)), trade);
-    } catch(err) { console.error(err); }
-  }
-
-  clearForm(); 
-  toast('Trade saved successfully!'); 
-  go('trades');
+  persist(); clearForm(); toast('Trade saved successfully!'); go('trades');
 }
 
 function clearForm(){
@@ -747,6 +661,7 @@ function renderTrades(){
   tbody.innerHTML = filtered.map(t => {
     const rVal = Number(t.r) || 0;
     const pillClass = rVal >= 0 ? 'pill' : 'pill red';
+    const resultText = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE');
     return `
       <tr>
         <td>${t.date || ''}</td>
@@ -797,13 +712,6 @@ function deleteTrade(id){
   if(confirm('Are you sure you want to delete this trade?')){
     data.trades = data.trades.filter(x => x.id !== id);
     persist();
-    
-    if(window.fbDb) {
-      try {
-        window.fbDeleteDoc(window.fbDoc(window.fbDb, "trades_data", String(id)));
-      } catch(err) { console.error(err); }
-    }
-
     toast('Trade deleted');
   }
 }
@@ -880,16 +788,8 @@ function renderAnalytics(){
 function saveNote(){
   const text = val('noteText');
   if(!text.trim()) return;
-  const newNote = {id: Date.now(), date: new Date().toLocaleDateString(), text};
-  data.notes.unshift(newNote);
+  data.notes.unshift({id: Date.now(), date: new Date().toLocaleDateString(), text});
   persist();
-  
-  if(window.fbDb) {
-    try {
-      window.fbSetDoc(window.fbDoc(window.fbDb, "notes_data", String(newNote.id)), newNote);
-    } catch(err) { console.error(err); }
-  }
-
   $('noteText').value = '';
   renderNotes();
   toast('Note saved');
@@ -913,13 +813,6 @@ function renderNotes(){
 function deleteNote(id){
   data.notes = data.notes.filter(n => n.id !== id);
   persist();
-  
-  if(window.fbDb) {
-    try {
-      window.fbDeleteDoc(window.fbDoc(window.fbDb, "notes_data", String(id)));
-    } catch(err) { console.error(err); }
-  }
-
   renderNotes();
   toast('Note deleted');
 }
@@ -964,12 +857,32 @@ function renderAll(){
   renderNotes();
 }
 
+// Initialize Theme & App on load with Firebase sync check
 document.addEventListener('DOMContentLoaded', () => {
-  if(data && data.theme){
+  if(data.theme){
     $('themeSelect').value = data.theme;
     changeTheme(data.theme);
   }
-  renderAll();
+  
+  // محاولة جلب البيانات السحابية من Firebase عند بدء التشغيل
+  db.collection("rjournal").doc("main_data").get()
+    .then((doc) => {
+      if (doc.exists && doc.data().trades) {
+        data = doc.data();
+        if(data.theme) {
+          $('themeSelect').value = data.theme;
+          changeTheme(data.theme);
+        }
+        renderAll();
+        if($('firebase-indicator'))$('firebase-indicator').textContent = 'Firebase: Synced ✓';
+      } else {
+        renderAll();
+      }
+    })
+    .catch((error) => {
+      renderAll();
+      if($('firebase-indicator'))$('firebase-indicator').textContent = 'Firebase: Offline mode';
+    });
 });
 </script>
 </body>
