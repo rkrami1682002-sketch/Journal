@@ -99,19 +99,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 .dateFilter input{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px;outline:none;font-size:12px}
 .tradesSummary{display:flex;gap:15px;align-items:center;color:var(--muted);font-size:13px;background:var(--panel2);padding:8px 15px;border-radius:8px;border:1px solid var(--line);margin-bottom:10px}
 </style>
- <script>
-  let w = 'www.';
-  let g = 'gstatic';
-  let f = 'firebasejs';
-  let v = '10.8.0';
-  let baseUrl = 'https://' + w + g + '.com/' + f + '/' + v + '/';
-  let s1 = document.createElement('script');
-  s1.src = baseUrl + 'firebase-app-compat.js';
-  document.head.appendChild(s1);
-  let s2 = document.createElement('script');
-  s2.src = baseUrl + 'firebase-firestore-compat.js';
-  document.head.appendChild(s2);
-</script>
 </head>
 <body>
 <div class="app">
@@ -327,19 +314,37 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 <section id="notes" class="page"><div class="head"><div><h1>Journal & Notes</h1></div></div><div class="card"><div class="formGrid"><div class="field span3"><label>Quick Notes</label><textarea id="noteText"></textarea></div></div><div class="actions"><button class="primary" onclick="saveNote()">Save Note</button></div></div><div style="height:12px"></div><div class="card"><div class="list" id="notesList"></div></div></section>
 </main></div><div class="toast" id="toast"></div>
 
-<script>
- const firebaseConfig = {
-    apiKey: "AIzaSyClGp69ntCo79Ak4HRcBEwfXRQpHdO6viI",
-    authDomain: "rakan-1406d." + "firebaseapp.com",
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCLGp69htCo79Ak4HRcBEwfXRQpHdO6viI",
+    authDomain: "rakan-1406d.firebaseapp.com",
     projectId: "rakan-1406d",
     storageBucket: "rakan-1406d.firebasestorage.app",
-    messagingSenderId: "750628813581",
-    appId: "1:750628813581:web:00b95cf6c1d078f7da8e44",
+    messagingSenderId: "75062813581",
+    appId: "1:75062813581:web:00b95cf6c1d078f7da8e444",
     measurementId: "G-3EB9VLN0WS"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+  };
 
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.fbDb = db;
+  window.fbCollection = collection;
+  window.fbGetDocs = getDocs;
+  window.fbSetDoc = setDoc;
+  window.fbDoc = doc;
+  window.fbDeleteDoc = deleteDoc;
+  
+  if(window.initFirebaseData) {
+    window.initFirebaseData();
+  }
+</script>
+
+<script>
 const KEY='rjournal_pro_v11_clean_fixed';
 let data = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem('rjournal_pro_v11_clean') || 'null') || {
   theme:'dark', trades:[], notes:[],
@@ -348,6 +353,39 @@ let data = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem('rjourna
 
 const $=id=>document.getElementById(id);
 let currentCalDate = new Date();
+
+async function initFirebaseData() {
+  if(!window.fbDb) return;
+  try {
+    const querySnapshot = await window.fbGetDocs(window.fbCollection(window.fbDb, "trades_data"));
+    let cloudTrades = [];
+    querySnapshot.forEach((doc) => {
+      cloudTrades.push(doc.data());
+    });
+    if(cloudTrades.length > 0) {
+      data.trades = cloudTrades.sort((a, b) => b.id - a.id);
+    }
+    
+    const notesSnapshot = await window.fbGetDocs(window.fbCollection(window.fbDb, "notes_data"));
+    let cloudNotes = [];
+    notesSnapshot.forEach((doc) => {
+      cloudNotes.push(doc.data());
+    });
+    if(cloudNotes.length > 0) {
+      data.notes = cloudNotes.sort((a, b) => b.id - a.id);
+    }
+
+    const listsSnapshot = await window.fbGetDocs(window.fbCollection(window.fbDb, "lists_data"));
+    listsSnapshot.forEach((doc) => {
+      if(doc.data().lists) data.lists = doc.data().lists;
+    });
+
+    renderAll();
+  } catch(e) {
+    console.log("Using local storage fallback", e);
+  }
+}
+window.initFirebaseData = initFirebaseData;
 
 function changeTheme(theme){
   data.theme=theme;
@@ -361,6 +399,12 @@ function changeTheme(theme){
 function persist(){
   localStorage.setItem(KEY, JSON.stringify(data));
   renderAll();
+  
+  if(window.fbDb) {
+    try {
+      window.fbSetDoc(window.fbDoc(window.fbDb, "lists_data", "main_lists"), { lists: data.lists });
+    } catch(err) { console.error(err); }
+  }
 }
 
 function toast(t){
@@ -439,7 +483,7 @@ window.addEventListener('click', function(e) {
 });
 
 function updateDropdownText(boxId, textId) {
-  const container = $(boxId), textEl = $(textId);
+  const container = $(boxId), textEl =$(textId);
   if(!container || !textEl) return;
   const checked = [];
   container.querySelectorAll('.dropdown-option.selected').forEach(opt => checked.push(opt.getAttribute('data-value')));
@@ -579,8 +623,7 @@ function filterTradesByDate(dateStr) {
   go('trades');
   $('dateFrom').value = dateStr;
   $('dateTo').value = dateStr;
-  $('tradeSearch').value = '';
-  $('tradeResult').value = 'All';
+  $('tradeSearch').value = '';$('tradeResult').value = 'All';
   renderTrades();
 }
 
@@ -598,25 +641,26 @@ function saveTrade(){
     chartAfter: val('fChartAfterData'), notes: val('fNotes')
   };
   const idx = data.trades.findIndex(t => t.id === id);
-   if(idx >= 0) data.trades[idx] = trade; else data.trades.unshift(trade);
+  if(idx >= 0) data.trades[idx] = trade; else data.trades.unshift(trade);
   
-  localStorage.setItem(KEY, JSON.stringify(data));
-
-  try {
-    db.collection("trades").doc(String(id)).set(trade);
-  } catch(e) {
-    console.log("Saved locally due to offline status");
+  persist(); 
+  
+  if(window.fbDb) {
+    try {
+      window.fbSetDoc(window.fbDoc(window.fbDb, "trades_data", String(trade.id)), trade);
+    } catch(err) { console.error(err); }
   }
 
-  clearForm(); toast('Trade saved successfully to Google Cloud!'); go('trades');
+  clearForm(); 
+  toast('Trade saved successfully!'); 
+  go('trades');
 }
 
 function clearForm(){
-  $('editTradeId').value = '';
-  $('formTitle').textContent = 'Add Trade';
+  $('editTradeId').value = '';$('formTitle').textContent = 'Add Trade';
   const d = new Date();
   $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => { if($(id)) $(id).value = ''; });
+  ['fTime','fEntryPrice','fExitPrice','fSize','fPnl','fRisk','fSL','fTP','fRR','fR','fConfidence','fChartBeforeFile','fChartAfterFile','fChartBeforeData','fChartAfterData','fNotes'].forEach(id => { if($(id))$(id).value = ''; });
   ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => { $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected')); });
   updateDropdownText('dropBias', 'dropBiasText'); updateDropdownText('dropEntry', 'dropEntryText');
   updateDropdownText('dropKL', 'dropKLText'); updateDropdownText('dropNarrative', 'dropNarrativeText');
@@ -692,28 +736,17 @@ function editTrade(id){
   go('add');
   $('editTradeId').value = t.id;
   $('formTitle').textContent = 'Edit Trade';
-  $('fDate').value = t.date || '';
-  $('fTime').value = t.time || '';
-  $('fSymbol').value = t.symbol || 'MNQ';
-  $('fSession').value = t.session || 'NY AM';
-  $('fGrade').value = t.grade || 'A+';
-  $('fTradeStatus').value = t.tradeStatus || 'In-Plan';
-  $('fEntryPrice').value = t.entryPrice || '';
-  $('fExitPrice').value = t.exitPrice || '';
-  $('fSize').value = t.size || '';
-  $('fPnl').value = t.pnl || '';
-  $('fRisk').value = t.risk || '';
-  $('fSL').value = t.sl || '';
-  $('fTP').value = t.tp || '';
-  $('fRR').value = t.rr || '';
-  $('fR').value = t.r || '';
-  $('fExec').value = t.exec || 'Excellent';
-  $('fConfidence').value = t.confidence || '';
-  $('fEmotion').value = t.emotion || 'Calm';
-  $('fPlan').value = t.plan || 'Yes';
-  $('fChartBeforeData').value = t.chartBefore || '';
-  $('fChartAfterData').value = t.chartAfter || '';
-  $('fNotes').value = t.notes || '';
+  $('fDate').value = t.date \vert{}\vert{} '';$('fTime').value = t.time || '';
+  $('fSymbol').value = t.symbol \vert{}\vert{} 'MNQ';$('fSession').value = t.session || 'NY AM';
+  $('fGrade').value = t.grade \vert{}\vert{} 'A+';$('fTradeStatus').value = t.tradeStatus || 'In-Plan';
+  $('fEntryPrice').value = t.entryPrice \vert{}\vert{} '';$('fExitPrice').value = t.exitPrice || '';
+  $('fSize').value = t.size \vert{}\vert{} '';$('fPnl').value = t.pnl || '';
+  $('fRisk').value = t.risk \vert{}\vert{} '';$('fSL').value = t.sl || '';
+  $('fTP').value = t.tp \vert{}\vert{} '';$('fRR').value = t.rr || '';
+  $('fR').value = t.r \vert{}\vert{} '';$('fExec').value = t.exec || 'Excellent';
+  $('fConfidence').value = t.confidence \vert{}\vert{} '';$('fEmotion').value = t.emotion || 'Calm';
+  $('fPlan').value = t.plan \vert{}\vert{} 'Yes';$('fChartBeforeData').value = t.chartBefore || '';
+  $('fChartAfterData').value = t.chartAfter \vert{}\vert{} '';$('fNotes').value = t.notes || '';
   setCheckedValues('dropBias', t.bias, 'dropBiasText');
   setCheckedValues('dropEntry', t.entry, 'dropEntryText');
   setCheckedValues('dropKL', t.kl, 'dropKLText');
@@ -724,6 +757,13 @@ function deleteTrade(id){
   if(confirm('Are you sure you want to delete this trade?')){
     data.trades = data.trades.filter(x => x.id !== id);
     persist();
+    
+    if(window.fbDb) {
+      try {
+        window.fbDeleteDoc(window.fbDoc(window.fbDb, "trades_data", String(id)));
+      } catch(err) { console.error(err); }
+    }
+
     toast('Trade deleted');
   }
 }
@@ -791,7 +831,7 @@ function renderPerformanceChart(){
 }
 
 function renderAnalytics(){
-  const s = $('sessionStats'), b = $('biasStats'), sym = $('symbolStats');
+  const s = $('sessionStats'), b = $('biasStats'), sym =$('symbolStats');
   if(s) s.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics active.</div>`;
   if(b) b.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics active.</div>`;
   if(sym) sym.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics active.</div>`;
@@ -800,8 +840,16 @@ function renderAnalytics(){
 function saveNote(){
   const text = val('noteText');
   if(!text.trim()) return;
-  data.notes.unshift({id: Date.now(), date: new Date().toLocaleDateString(), text});
+  const newNote = {id: Date.now(), date: new Date().toLocaleDateString(), text};
+  data.notes.unshift(newNote);
   persist();
+  
+  if(window.fbDb) {
+    try {
+      window.fbSetDoc(window.fbDoc(window.fbDb, "notes_data", String(newNote.id)), newNote);
+    } catch(err) { console.error(err); }
+  }
+
   $('noteText').value = '';
   renderNotes();
   toast('Note saved');
@@ -825,12 +873,19 @@ function renderNotes(){
 function deleteNote(id){
   data.notes = data.notes.filter(n => n.id !== id);
   persist();
+  
+  if(window.fbDb) {
+    try {
+      window.fbDeleteDoc(window.fbDoc(window.fbDb, "notes_data", String(id)));
+    } catch(err) { console.error(err); }
+  }
+
   renderNotes();
   toast('Note deleted');
 }
 
 function openModal(type){
-  const overlay = $('modalOverlay'), title = $('modalTitle'), body = $('modalBody');
+  const overlay = $('modalOverlay'), title = $('modalTitle'), body =$('modalBody');
   overlay.classList.add('active');
   if(type === 'chart'){
     title.textContent = 'Performance Overview (Expanded)';
@@ -843,7 +898,7 @@ function openModal(type){
 }
 
 function openImageModal(src){
-  const overlay = $('modalOverlay'), title = $('modalTitle'), body = $('modalBody');
+  const overlay = $('modalOverlay'), title = $('modalTitle'), body =$('modalBody');
   overlay.classList.add('active');
   title.textContent = 'Chart Image Preview';
   body.innerHTML = `<div style="text-align:center;"><img src="${src}" style="max-width:100%; max-height:75vh; border-radius:8px;"></div>`;
