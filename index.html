@@ -345,12 +345,34 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </script>
 
 <script>
-const KEY='rjournal_pro_v11_clean_fixed';
-let data = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem('rjournal_pro_v11_clean') || 'null') || {
-  theme:'dark', trades:[], notes:[],
-  lists:{KL:[], Entry:[], Bias:[], Narrative:[]}
-};
+const KEYS = ['rjournal_pro_v11_clean_fixed', 'rjournal_pro_v11_clean', 'rjournal_pro_v10', 'rjournal_pro_v9', 'r_journal_data'];
+let data = null;
 
+for(let k of KEYS) {
+  const saved = localStorage.getItem(k);
+  if(saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if(parsed && (parsed.trades || parsed.lists)) {
+        data = parsed;
+        break;
+      }
+    } catch(e) {}
+  }
+}
+
+if(!data) {
+  data = {
+    theme: 'dark', trades: [], notes: [],
+    lists: { KL: [], Entry: [], Bias: [], Narrative: [] }
+  };
+}
+
+if(!data.lists) data.lists = { KL: [], Entry: [], Bias: [], Narrative: [] };
+if(!data.trades) data.trades = [];
+if(!data.notes) data.notes = [];
+
+const MAIN_KEY = 'rjournal_pro_v11_clean_fixed';
 const $=id=>document.getElementById(id);
 let currentCalDate = new Date();
 
@@ -363,7 +385,12 @@ async function initFirebaseData() {
       cloudTrades.push(doc.data());
     });
     if(cloudTrades.length > 0) {
-      data.trades = cloudTrades.sort((a, b) => b.id - a.id);
+      // Merge cloud trades with local trades uniquely by ID
+      const existingIds = new Set(data.trades.map(t => t.id));
+      cloudTrades.forEach(ct => {
+        if(!existingIds.has(ct.id)) data.trades.push(ct);
+      });
+      data.trades.sort((a, b) => b.id - a.id);
     }
     
     const notesSnapshot = await window.fbGetDocs(window.fbCollection(window.fbDb, "notes_data"));
@@ -372,12 +399,23 @@ async function initFirebaseData() {
       cloudNotes.push(doc.data());
     });
     if(cloudNotes.length > 0) {
-      data.notes = cloudNotes.sort((a, b) => b.id - a.id);
+      const existingNoteIds = new Set(data.notes.map(n => n.id));
+      cloudNotes.forEach(cn => {
+        if(!existingNoteIds.has(cn.id)) data.notes.push(cn);
+      });
+      data.notes.sort((a, b) => b.id - a.id);
     }
 
     const listsSnapshot = await window.fbGetDocs(window.fbCollection(window.fbDb, "lists_data"));
     listsSnapshot.forEach((doc) => {
-      if(doc.data().lists) data.lists = doc.data().lists;
+      if(doc.data().lists) {
+        // Merge lists
+        ['KL', 'Entry', 'Bias', 'Narrative'].forEach(cat => {
+          if(doc.data().lists[cat]) {
+            data.lists[cat] = Array.from(new Set([...(data.lists[cat] || []), ...doc.data().lists[cat]]));
+          }
+        });
+      }
     });
 
     renderAll();
@@ -388,16 +426,16 @@ async function initFirebaseData() {
 window.initFirebaseData = initFirebaseData;
 
 function changeTheme(theme){
-  data.theme=theme;
-  document.body.className='';
-  if(theme==='light') document.body.classList.add('theme-light');
-  if(theme==='blue') document.body.classList.add('theme-blue');
-  if(theme==='gray') document.body.classList.add('theme-gray');
+  data.theme = theme;
+  document.body.className = '';
+  if(theme === 'light') document.body.classList.add('theme-light');
+  if(theme === 'blue') document.body.classList.add('theme-blue');
+  if(theme === 'gray') document.body.classList.add('theme-gray');
   persist();
 }
 
 function persist(){
-  localStorage.setItem(KEY, JSON.stringify(data));
+  localStorage.setItem(MAIN_KEY, JSON.stringify(data));
   renderAll();
   
   if(window.fbDb) {
@@ -410,17 +448,17 @@ function persist(){
 function toast(t){
   const el = $('toast');
   if(!el) return;
-  el.textContent=t;
-  el.style.display='block';
-  setTimeout(()=>el.style.display='none',1800);
+  el.textContent = t;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 1800);
 }
 
 function go(page){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
   const target = $(page);
   if(target) target.classList.add('active');
-  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
-  if(page==='add' && !$('editTradeId').value) {
+  document.querySelectorAll('.nav').forEach(x => x.classList.toggle('active', x.dataset.page === page));
+  if(page === 'add' && !$('editTradeId').value) {
     const d = new Date();
     $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
@@ -428,7 +466,7 @@ function go(page){
   window.scrollTo(0,0);
 }
 
-document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
+document.querySelectorAll('.nav,[data-page]').forEach(x => x.addEventListener('click', () => go(x.dataset.page)));
 function val(id){ const el = $(id); return el ? el.value : ''; }
 
 function encodeImage(input, targetId) {
@@ -457,9 +495,12 @@ function importData(input){
   reader.onload = function(e) {
     try {
       const imported = JSON.parse(e.target.result);
-      if(imported && imported.trades && imported.lists){
-        if(confirm('This will replace your current trades and settings with the backup file. Are you sure?')){
+      if(imported && (imported.trades || imported.lists)){
+        if(confirm('This will merge or replace your current trades and settings with the backup file. Are you sure?')){
           data = imported;
+          if(!data.lists) data.lists = { KL: [], Entry: [], Bias: [], Narrative: [] };
+          if(!data.trades) data.trades = [];
+          if(!data.notes) data.notes = [];
           persist();
           toast('Data imported successfully!');
         }
@@ -706,7 +747,6 @@ function renderTrades(){
   tbody.innerHTML = filtered.map(t => {
     const rVal = Number(t.r) || 0;
     const pillClass = rVal >= 0 ? 'pill' : 'pill red';
-    const resultText = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE');
     return `
       <tr>
         <td>${t.date || ''}</td>
@@ -924,9 +964,8 @@ function renderAll(){
   renderNotes();
 }
 
-// Initialize Theme & App on load
 document.addEventListener('DOMContentLoaded', () => {
-  if(data.theme){
+  if(data && data.theme){
     $('themeSelect').value = data.theme;
     changeTheme(data.theme);
   }
