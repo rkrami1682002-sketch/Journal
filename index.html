@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d1a10">
 <title>R Journal</title>
-<!-- Firebase SDKs (Compat Version لضمان العمل بسلاسة مع كود الويب والمتصفحات) -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
@@ -78,7 +78,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 .modalBody .day strong{font-size:12px}
 .modalBody .day small{font-size:12px}
 
-/* Clean Dropdown Style with Checkmark */
+/* Clean Dropdown Style */
 .custom-dropdown { position: relative; width: 100%; }
 .dropdown-select-btn { width: 100%; background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 10px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
 .dropdown-content { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; margin-top: 4px; max-height: 160px; overflow-y: auto; z-index: 10; padding: 4px; box-shadow: var(--shadow); }
@@ -121,7 +121,7 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 <main class="main">
 <header class="top">
   <div class="topRight">
-    <div id="firebase-indicator" style="font-size:11px; color:var(--muted); margin-right:10px;">Firebase: Connecting...</div>
+    <div id="firebase-indicator" style="font-size:11px; color:var(--muted); margin-right:10px;">Firebase: Ready</div>
     <label style="font-size:12px; color:var(--muted);">Theme:</label>
     <select class="select" id="themeSelect" onchange="changeTheme(this.value)">
       <option value="dark">Dark Emerald</option>
@@ -257,8 +257,8 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
   <div class="field"><label>Emotional Drift</label><select id="fEmotion"><option>Calm</option><option>Confident</option><option>FOMO</option><option>Revenge</option><option>Fear</option><option>Greed</option><option>Overtraded</option></select></div>
   <div class="field span2"><label>Plan Followed</label><select id="fPlan"><option>Yes</option><option>Partially</option><option>No</option></select></div>
   
-  <div class="field span3"><label>Before Chart Image (صورة قبل الدخول)</label><input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')"><input type="hidden" id="fChartBeforeData"></div>
-  <div class="field span3"><label>After Chart Image (صورة بعد الدخول)</label><input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')"><input type="hidden" id="fChartAfterData"></div>
+  <div class="field span3"><label>Before Chart Image</label><input id="fChartBeforeFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartBeforeData')"><input type="hidden" id="fChartBeforeData"></div>
+  <div class="field span3"><label>After Chart Image</label><input id="fChartAfterFile" type="file" accept="image/*" onchange="encodeImage(this, 'fChartAfterData')"><input type="hidden" id="fChartAfterData"></div>
 
   <div class="field span3"><label>Notes</label><textarea id="fNotes" placeholder="What happened? What did you learn?"></textarea></div>
  </div><div class="actions"><button class="primary" onclick="saveTrade()">Save Trade</button><button class="secondary" onclick="clearForm()">Clear / Cancel</button></div></div>
@@ -321,7 +321,6 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-// إعدادات Firebase الخاصة بك
 const firebaseConfig = {
   apiKey: "AIzaSyCLGp69htCo79Ak4HRCBeWfXRQpHdO6viI",
   authDomain: "rakan-1406d.firebaseapp.com",
@@ -332,17 +331,14 @@ const firebaseConfig = {
   measurementId: "G-3EB9VLN0WS"
 };
 
-// تهيئة Firebase
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
-  try {
-    firebase.analytics();
-  } catch(e) {}
+  try { firebase.analytics(); } catch(e) {}
 }
 const db = firebase.firestore();
 
 const KEY='rjournal_pro_v11_clean_fixed';
-let data = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem('rjournal_pro_v11_clean') || 'null') || {
+let data = JSON.parse(localStorage.getItem(KEY) || 'null') || {
   theme:'dark', trades:[], notes:[],
   lists:{KL:[], Entry:[], Bias:[], Narrative:[]}
 };
@@ -351,11 +347,11 @@ const $=id=>document.getElementById(id);
 let currentCalDate = new Date();
 
 function changeTheme(theme){
-  data.theme=theme;
-  document.body.className='';
-  if(theme==='light') document.body.classList.add('theme-light');
-  if(theme==='blue') document.body.classList.add('theme-blue');
-  if(theme==='gray') document.body.classList.add('theme-gray');
+  data.theme = theme;
+  document.body.className = '';
+  if(theme === 'light') document.body.classList.add('theme-light');
+  if(theme === 'blue') document.body.classList.add('theme-blue');
+  if(theme === 'gray') document.body.classList.add('theme-gray');
   persist();
 }
 
@@ -363,7 +359,6 @@ function persist(){
   localStorage.setItem(KEY, JSON.stringify(data));
   renderAll();
   
-  // مزامنة صامتة مع Firebase كطبقة حفظ إضافية
   db.collection("rjournal").doc("main_data").set(data)
     .then(() => {
       if($('firebase-indicator')) $('firebase-indicator').textContent = 'Firebase: Synced ✓';
@@ -376,17 +371,17 @@ function persist(){
 function toast(t){
   const el = $('toast');
   if(!el) return;
-  el.textContent=t;
-  el.style.display='block';
-  setTimeout(()=>el.style.display='none',1800);
+  el.textContent = t;
+  el.style.display = 'block';
+  setTimeout(()=>el.style.display='none', 1800);
 }
 
 function go(page){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const target = $(page);
   if(target) target.classList.add('active');
-  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
-  if(page==='add' && !$('editTradeId').value) {
+  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active', x.dataset.page === page));
+  if(page === 'add' && !$('editTradeId').value) {
     const d = new Date();
     $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
@@ -480,6 +475,7 @@ function setCheckedValues(containerId, valuesStr, textId) {
 function renderStrategiesManager() {
   const container = $('strategyManager');
   if(!container) return;
+  if(!data.lists) data.lists = {KL:[], Entry:[], Bias:[], Narrative:[]};
   const keys = [{key: 'KL', title: 'KL'}, {key: 'Entry', title: 'Entry'}, {key: 'Bias', title: 'Bias'}, {key: 'Narrative', title: 'Narrative'}];
   container.innerHTML = keys.map(k => `
     <div class="card">
@@ -521,6 +517,7 @@ function deleteStrategyItem(category, item) {
 }
 
 function renderDropdowns() {
+  if(!data.lists) data.lists = {KL:[], Entry:[], Bias:[], Narrative:[]};
   const map = {
     'fKLBox': {list: data.lists.KL, box: 'dropKL', text: 'dropKLText'},
     'fEntryBox': {list: data.lists.Entry, box: 'dropEntry', text: 'dropEntryText'},
@@ -557,7 +554,7 @@ function renderCalendar(targetId='calendarGridWrapper') {
   for(let i = 0; i < firstDay; i++) daysHTML += `<div class="day emptyDay"></div>`;
   for(let d = 1; d <= totalDays; d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const dayTrades = data.trades.filter(t => t.date === dateStr);
+    const dayTrades = (data.trades || []).filter(t => t.date === dateStr);
     const dayR = dayTrades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
     const statusClass = dayTrades.length > 0 ? (dayR >= 0 ? 'pos' : 'neg') : '';
     const now = new Date(), todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -606,6 +603,7 @@ function saveTrade(){
     emotion: val('fEmotion'), plan: val('fPlan'), chartBefore: val('fChartBeforeData'),
     chartAfter: val('fChartAfterData'), notes: val('fNotes')
   };
+  if(!data.trades) data.trades = [];
   const idx = data.trades.findIndex(t => t.id === id);
   if(idx >= 0) data.trades[idx] = trade; else data.trades.unshift(trade);
   persist(); clearForm(); toast('Trade saved successfully!'); go('trades');
@@ -629,6 +627,7 @@ function renderTrades(){
   const dateTo = $('dateTo').value;
   const resultFilter = $('tradeResult').value;
 
+  if(!data.trades) data.trades = [];
   const filtered = data.trades.filter(t => {
     const matchSymbol = (t.symbol || '').toLowerCase().includes(search);
     const matchFrom = !dateFrom || t.date >= dateFrom;
@@ -661,7 +660,6 @@ function renderTrades(){
   tbody.innerHTML = filtered.map(t => {
     const rVal = Number(t.r) || 0;
     const pillClass = rVal >= 0 ? 'pill' : 'pill red';
-    const resultText = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE');
     return `
       <tr>
         <td>${t.date || ''}</td>
@@ -686,7 +684,7 @@ function renderTrades(){
 }
 
 function editTrade(id){
-  const t = data.trades.find(x => x.id === id);
+  const t = (data.trades || []).find(x => x.id === id);
   if(!t) return;
   go('add');
   $('editTradeId').value = t.id;
@@ -710,7 +708,7 @@ function editTrade(id){
 
 function deleteTrade(id){
   if(confirm('Are you sure you want to delete this trade?')){
-    data.trades = data.trades.filter(x => x.id !== id);
+    data.trades = (data.trades || []).filter(x => x.id !== id);
     persist();
     toast('Trade deleted');
   }
@@ -719,26 +717,27 @@ function deleteTrade(id){
 function renderMetrics(){
   const container = $('metrics');
   if(!container) return;
-  const totalTrades = data.trades.length;
-  const wins = data.trades.filter(t => Number(t.r) > 0).length;
+  const trades = data.trades || [];
+  const totalTrades = trades.length;
+  const wins = trades.filter(t => Number(t.r) > 0).length;
   const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
-  const totalR = data.trades.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
-  const totalPnl = data.trades.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
+  const totalR = trades.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
+  const totalPnl = trades.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
 
   container.innerHTML = `
     <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All recorded</div></div>
     <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate}%</div><div class="sub">${wins} Wins</div></div>
     <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR.toFixed(2)}R</div><div class="sub">Expectancy</div></div>
     <div class="metric"><div class="label">Total P&L</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">$${totalPnl.toFixed(2)}</div><div class="sub">Net Profit</div></div>
-    <div class="metric"><div class="label">Best Trade</div><div class="value up">${data.trades.length ? Math.max(...data.trades.map(t => Number(t.r) || 0)).toFixed(1) : 0}R</div><div class="sub">Max R</div></div>
-    <div class="metric"><div class="label">Worst Trade</div><div class="value down">${data.trades.length ? Math.min(...data.trades.map(t => Number(t.r) || 0)).toFixed(1) : 0}R</div><div class="sub">Max Drawdown</div></div>
+    <div class="metric"><div class="label">Best Trade</div><div class="value up">${trades.length ? Math.max(...trades.map(t => Number(t.r) || 0)).toFixed(1) : 0}R</div><div class="sub">Max R</div></div>
+    <div class="metric"><div class="label">Worst Trade</div><div class="value down">${trades.length ? Math.min(...trades.map(t => Number(t.r) || 0)).toFixed(1) : 0}R</div><div class="sub">Max Drawdown</div></div>
   `;
 }
 
 function renderRecent(){
   const tbody = $('recent');
   if(!tbody) return;
-  const recent = data.trades.slice(0, 5);
+  const recent = (data.trades || []).slice(0, 5);
   if(recent.length === 0){
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:20px;">No trades found.</td></tr>`;
     return;
@@ -761,12 +760,13 @@ function renderRecent(){
 function renderPerformanceChart(){
   const el = $('performanceChart');
   if(!el) return;
-  if(data.trades.length === 0){
+  const trades = data.trades || [];
+  if(trades.length === 0){
     el.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted);">No chart data available</div>`;
     return;
   }
   let cumulative = 0;
-  const points = data.trades.slice().reverse().map((t, idx) => {
+  const points = trades.slice().reverse().map((t, idx) => {
     cumulative += Number(t.r) || 0;
     return `${idx}, ${100 - (cumulative * 10)}y`;
   }).join(' ');
@@ -788,6 +788,7 @@ function renderAnalytics(){
 function saveNote(){
   const text = val('noteText');
   if(!text.trim()) return;
+  if(!data.notes) data.notes = [];
   data.notes.unshift({id: Date.now(), date: new Date().toLocaleDateString(), text});
   persist();
   $('noteText').value = '';
@@ -798,11 +799,12 @@ function saveNote(){
 function renderNotes(){
   const container = $('notesList');
   if(!container) return;
-  if(data.notes.length === 0){
+  const notes = data.notes || [];
+  if(notes.length === 0){
     container.innerHTML = `<div style="color:var(--muted); text-align:center; padding:20px;">No notes saved yet.</div>`;
     return;
   }
-  container.innerHTML = data.notes.map(n => `
+  container.innerHTML = notes.map(n => `
     <div class="listItem">
       <div><small style="color:var(--muted)">${n.date}</small><div>${n.text}</div></div>
       <button class="danger" onclick="deleteNote(${n.id})">Delete</button>
@@ -811,7 +813,7 @@ function renderNotes(){
 }
 
 function deleteNote(id){
-  data.notes = data.notes.filter(n => n.id !== id);
+  data.notes = (data.notes || []).filter(n => n.id !== id);
   persist();
   renderNotes();
   toast('Note deleted');
@@ -857,31 +859,29 @@ function renderAll(){
   renderNotes();
 }
 
-// Initialize Theme & App on load with Firebase sync check
 document.addEventListener('DOMContentLoaded', () => {
-  if(data.theme){
-    $('themeSelect').value = data.theme;
-    changeTheme(data.theme);
-  }
-  
-  // محاولة جلب البيانات السحابية من Firebase عند بدء التشغيل
   db.collection("rjournal").doc("main_data").get()
     .then((doc) => {
-      if (doc.exists && doc.data().trades) {
-        data = doc.data();
-        if(data.theme) {
-          $('themeSelect').value = data.theme;
-          changeTheme(data.theme);
+      if (doc.exists && doc.data()) {
+        const cloudData = doc.data();
+        if(cloudData.trades || cloudData.lists || cloudData.theme){
+          data = cloudData;
         }
-        renderAll();
-        if($('firebase-indicator'))$('firebase-indicator').textContent = 'Firebase: Synced ✓';
-      } else {
-        renderAll();
       }
     })
     .catch((error) => {
+      console.log("Using local storage fallback");
+    })
+    .finally(() => {
+      if(!data.trades) data.trades = [];
+      if(!data.notes) data.notes = [];
+      if(!data.lists) data.lists = {KL:[], Entry:[], Bias:[], Narrative:[]};
+      if(data.theme){
+        $('themeSelect').value = data.theme;
+        changeTheme(data.theme);
+      }
       renderAll();
-      if($('firebase-indicator'))$('firebase-indicator').textContent = 'Firebase: Offline mode';
+      if($('firebase-indicator'))$('firebase-indicator').textContent = 'Firebase: Active ✓';
     });
 });
 </script>
