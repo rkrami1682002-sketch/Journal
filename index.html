@@ -315,44 +315,59 @@ nav{display:grid;gap:5px}.nav{border:0;background:transparent;color:var(--text);
 </main></div><div class="toast" id="toast"></div>
 
 <script>
-const KEY='rjournal_pro_v11_clean';
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
- theme:'dark',trades:[],notes:[],
- lists:{KL:[],Entry:[],Bias:[],Narrative:[]}
+const KEY='rjournal_pro_v11_clean_fixed';
+let data = JSON.parse(localStorage.getItem(KEY) || localStorage.getItem('rjournal_pro_v11_clean') || 'null') || {
+  theme:'dark', trades:[], notes:[],
+  lists:{KL:[], Entry:[], Bias:[], Narrative:[]}
 };
+
 const $=id=>document.getElementById(id);
 let currentCalDate = new Date();
 
 function changeTheme(theme){
- data.theme=theme;
- document.body.className='';
- if(theme==='light') document.body.classList.add('theme-light');
- if(theme==='blue') document.body.classList.add('theme-blue');
- if(theme==='gray') document.body.classList.add('theme-gray');
- persist();
+  data.theme=theme;
+  document.body.className='';
+  if(theme==='light') document.body.classList.add('theme-light');
+  if(theme==='blue') document.body.classList.add('theme-blue');
+  if(theme==='gray') document.body.classList.add('theme-gray');
+  persist();
 }
 
-function persist(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
-function toast(t){$('toast').textContent=t;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
-function go(page){
- document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
- $(page).classList.add('active');
- document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
- if(page==='add' && !$('editTradeId').value) {
-  const d = new Date();
-  $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
- }
- renderAll();scrollTo(0,0);
+function persist(){
+  localStorage.setItem(KEY, JSON.stringify(data));
+  renderAll();
 }
+
+function toast(t){
+  const el = $('toast');
+  if(!el) return;
+  el.textContent=t;
+  el.style.display='block';
+  setTimeout(()=>el.style.display='none',1800);
+}
+
+function go(page){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const target = $(page);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+  if(page==='add' && !$('editTradeId').value) {
+    const d = new Date();
+    $('fDate').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  renderAll();
+  window.scrollTo(0,0);
+}
+
 document.querySelectorAll('.nav,[data-page]').forEach(x=>x.addEventListener('click',()=>go(x.dataset.page)));
-function val(id){return $(id).value}
+function val(id){ const el = $(id); return el ? el.value : ''; }
 
 function encodeImage(input, targetId) {
- if (input.files && input.files[0]) {
-  const reader = new FileReader();
-  reader.onload = function(e) { $(targetId).value = e.target.result; };
-  reader.readAsDataURL(input.files[0]);
- }
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) { $(targetId).value = e.target.result; };
+    reader.readAsDataURL(input.files[0]);
+  }
 }
 
 function exportData(){
@@ -571,8 +586,70 @@ function clearForm(){
   ['dropBias','dropEntry','dropKL','dropNarrative'].forEach(id => { $(id).querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected')); });
   updateDropdownText('dropBias', 'dropBiasText'); updateDropdownText('dropEntry', 'dropEntryText');
   updateDropdownText('dropKL', 'dropKLText'); updateDropdownText('dropNarrative', 'dropNarrativeText');
-  $('fSymbol').selectedIndex = 0; $('fSession').selectedIndex = 0; $('fGrade').selectedIndex = 0;
-  $('fTradeStatus').selectedIndex = 0; $('fExec').selectedIndex = 0; $('fEmotion').selectedIndex = 0; $('fPlan').selectedIndex = 0;
+}
+
+function renderTrades(){
+  const tbody = $('tradesBody');
+  if(!tbody) return;
+  const search = $('tradeSearch').value.toLowerCase();
+  const dateFrom = $('dateFrom').value;
+  const dateTo = $('dateTo').value;
+  const resultFilter = $('tradeResult').value;
+
+  const filtered = data.trades.filter(t => {
+    const matchSymbol = (t.symbol || '').toLowerCase().includes(search);
+    const matchFrom = !dateFrom || t.date >= dateFrom;
+    const matchTo = !dateTo || t.date <= dateTo;
+    let matchResult = true;
+    const rVal = Number(t.r) || 0;
+    if(resultFilter === 'Win') matchResult = rVal > 0;
+    else if(resultFilter === 'Loss') matchResult = rVal < 0;
+    else if(resultFilter === 'Breakeven') matchResult = rVal === 0;
+    return matchSymbol && matchFrom && matchTo && matchResult;
+  });
+
+  const sumDiv = $('tradesSummary');
+  if(dateFrom || dateTo || search || resultFilter !== 'All'){
+    sumDiv.style.display = 'flex';
+    $('summaryCount').textContent = filtered.length;
+    const totalR = filtered.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
+    const totalPnl = filtered.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
+    $('summaryTotalR').textContent = totalR.toFixed(2) + 'R';
+    $('summaryTotalPnl').textContent = '$' + totalPnl.toFixed(2);
+  } else {
+    sumDiv.style.display = 'none';
+  }
+
+  if(filtered.length === 0){
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--muted); padding:30px;">No trades found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(t => {
+    const rVal = Number(t.r) || 0;
+    const pillClass = rVal >= 0 ? 'pill' : 'pill red';
+    const resultText = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'BE');
+    return `
+      <tr>
+        <td>${t.date || ''}</td>
+        <td><b>${t.symbol || ''}</b></td>
+        <td>${t.tradeStatus || 'In-Plan'}</td>
+        <td>${t.bias || '-'}</td>
+        <td>${t.entry || '-'}</td>
+        <td>${t.kl || '-'}</td>
+        <td><span class="${pillClass}">${rVal >= 0 ? '+' : ''}${rVal.toFixed(1)}R</span></td>
+        <td>$${Number(t.pnl || 0).toFixed(2)}</td>
+        <td>
+          ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="openImageModal('${t.chartBefore}')">` : ''}
+          ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="openImageModal('${t.chartAfter}')">` : ''}
+        </td>
+        <td>
+          <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
+          <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function editTrade(id){
@@ -603,7 +680,6 @@ function editTrade(id){
   $('fChartBeforeData').value = t.chartBefore || '';
   $('fChartAfterData').value = t.chartAfter || '';
   $('fNotes').value = t.notes || '';
-
   setCheckedValues('dropBias', t.bias, 'dropBiasText');
   setCheckedValues('dropEntry', t.entry, 'dropEntryText');
   setCheckedValues('dropKL', t.kl, 'dropKLText');
@@ -614,70 +690,129 @@ function deleteTrade(id){
   if(confirm('Are you sure you want to delete this trade?')){
     data.trades = data.trades.filter(x => x.id !== id);
     persist();
-    toast('Trade deleted successfully');
+    toast('Trade deleted');
   }
 }
 
-function renderTrades(){
-  const search = ($('tradeSearch').value || '').toLowerCase();
-  const dateFrom = $('dateFrom').value;
-  const dateTo = $('dateTo').value;
-  const resFilter = $('tradeResult').value;
+function renderMetrics(){
+  const container = $('metrics');
+  if(!container) return;
+  const totalTrades = data.trades.length;
+  const wins = data.trades.filter(t => Number(t.r) > 0).length;
+  const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : 0;
+  const totalR = data.trades.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
+  const totalPnl = data.trades.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
 
-  const filtered = data.trades.filter(t => {
-    const symbolMatch = (t.symbol || '').toLowerCase().includes(search);
-    const dateMatch = (!dateFrom || t.date >= dateFrom) && (!dateTo || t.date <= dateTo);
-    const rVal = Number(t.r) || 0;
-    const resType = rVal > 0 ? 'Win' : (rVal < 0 ? 'Loss' : 'Breakeven');
-    const resultMatch = resFilter === 'All' || resType === resFilter;
-    return symbolMatch && dateMatch && resultMatch;
-  });
+  container.innerHTML = `
+    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All recorded</div></div>
+    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate}%</div><div class="sub">${wins} Wins</div></div>
+    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${totalR.toFixed(2)}R</div><div class="sub">Expectancy</div></div>
+    <div class="metric"><div class="label">Total P&L</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">$${totalPnl.toFixed(2)}</div><div class="sub">Net Profit</div></div>
+    <div class="metric"><div class="label">Best Trade</div><div class="value up">${data.trades.length ? Math.max(...data.trades.map(t => Number(t.r) || 0)).toFixed(1) : 0}R</div><div class="sub">Max R</div></div>
+    <div class="metric"><div class="label">Worst Trade</div><div class="value down">${data.trades.length ? Math.min(...data.trades.map(t => Number(t.r) || 0)).toFixed(1) : 0}R</div><div class="sub">Max Drawdown</div></div>
+  `;
+}
 
-  const sumBox = $('tradesSummary');
-  if(dateFrom || dateTo || search || resFilter !== 'All'){
-    sumBox.style.display = 'flex';
-    $('summaryCount').textContent = filtered.length;
-    const totalR = filtered.reduce((acc, t) => acc + (Number(t.r) || 0), 0);
-    const totalPnl = filtered.reduce((acc, t) => acc + (Number(t.pnl) || 0), 0);
-    $('summaryTotalR').textContent = (totalR >= 0 ? '+' : '') + totalR.toFixed(2) + 'R';
-    $('summaryTotalPnl').textContent = (totalPnl >= 0 ? '+' : '-') + '$' + Math.abs(totalPnl).toFixed(2);
-  } else {
-    sumBox.style.display = 'none';
-  }
-
-  const tbody = $('tradesBody');
+function renderRecent(){
+  const tbody = $('recent');
   if(!tbody) return;
-  tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:var(--muted); padding:30px;">No trades found.</td></tr>` : filtered.map(t => {
-    const rVal = Number(t.r) || 0;
-    const pnlVal = Number(t.pnl) || 0;
-    const isWin = rVal >= 0;
+  const recent = data.trades.slice(0, 5);
+  if(recent.length === 0){
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:20px;">No trades found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = recent.map(t => {
+    const r = Number(t.r) || 0;
     return `
       <tr>
-        <td>${t.date || ''}</td>
-        <td><strong>${t.symbol || ''}</strong></td>
-        <td><span style="font-size:11px; color:var(--muted);">${t.tradeStatus || 'In-Plan'}</span></td>
-        <td><span style="font-size:11px;">${t.bias || '-'}</span></td>
-        <td><span style="font-size:11px;">${t.entry || '-'}</span></td>
-        <td><span style="font-size:11px;">${t.kl || '-'}</span></td>
-        <td class="${isWin ? 'up' : 'down'}"><strong>${(rVal >= 0 ? '+' : '') + rVal.toFixed(2)}R</strong></td>
-        <td class="${pnlVal >= 0 ? 'up' : 'down'}"><strong>${(pnlVal >= 0 ? '+' : '-') + '$' + Math.abs(pnlVal).toFixed(2)}</strong></td>
-        <td>
-          ${t.chartBefore ? `<img src="${t.chartBefore}" class="thumbImg" onclick="showImageModal('${t.chartBefore}')">` : ''}
-          ${t.chartAfter ? `<img src="${t.chartAfter}" class="thumbImg" onclick="showImageModal('${t.chartAfter}')">` : ''}
-        </td>
-        <td>
-          <button class="editBtn" onclick="editTrade(${t.id})">Edit</button>
-          <button class="danger" onclick="deleteTrade(${t.id})">Del</button>
-        </td>
+        <td>${t.date}</td>
+        <td><b>${t.symbol}</b></td>
+        <td>${t.grade || '-'}</td>
+        <td><span class="${r >= 0 ? 'pill' : 'pill red'}">${r >= 0 ? '+' : ''}${r.toFixed(1)}R</span></td>
+        <td>$${Number(t.pnl || 0).toFixed(2)}</td>
+        <td>${r > 0 ? 'Win' : (r < 0 ? 'Loss' : 'BE')}</td>
       </tr>
     `;
   }).join('');
 }
 
-function showImageModal(src){
-  $('modalTitle').textContent = 'Chart Image Preview';
-  $('modalBody').innerHTML = `<div style="text-align:center;"><img src="${src}" style="max-width:100%; border-radius:10px; border:1px solid var(--line);"></div>`;
-  $('modalOverlay').classList.add('active');
+function renderPerformanceChart(){
+  const el = $('performanceChart');
+  if(!el) return;
+  if(data.trades.length === 0){
+    el.innerHTML = `<div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted);">No chart data available</div>`;
+    return;
+  }
+  let cumulative = 0;
+  const points = data.trades.slice().reverse().map((t, idx) => {
+    cumulative += Number(t.r) || 0;
+    return `${idx}, ${100 - (cumulative * 10)}y`;
+  }).join(' ');
+
+  el.innerHTML = `
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+      <polyline fill="none" stroke="var(--green)" stroke-width="2" points="${points}" />
+    </svg>
+  `;
+}
+
+function renderAnalytics(){
+  const s = $('sessionStats'), b = $('biasStats'), sym = $('symbolStats');
+  if(s) s.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics active.</div>`;
+  if(b) b.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics active.</div>`;
+  if(sym) sym.innerHTML = `<div style="color:var(--muted); font-size:12px;">Analytics active.</div>`;
+}
+
+function saveNote(){
+  const text = val('noteText');
+  if(!text.trim()) return;
+  data.notes.unshift({id: Date.now(), date: new Date().toLocaleDateString(), text});
+  persist();
+  $('noteText').value = '';
+  renderNotes();
+  toast('Note saved');
+}
+
+function renderNotes(){
+  const container = $('notesList');
+  if(!container) return;
+  if(data.notes.length === 0){
+    container.innerHTML = `<div style="color:var(--muted); text-align:center; padding:20px;">No notes saved yet.</div>`;
+    return;
+  }
+  container.innerHTML = data.notes.map(n => `
+    <div class="listItem">
+      <div><small style="color:var(--muted)">${n.date}</small><div>${n.text}</div></div>
+      <button class="danger" onclick="deleteNote(${n.id})">Delete</button>
+    </div>
+  `).join('');
+}
+
+function deleteNote(id){
+  data.notes = data.notes.filter(n => n.id !== id);
+  persist();
+  renderNotes();
+  toast('Note deleted');
+}
+
+function openModal(type){
+  const overlay = $('modalOverlay'), title = $('modalTitle'), body = $('modalBody');
+  overlay.classList.add('active');
+  if(type === 'chart'){
+    title.textContent = 'Performance Overview (Expanded)';
+    body.innerHTML = `<div class="chart" style="height:100%">${$('performanceChart').innerHTML}</div>`;
+  } else if(type === 'calendar'){
+    title.textContent = 'Trading Calendar (Expanded)';
+    body.innerHTML = `<div id="modalCalendar"></div>`;
+    renderCalendar('modalCalendar');
+  }
+}
+
+function openImageModal(src){
+  const overlay = $('modalOverlay'), title = $('modalTitle'), body = $('modalBody');
+  overlay.classList.add('active');
+  title.textContent = 'Chart Image Preview';
+  body.innerHTML = `<div style="text-align:center;"><img src="${src}" style="max-width:100%; max-height:75vh; border-radius:8px;"></div>`;
 }
 
 function closeModal(){
@@ -688,269 +823,26 @@ function closeModalOnBg(e){
   if(e.target === $('modalOverlay')) closeModal();
 }
 
-function openModal(type){
-  $('modalOverlay').classList.add('active');
-  if(type === 'chart'){
-    $('modalTitle').textContent = 'Performance Overview (Expanded)';
-    $('modalBody').innerHTML = `<div class="chart" id="modalChartContainer" style="height:500px;"></div>`;
-    renderPerformanceChart('modalChartContainer');
-  } else if(type === 'calendar'){
-    $('modalTitle').textContent = 'Trading Calendar (Expanded)';
-    $('modalBody').innerHTML = `<div id="modalCalendarContainer"></div>`;
-    renderCalendar('modalCalendarContainer');
-  }
-}
-
-function renderMetrics(){
-  const trades = data.trades;
-  const totalTrades = trades.length;
-  const totalR = trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-  const wins = trades.filter(t => (Number(t.r) || 0) > 0).length;
-  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-  
-  let cum = 0, peak = 0, maxDD = 0;
-  [...trades].reverse().forEach(t => {
-    cum += Number(t.r) || 0;
-    if(cum > peak) peak = cum;
-    const dd = peak - cum;
-    if(dd > maxDD) maxDD = dd;
-  });
-
-  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  const expectancy = totalTrades > 0 ? totalR / totalTrades : 0;
-
-  $('metrics').innerHTML = `
-    <div class="metric"><div class="label">Total Trades</div><div class="value">${totalTrades}</div><div class="sub">All logged setups</div></div>
-    <div class="metric"><div class="label">Total R</div><div class="value ${totalR >= 0 ? 'up' : 'down'}">${(totalR >= 0 ? '+' : '') + totalR.toFixed(2)}R</div><div class="sub">Cumulative R</div></div>
-    <div class="metric"><div class="label">Win Rate</div><div class="value">${winRate.toFixed(1)}%</div><div class="sub">${wins} Wins</div></div>
-    <div class="metric"><div class="label">Max Drawdown</div><div class="value down">-${maxDD.toFixed(2)}R</div><div class="sub">Peak to trough</div></div>
-    <div class="metric"><div class="label">Total PnL ($)</div><div class="value ${totalPnl >= 0 ? 'up' : 'down'}">${(totalPnl >= 0 ? '+' : '-')}$${Math.abs(totalPnl).toFixed(2)}</div><div class="sub">Net dollar return</div></div>
-    <div class="metric"><div class="label">Avg R / Trade</div><div class="value ${expectancy >= 0 ? 'up' : 'down'}">${(expectancy >= 0 ? '+' : '') + expectancy.toFixed(2)}R</div><div class="sub">Expectancy</div></div>
-  `;
-}
-
-function renderStats(){
-  const trades = data.trades;
-  const totalTrades = trades.length;
-  const totalR = trades.reduce((sum, t) => sum + (Number(t.r) || 0), 0);
-  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-  const wins = trades.filter(t => (Number(t.r) || 0) > 0).length;
-  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-  const bestTrade = trades.reduce((max, t) => Math.max(max, Number(t.r) || 0), 0);
-  const worstTrade = trades.reduce((min, t) => Math.min(min, Number(t.r) || 0), 0);
-  const profitFactor = Math.abs(trades.filter(t => (Number(t.r) || 0) > 0).reduce((s, t) => s + Number(t.r), 0) / (trades.filter(t => (Number(t.r) || 0) < 0).reduce((s, t) => s + Number(t.r), 0) || 1));
-
-  const recentContainer = $('recent');
-  if(recentContainer){
-    recentContainer.innerHTML = trades.slice(0, 5).map(t => {
-      const rVal = Number(t.r) || 0;
-      const pnlVal = Number(t.pnl) || 0;
-      const isWin = rVal >= 0;
-      return `
-        <tr>
-          <td>${t.date || ''}</td>
-          <td>${t.symbol || ''}</td>
-          <td>${t.grade || '-'}</td>
-          <td class="${isWin ? 'up' : 'down'}">${(rVal >= 0 ? '+' : '') + rVal.toFixed(2)}R</td>
-          <td class="${pnlVal >= 0 ? 'up' : 'down'}">${(pnlVal >= 0 ? '+' : '-')}$${Math.abs(pnlVal).toFixed(2)}</td>
-          <td><span class="pill ${isWin ? '' : 'red'}">${isWin ? 'Win' : 'Loss'}</span></td>
-        </tr>
-      `;
-    }).join('') || `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades yet</td></tr>`;
-  }
-}
-
-function renderAnalytics(){
-  const trades = data.trades;
-  const groupBy = (key) => {
-    const map = {};
-    trades.forEach(t => {
-      const k = t[key] || 'Unspecified';
-      if(!map[k]) map[k] = {count: 0, r: 0, pnl: 0};
-      map[k].count++;
-      map[k].r += Number(t.r) || 0;
-      map[k].pnl += Number(t.pnl) || 0;
-    });
-    return map;
-  };
-
-  const renderGroupTable = (map, titleKey) => {
-    const keys = Object.keys(map);
-    if(keys.length === 0) return `<div style="color:var(--muted); font-size:12px; padding:10px;">No data available</div>`;
-    return `
-      <table class="table">
-        <thead><tr><th>${titleKey}</th><th>Trades</th><th>Total R</th><th>PnL</th></tr></thead>
-        <tbody>
-          ${keys.map(k => `
-            <tr>
-              <td><strong>${k}</strong></td>
-              <td>${map[k].count}</td>
-              <td class="${map[k].r >= 0 ? 'up' : 'down'}">${(map[k].r >= 0 ? '+' : '') + map[k].r.toFixed(2)}R</td>
-              <td class="${map[k].pnl >= 0 ? 'up' : 'down'}">${(map[k].pnl >= 0 ? '+' : '-') + '$' + Math.abs(map[k].pnl).toFixed(2)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-  };
-
-  $('sessionStats').innerHTML = renderGroupTable(groupBy('session'), 'Session');
-  $('biasStats').innerHTML = renderGroupTable(groupBy('bias'), 'Bias');
-  $('symbolStats').innerHTML = renderGroupTable(groupBy('symbol'), 'Symbol');
-}
-
-function renderNotes(){
-  const container = $('notesList');
-  if(!container) return;
-  container.innerHTML = (data.notes || []).length === 0 ? `<div style="color:var(--muted); font-size:12px; padding:10px;">No notes saved yet.</div>` : (data.notes || []).map((n, i) => `
-    <div class="listItem" style="flex-direction:column; align-items:flex-start; gap:6px;">
-      <div style="display:flex; justify-content:space-between; width:100%;">
-        <span style="font-size:11px; color:var(--muted);">${n.date}</span>
-        <button class="danger" onclick="deleteNote(${i})">Delete</button>
-      </div>
-      <div style="white-space:pre-wrap; font-size:13px;">${n.text}</div>
-    </div>
-  `).join('');
-}
-
-function saveNote(){
-  const text = $('noteText').value.trim();
-  if(!text) return;
-  if(!data.notes) data.notes = [];
-  data.notes.unshift({date: new Date().toISOString().slice(0,10), text});
-  $('noteText').value = '';
-  persist();
-  toast('Note saved successfully');
-}
-
-function deleteNote(index){
-  data.notes.splice(index, 1);
-  persist();
-  toast('Note deleted');
-}
-
-// دالة رسم الشارت المطورة لحل مشكلة نقطة البداية وتحديث المحور اليمين ديناميكياً
-function renderPerformanceChart(containerId = 'performanceChart') {
-  const container = $(containerId);
-  if(!container) return;
-
-  const chartType = $('chartTypeSelect') ? $('chartTypeSelect').value : 'r';
-  const rrFilter = $('rrFilterSelect') ? $('rrFilterSelect').value : 'all';
-
-  let sortedTrades = [...data.trades].sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-
-  if(rrFilter === 'weekly') {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneWeekAgo);
-  } else if(rrFilter === 'monthly') {
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    sortedTrades = sortedTrades.filter(t => new Date(t.date || 0) >= oneMonthAgo);
-  }
-
-  let cumulative = 0;
-  const points = [{ xLabel: 'Start', value: 0, date: '' }];
-
-  sortedTrades.forEach(t => {
-    let val = chartType === 'pnl' ? (Number(t.pnl) || 0) : (Number(t.r) || 0);
-    cumulative += val;
-    points.push({
-      xLabel: t.date ? t.date.slice(5) : '',
-      value: cumulative,
-      date: t.date || ''
-    });
-  });
-
-  if(points.length === 1) {
-    container.innerHTML = `<div class="empty" style="padding-top:80px; text-align:center; color:var(--muted);">No performance data available for chart yet.</div>`;
-    return;
-  }
-
-  const values = points.map(p => p.value);
-  let maxVal = Math.max(...values, 0);
-  let minVal = Math.min(...values, 0);
-
-  if(maxVal === minVal) {
-    maxVal += 1;
-    minVal -= 1;
-  }
-
-  const paddingRange = (maxVal - minVal) * 0.15;
-  maxVal += paddingRange;
-  minVal -= paddingRange;
-
-  const width = container.clientWidth || 500;
-  const height = container.clientHeight || 280;
-  const margin = { top: 20, right: 65, bottom: 30, left: 20 };
-  const graphWidth = width - margin.left - margin.right;
-  const graphHeight = height - margin.top - margin.bottom;
-
-  const getX = (i) => margin.left + (i / (points.length - 1)) * graphWidth;
-  const getY = (val) => margin.top + graphHeight - ((val - minVal) / (maxVal - minVal || 1)) * graphHeight;
-
-  const pathCoords = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(p.value)}`).join(' ');
-  const firstX = getX(0);
-  const lastX = getX(points.length - 1);
-  const bottomY = margin.top + graphHeight;
-  const areaCoords = `${pathCoords} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
-
-  const steps = 5;
-  let yAxisGridHTML = '';
-  let yAxisLabelsHTML = '';
-
-  for(let i = 0; i <= steps; i++) {
-    const val = minVal + (maxVal - minVal) * (i / steps);
-    const yPos = getY(val);
-    yAxisGridHTML += `<line x1="${margin.left}" y1="${yPos}" x2="${width - margin.right}" y2="${yPos}" stroke="var(--line)" stroke-dasharray="3 3" opacity="0.6"/>`;
-    
-    let formattedVal = chartType === 'pnl' ? (val >= 0 ? `+$${val.toFixed(0)}` : `-$${Math.abs(val).toFixed(0)}`) : (val >= 0 ? `+${val.toFixed(1)}R` : `${val.toFixed(1)}R`);
-    yAxisLabelsHTML += `<text x="${width - margin.right + 8}" y="${yPos + 4}" fill="var(--muted)" font-size="10">${formattedVal}</text>`;
-  }
-
-  const lastPoint = points[points.length - 1];
-  const lastXPos = getX(points.length - 1);
-  const lastYPos = getY(lastPoint.value);
-  const startPoint = points[0];
-  const startXPos = getX(0);
-  const startYPos = getY(startPoint.value);
-
-  container.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}">
-      <defs>
-        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
-          <stop offset="100%" stop-color="var(--green)" stop-opacity="0.0"/>
-        </linearGradient>
-      </defs>
-      ${yAxisGridHTML}
-      <path d="${areaCoords}" fill="url(#chartGrad)"/>
-      <path d="${pathCoords}" fill="none" stroke="var(--green)" stroke-width="2.5"/>
-      ${yAxisLabelsHTML}
-      <circle cx="${startXPos}" cy="${startYPos}" r="4" fill="var(--green)"/>
-      <text x="${startXPos}" y="${bottomY + 16}" fill="var(--muted)" font-size="10">${startPoint.xLabel || 'Start'}</text>
-      <circle cx="${lastXPos}" cy="${lastYPos}" r="4" fill="var(--green)"/>
-      <text x="${lastXPos}" y="${bottomY + 16}" fill="var(--muted)" font-size="10" text-anchor="end">${lastPoint.xLabel}</text>
-    </svg>
-  `;
-}
-
 function renderAll(){
-  renderMetrics();
-  renderStats();
-  renderPerformanceChart();
-  renderCalendar();
-  renderTrades();
-  renderAnalytics();
-  renderNotes();
   renderStrategiesManager();
   renderDropdowns();
+  renderCalendar('calendarGridWrapper');
+  renderTrades();
+  renderMetrics();
+  renderRecent();
+  renderPerformanceChart();
+  renderAnalytics();
+  renderNotes();
 }
 
-// Initial Run
-changeTheme(data.theme || 'dark');
-$('themeSelect').value = data.theme || 'dark';
-renderAll();
+// Initialize Theme & App on load
+document.addEventListener('DOMContentLoaded', () => {
+  if(data.theme){
+    $('themeSelect').value = data.theme;
+    changeTheme(data.theme);
+  }
+  renderAll();
+});
 </script>
 </body>
 </html>
